@@ -27,3 +27,9 @@ Homestead.yaml
 Thumbs.db
 /node_modules
 /storage/framework/views/*
+/vendor
+/bootstrap/cache/*.php
+!/bootstrap/cache/.gitignore
+/storage/logs/*
+/bootstrap/cache/*.php
+/storage/logs/*.log

@@ -31,3 +31,5 @@ Thumbs.db
 /bootstrap/cache/*.php
 !/bootstrap/cache/.gitignore
 /storage/logs/*
+/bootstrap/cache/*.php
+/storage/logs/*.log

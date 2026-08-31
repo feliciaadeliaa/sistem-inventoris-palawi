@@ -11,7 +11,7 @@ use App\Http\Controllers\User\StockOutController as UserStockOutController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 Route::get('/dashboard', function () {
@@ -44,6 +44,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::resource('barang', ItemController::class)
         ->parameters(['barang' => 'item'])
         ->except(['show']);
+
+    Route::get('barang/{item}/qr', [ItemController::class, 'showQr'])->name('barang.qr');
+    Route::get('barang/{item}/qr/download', [ItemController::class, 'downloadQr'])->name('barang.qr.download');
+    Route::get('barang/print-labels', [ItemController::class, 'printLabels'])->name('barang.print-labels');
 
     Route::resource('kategori', CategoryController::class)
         ->parameters(['kategori' => 'category'])

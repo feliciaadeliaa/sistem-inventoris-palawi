@@ -87,17 +87,20 @@ document.addEventListener('DOMContentLoaded', function () {
     const detailUrlTemplate = "{{ route('barang.detail', ['item_id' => '__ITEM_ID__']) }}";
     const isAdmin = @json(auth()->user()->role === 'admin');
 
-    // Peta tombol aksi: berbeda untuk Admin (proses langsung) dan User (ajukan)
+    // Peta tombol aksi: berbeda untuk Admin (proses langsung) dan User (ajukan).
+    // Setiap entri adalah function yang menerima item_id dan mengembalikan URL tujuan,
+    // karena tiap route punya format berbeda (path parameter vs query string).
     const actionRoutes = isAdmin ? {
-        stock_in: '/admin/stock-in',
-        stock_out: '/admin/transaksi/stock-out',
-        mutasi: '/admin/transaksi/mutasi',
-        perbaikan: '/admin/transaksi/perbaikan',
-        kerusakan: '/admin/transaksi/kerusakan',
+        stock_in: (id) => `/admin/stock-in?item_id=${encodeURIComponent(id)}`,
+        stock_out: (id) => `/admin/transaksi/stock-out?item_id=${encodeURIComponent(id)}`,
+        mutasi: (id) => `/admin/transaksi/mutasi?item_id=${encodeURIComponent(id)}`,
+        perbaikan: (id) => `/admin/transaksi/perbaikan?item_id=${encodeURIComponent(id)}`,
+        kerusakan: (id) => `/admin/transaksi/kerusakan?item_id=${encodeURIComponent(id)}`,
     } : {
-        peminjaman: '/transaksi/stock-out',
-        perbaikan: '/ajukan/perbaikan',
-        kerusakan: '/ajukan/kerusakan',
+        // Route form Ajukan Peminjaman pakai path parameter: /transaksi/stock-out/{item_id}
+        peminjaman: (id) => `/transaksi/stock-out/ajukan/${encodeURIComponent(id)}`,
+        perbaikan: (id) => `/ajukan/perbaikan?item_id=${encodeURIComponent(id)}`,
+        kerusakan: (id) => `/ajukan/kerusakan?item_id=${encodeURIComponent(id)}`,
     };
 
     const statusLabel = {
@@ -190,12 +193,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 300);
     });
 
-    // --- Tombol aksi (peminjaman/perbaikan/lapor rusak) ---
+    // --- Tombol aksi (peminjaman/perbaikan/lapor rusak, atau proses transaksi utk Admin) ---
     document.querySelectorAll('.hasil-action-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             if (!currentItemId) return;
-            const base = actionRoutes[this.dataset.action];
-            window.location.href = `${base}?item_id=${encodeURIComponent(currentItemId)}`;
+            const buildUrl = actionRoutes[this.dataset.action];
+            if (typeof buildUrl !== 'function') return;
+            window.location.href = buildUrl(currentItemId);
         });
     });
 

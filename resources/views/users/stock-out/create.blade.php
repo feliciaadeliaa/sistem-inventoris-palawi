@@ -1,60 +1,154 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Ajukan Peminjaman Barang
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+@section('content')
+<div class="max-w-xl mx-auto py-8 px-4">
+    <h1 class="text-2xl font-semibold text-white mb-6">Ajukan Peminjaman</h1>
 
-                <div class="mb-6 p-4 bg-gray-50 rounded border">
-                    <p class="text-sm text-gray-500">Barang yang akan dipinjam</p>
-                    <p class="font-semibold text-lg">{{ $item->nama_barang }}</p>
-                    <p class="text-sm text-gray-500">Kode: {{ $item->item_id }} &bull; Lokasi: {{ $item->location->nama_lokasi ?? '-' }}</p>
-                </div>
-
-                @if ($errors->any())
-                    <div class="mb-4 p-4 bg-red-100 text-red-700 rounded">
-                        <ul class="list-disc list-inside text-sm">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                <form method="POST" action="{{ route('peminjaman.store') }}" class="space-y-4">
-                    @csrf
-                    <input type="hidden" name="item_id" value="{{ $item->item_id }}">
-
-                    <div>
-                        <label for="keterangan" class="block text-sm font-medium text-gray-700">
-                            Tujuan Peminjaman
-                        </label>
-                        <textarea name="keterangan" id="keterangan" rows="3" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">{{ old('keterangan') }}</textarea>
-                    </div>
-
-                    <div>
-                        <label for="tanggal_kembali_estimasi" class="block text-sm font-medium text-gray-700">
-                            Estimasi Tanggal Kembali
-                        </label>
-                        <input type="date" name="tanggal_kembali_estimasi" id="tanggal_kembali_estimasi" required
-                            min="{{ now()->format('Y-m-d') }}"
-                            value="{{ old('tanggal_kembali_estimasi') }}"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                    </div>
-
-                    <div class="flex justify-end gap-2">
-                        <a href="{{ route('peminjaman.index') }}" class="px-4 py-2 text-gray-600">Batal</a>
-                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                            Ajukan Peminjaman
-                        </button>
-                    </div>
-                </form>
-            </div>
+    @if (session('success'))
+        <div class="bg-green-900/40 border border-green-700 text-green-300 text-sm rounded-lg px-4 py-3 mb-6">
+            {{ session('success') }}
         </div>
-    </div>
-</x-app-layout>
+    @endif
+
+    @if ($errors->any())
+        <div class="bg-red-900/40 border border-red-700 text-red-300 text-sm rounded-lg px-4 py-3 mb-6">
+            <ul class="list-disc list-inside space-y-1">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('peminjaman.store') }}">
+        @csrf
+
+        {{-- Pilih Barang --}}
+        <label class="block text-gray-300 text-sm mb-2">Barang</label>
+
+        <div id="item-selected" class="{{ $item ? '' : 'hidden' }} border border-gray-700 rounded-lg px-4 py-3 mb-3 bg-gray-900/40 flex items-center justify-between">
+            <div>
+                <p id="item-selected-nama" class="text-white font-medium">{{ $item->nama_barang ?? '' }}</p>
+                <p id="item-selected-info" class="text-gray-400 text-sm">
+                    {{ $item->item_id ?? '' }} · {{ $item->location->nama_lokasi ?? '' }}
+                </p>
+            </div>
+            <button type="button" id="btn-ganti-barang" class="text-sm text-green-500 underline">
+                Ganti
+            </button>
+        </div>
+
+        <div id="item-search-wrapper" class="{{ $item ? 'hidden' : '' }}">
+            <input
+                type="text"
+                id="search-barang"
+                placeholder="Cari nama atau kode barang"
+                class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-3 mb-2 focus:outline-none focus:ring-2 focus:ring-green-600"
+                autocomplete="off"
+            >
+            <div id="search-results" class="space-y-2 mb-3"></div>
+        </div>
+
+        <input type="hidden" name="item_id" id="item_id" value="{{ old('item_id', $item->item_id ?? '') }}">
+
+        {{-- Tanggal Kembali --}}
+        <label for="tanggal_kembali_estimasi" class="block text-gray-300 text-sm mb-2 mt-4">
+            Perkiraan Tanggal Kembali
+        </label>
+        <input
+            type="date"
+            name="tanggal_kembali_estimasi"
+            id="tanggal_kembali_estimasi"
+            value="{{ old('tanggal_kembali_estimasi') }}"
+            min="{{ now()->format('Y-m-d') }}"
+            class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-green-600"
+            required
+        >
+
+        {{-- Keterangan --}}
+        <label for="keterangan" class="block text-gray-300 text-sm mb-2">
+            Keterangan (opsional)
+        </label>
+        <textarea
+            name="keterangan"
+            id="keterangan"
+            rows="3"
+            placeholder="Contoh: dipakai untuk presentasi klien tanggal 5 Sept"
+            class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-3 mb-6 focus:outline-none focus:ring-2 focus:ring-green-600"
+        >{{ old('keterangan') }}</textarea>
+
+        <button
+            type="submit"
+            class="w-full bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg px-4 py-3"
+        >
+            Kirim Pengajuan
+        </button>
+    </form>
+</div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchUrl = "{{ route('barang.cari') }}";
+
+    const itemIdInput = document.getElementById('item_id');
+    const itemSelected = document.getElementById('item-selected');
+    const itemSelectedNama = document.getElementById('item-selected-nama');
+    const itemSelectedInfo = document.getElementById('item-selected-info');
+    const itemSearchWrapper = document.getElementById('item-search-wrapper');
+    const searchInput = document.getElementById('search-barang');
+    const searchResults = document.getElementById('search-results');
+
+    function pilihBarang(item) {
+        itemIdInput.value = item.item_id;
+        itemSelectedNama.textContent = item.nama_barang;
+        itemSelectedInfo.textContent = `${item.item_id} · ${item.lokasi}`;
+        itemSelected.classList.remove('hidden');
+        itemSearchWrapper.classList.add('hidden');
+        searchResults.innerHTML = '';
+        searchInput.value = '';
+    }
+
+    document.getElementById('btn-ganti-barang').addEventListener('click', function () {
+        itemSelected.classList.add('hidden');
+        itemSearchWrapper.classList.remove('hidden');
+        itemIdInput.value = '';
+    });
+
+    let debounceTimer;
+    searchInput.addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        const q = this.value.trim();
+
+        if (q.length < 2) {
+            searchResults.innerHTML = '';
+            return;
+        }
+
+        debounceTimer = setTimeout(() => {
+            fetch(`${searchUrl}?q=${encodeURIComponent(q)}`)
+                .then(res => res.json())
+                .then(items => {
+                    searchResults.innerHTML = '';
+                    items
+                        .filter(item => item.status === 'tersedia')
+                        .forEach(item => {
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'w-full text-left bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-3 hover:bg-gray-800';
+                            btn.innerHTML = `<span class="font-medium">${item.nama_barang}</span>
+                                              <span class="block text-gray-400 text-sm">${item.item_id} · ${item.lokasi}</span>`;
+                            btn.addEventListener('click', () => pilihBarang(item));
+                            searchResults.appendChild(btn);
+                        });
+
+                    if (searchResults.children.length === 0) {
+                        searchResults.innerHTML = '<p class="text-gray-500 text-sm">Barang tidak ditemukan atau sedang tidak tersedia.</p>';
+                    }
+                });
+        }, 300);
+    });
+});
+</script>
+@endpush
+@endsection

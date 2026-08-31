@@ -1,7 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
-    <h2 class="text-xl font-semibold mb-6 text-gray-800 dark:text-white">Riwayat Stock In</h2>
+    <div class="mb-6 flex items-center justify-between">
+    <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Riwayat Stock In</h2>
+    <a href="{{ route('stock-in.create') }}"
+        class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 rounded-lg px-5 py-2.5 text-sm font-medium text-white transition">
+        + {{ __('Tambah Barang') }}
+    </a>
+</div>
 
     <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

@@ -5,6 +5,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\ItemController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\LocationController;
+use App\Http\Controllers\Admin\StockInController;
+use App\Http\Controllers\Admin\StockOutController as AdminStockOutController;
+use App\Http\Controllers\User\StockOutController as UserStockOutController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,6 +26,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// Sisi User - khusus role 'user'
+Route::middleware(['auth', 'user'])->prefix('transaksi')->name('peminjaman.')->group(function () {
+    Route::get('stock-out', [UserStockOutController::class, 'index'])->name('index');
+    Route::get('stock-out/ajukan/{item_id}', [UserStockOutController::class, 'create'])->name('create');
+    Route::post('stock-out', [UserStockOutController::class, 'store'])->name('store');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -47,4 +57,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         ->parameters(['lokasi' => 'location'])
         ->except(['show']);
 });
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    Route::get('stock-in', [StockInController::class, 'index'])->name('stock-in.index');
+});
+
+Route::middleware(['auth', 'admin'])->prefix('admin/transaksi')->name('admin.transaksi.')->group(function () {
+    Route::get('stock-out', [AdminStockOutController::class, 'index'])->name('stock-out.index');
+    Route::patch('stock-out/{transaction}/approve', [AdminStockOutController::class, 'approve'])->name('stock-out.approve');
+    Route::patch('stock-out/{transaction}/reject', [AdminStockOutController::class, 'reject'])->name('stock-out.reject');
+    Route::post('stock-out/confirm-return/{item_id}', [AdminStockOutController::class, 'confirmReturn'])->name('stock-out.confirm-return');
+});
+
 require __DIR__.'/auth.php';

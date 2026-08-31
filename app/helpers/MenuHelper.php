@@ -85,23 +85,13 @@ class MenuHelper
             'path' => '/calendar',
             ],
             [
-                'icon' => 'tables',
-                'name' => 'Scan / Cari Barang',
-                'path' => '/scan',
-            ],
-            [
                 'icon' => 'forms',
                 'name' => 'Ajukan Transaksi',
                 'subItems' => [
-                    ['name' => 'Peminjaman', 'path' => '/ajukan/peminjaman'],
+                    ['name' => 'Peminjaman', 'path' => '/transaksi/stock-out'],
                     ['name' => 'Perbaikan', 'path' => '/ajukan/perbaikan'],
                     ['name' => 'Lapor Kerusakan', 'path' => '/ajukan/kerusakan'],
                 ],
-            ],
-            [
-                'icon' => 'task',
-                'name' => 'Riwayat Pengajuan Saya',
-                'path' => '/riwayat',
             ],
             [
                 'icon' => 'user-profile',

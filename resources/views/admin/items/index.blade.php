@@ -1,14 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="mb-4 flex items-center justify-between">
+    <div class="mb-4">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-white leading-tight">
             {{ __('Master Data Barang') }}
         </h2>
-        <a href="{{ route('barang.create') }}"
-            class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 rounded-lg px-5 py-2.5 text-sm font-medium text-white transition">
-            + {{ __('Tambah Barang') }}
-        </a>
     </div>
 
     @if (session('success'))
@@ -110,7 +106,7 @@
 
             <img id="qr-modal-image" src="" alt="QR Code" class="mx-auto w-56 h-56">
 
-            <a
+            
                 id="qr-modal-download"
                 href="#"
                 class="inline-block mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"

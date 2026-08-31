@@ -3,44 +3,36 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreItemRequest;
-use App\Models\Category;
-use App\Models\Item;
-use App\Models\Location;
 use App\Models\Transaction;
 
 class StockInController extends Controller
 {
+    // Daftar barang yang sedang dipinjam, menunggu dikembalikan
     public function index()
     {
         $transactions = Transaction::with(['item', 'user'])
-            ->where('jenis_transaksi', 'Stock In')
+            ->where('jenis_transaksi', 'stock_out')
+            ->whereIn('status', ['disetujui', 'dikembalikan'])
             ->latest()
-            ->paginate(15);
+        ->paginate(15);
 
-        return view('admin.stock-in.index', compact('transactions'));
+    return view('admin.stock-in.index', compact('transactions'));
     }
 
-    public function create()
+    // Konfirmasi pengembalian (scan ulang QR barang)
+    public function confirmReturn(Transaction $transaction)
     {
-        $categories = Category::orderBy('nama_kategori')->get();
-        $locations = Location::orderBy('nama_lokasi')->get();
+        if ($transaction->status !== 'disetujui') {
+            return back()->with('error', 'Transaksi ini bukan barang yang sedang dipinjam.');
+        }
 
-        return view('admin.stock-in.create', compact('categories', 'locations'));
-    }
-
-    public function store(StoreItemRequest $request)
-    {
-        $item = Item::create($request->validated());
-
-        $item->transactions()->create([
-            'user_id' => auth()->id(),
-            'jenis_transaksi' => 'Stock In',
-            'keterangan' => 'Penerimaan barang baru',
+        $transaction->update([
+            'status' => 'dikembalikan',
+            'tanggal_kembali_aktual' => now(),
         ]);
 
-        return redirect()
-            ->route('stock-in.index')
-            ->with('success', 'Barang berhasil ditambahkan dan tercatat sebagai Stock In.');
+        $transaction->item->update(['status' => 'tersedia']);
+
+        return back()->with('success', 'Barang berhasil dikonfirmasi kembali, status jadi Tersedia.');
     }
 }

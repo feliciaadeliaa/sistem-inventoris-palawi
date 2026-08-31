@@ -13,6 +13,13 @@
         </div>
     @endif
 
+    <div class="mb-4 flex justify-end">
+        <a href="{{ route('barang.create') }}"
+            class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+            + {{ __('Tambah Barang') }}
+        </a>
+    </div>
+
     {{-- Form cetak label: SATU form membungkus seluruh tabel, checkbox per baris di dalamnya --}}
     <form action="{{ route('barang.print-labels') }}" method="GET" target="_blank">
 
@@ -106,8 +113,7 @@
 
             <img id="qr-modal-image" src="" alt="QR Code" class="mx-auto w-56 h-56">
 
-            
-                id="qr-modal-download"
+            <a id="qr-modal-download"
                 href="#"
                 class="inline-block mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >

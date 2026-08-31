@@ -52,7 +52,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::resource('barang', ItemController::class)
         ->parameters(['barang' => 'item'])
-        ->except(['show', 'create', 'store']);
+        ->except(['show']);
 
     Route::get('barang/{item}/qr', [ItemController::class, 'showQr'])->name('barang.qr');
     Route::get('barang/{item}/qr/download', [ItemController::class, 'downloadQr'])->name('barang.qr.download');
@@ -67,17 +67,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
         ->except(['show']);
 });
 
-Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('stock-in', [StockInController::class, 'index'])->name('stock-in.index');
-    Route::get('stock-in/create', [StockInController::class, 'create'])->name('stock-in.create');
-    Route::post('stock-in', [StockInController::class, 'store'])->name('stock-in.store');
+    Route::patch('stock-in/{transaction}/confirm-return', [StockInController::class, 'confirmReturn'])->name('stock-in.confirm-return');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin/transaksi')->name('admin.transaksi.')->group(function () {
     Route::get('stock-out', [AdminStockOutController::class, 'index'])->name('stock-out.index');
     Route::patch('stock-out/{transaction}/approve', [AdminStockOutController::class, 'approve'])->name('stock-out.approve');
     Route::patch('stock-out/{transaction}/reject', [AdminStockOutController::class, 'reject'])->name('stock-out.reject');
-    Route::post('stock-out/confirm-return/{item_id}', [AdminStockOutController::class, 'confirmReturn'])->name('stock-out.confirm-return');
     Route::get('mutasi', [MutasiController::class, 'index'])->name('mutasi.index');
     Route::post('mutasi', [MutasiController::class, 'store'])->name('mutasi.store');
 });

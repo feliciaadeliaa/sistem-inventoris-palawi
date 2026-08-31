@@ -29,12 +29,18 @@ class ItemController extends Controller
     }
 
     public function store(StoreItemRequest $request)
-    {
-        Item::create($request->validated());
+{
+    $item = Item::create($request->validated());
 
-        return redirect()
-            ->route('barang.index')
-            ->with('success', 'Barang berhasil ditambahkan.');
+    $item->transactions()->create([
+        'user_id' => auth()->id(),
+        'jenis_transaksi' => 'Stock In',
+        'keterangan' => 'Penerimaan barang baru',
+    ]);
+
+    return redirect()
+        ->route('barang.index')
+        ->with('success', 'Barang berhasil ditambahkan dan tercatat sebagai Stock In.');
     }
 
     public function edit(Item $item)

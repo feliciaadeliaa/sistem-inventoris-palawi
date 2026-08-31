@@ -35,4 +35,8 @@ class Item extends Model
             $item->update(['item_id' => 'ITM-' . str_pad($item->id, 6, '0', STR_PAD_LEFT)]);
         });
     }
+    public function transactions()
+{
+    return $this->hasMany(Transaction::class);
+}
 }

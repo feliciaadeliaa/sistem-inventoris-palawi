@@ -1,33 +1,61 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="mb-6 flex items-center justify-between">
-    <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Riwayat Stock In</h2>
-    <a href="{{ route('stock-in.create') }}"
-        class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 rounded-lg px-5 py-2.5 text-sm font-medium text-white transition">
-        + {{ __('Tambah Barang') }}
-    </a>
-</div>
+    <h2 class="text-xl font-semibold mb-6 text-gray-800 dark:text-white">Stock In — Konfirmasi Pengembalian Barang</h2>
+
+    @if (session('success'))
+        <div class="mb-4 p-4 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded">
+            {{ session('success') }}
+        </div>
+    @endif
 
     <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nama Barang</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Diinput Oleh</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Keterangan</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dipinjam Oleh</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal Pinjam</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                @foreach ($transactions as $trx)
+                @forelse ($transactions as $trx)
                     <tr>
-                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->created_at->format('d M Y H:i') }}</td>
                         <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->item->nama_barang }}</td>
                         <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->user->name }}</td>
-                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->keterangan }}</td>
+                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->created_at->format('d M Y') }}</td>
+                        <td class="px-4 py-3">
+                            @if ($trx->status === 'disetujui')
+                                <span class="text-yellow-600 dark:text-yellow-400">Sedang Dipinjam</span>
+                            @else
+                                <span class="text-green-600 dark:text-green-400">Dikembalikan</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3">
+                            @if ($trx->status === 'disetujui')
+                                <form action="{{ route('admin.stock-in.confirm-return', $trx) }}" method="POST">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700">
+                                        Konfirmasi Kembali
+                                    </button>
+                                </form>
+                            @else
+                                <span class="bg-gray-400 text-white px-3 py-1.5 rounded text-sm cursor-not-allowed">
+                                    Sudah Dikembalikan
+                                </span>
+                            @endif
+                        </td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                            Belum ada riwayat peminjaman.
+                        </td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
 

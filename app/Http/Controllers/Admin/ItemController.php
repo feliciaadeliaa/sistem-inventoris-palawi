@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreItemRequest;
 use App\Http\Requests\UpdateItemRequest;
+use App\Models\Category;
 use App\Models\Item;
+use App\Models\Location;
 use Illuminate\Http\Request;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
@@ -19,10 +22,27 @@ class ItemController extends Controller
         return view('admin.items.index', compact('items'));
     }
 
+    public function create()
+    {
+        $categories = Category::orderBy('nama_kategori')->get();
+        $locations = Location::orderBy('nama_lokasi')->get();
+
+        return view('admin.items.create', compact('categories', 'locations'));
+    }
+
+    public function store(StoreItemRequest $request)
+    {
+        Item::create($request->validated());
+
+        return redirect()
+            ->route('barang.index')
+            ->with('success', 'Barang berhasil ditambahkan.');
+    }
+
     public function edit(Item $item)
     {
-        $categories = \App\Models\Category::orderBy('nama_kategori')->get();
-        $locations = \App\Models\Location::orderBy('nama_lokasi')->get();
+        $categories = Category::orderBy('nama_kategori')->get();
+        $locations = Location::orderBy('nama_lokasi')->get();
 
         return view('admin.items.edit', compact('item', 'categories', 'locations'));
     }
@@ -53,21 +73,15 @@ class ItemController extends Controller
         )->header('Content-Type', 'image/svg+xml');
     }
 
-    /**
-     * Download QR single barang sebagai file PNG.
-     */
     public function downloadQr(Item $item)
     {
-        $qr = QrCode::format('png')->size(500)->generate($item->item_id);
+        $qr = QrCode::format('svg')->size(500)->generate($item->item_id);
 
         return response($qr)
-            ->header('Content-Type', 'image/png')
-            ->header('Content-Disposition', 'attachment; filename="qr-'.$item->item_id.'.png"');
+            ->header('Content-Type', 'image/svg+xml')
+            ->header('Content-Disposition', 'attachment; filename="qr-'.$item->item_id.'.svg"');
     }
 
-    /**
-     * Cetak label QR massal (batch) — halaman khusus print.
-     */
     public function printLabels(Request $request)
     {
         $request->validate([

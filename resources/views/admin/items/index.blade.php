@@ -13,6 +13,13 @@
         </div>
     @endif
 
+    <div class="mb-4 flex justify-end">
+        <a href="{{ route('barang.create') }}"
+            class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+            + {{ __('Tambah Barang') }}
+        </a>
+    </div>
+
     {{-- Form cetak label: SATU form membungkus seluruh tabel, checkbox per baris di dalamnya --}}
     <form action="{{ route('barang.print-labels') }}" method="GET" target="_blank">
 

@@ -33,9 +33,6 @@
                     {{ $item->item_id ?? '' }} · {{ $item->location->nama_lokasi ?? '' }}
                 </p>
             </div>
-            <button type="button" id="btn-ganti-barang" class="text-sm text-green-500 underline">
-                Ganti
-            </button>
         </div>
 
         <div id="item-search-wrapper" class="{{ $item ? 'hidden' : '' }}">
@@ -108,12 +105,6 @@ document.addEventListener('DOMContentLoaded', function () {
         searchResults.innerHTML = '';
         searchInput.value = '';
     }
-
-    document.getElementById('btn-ganti-barang').addEventListener('click', function () {
-        itemSelected.classList.add('hidden');
-        itemSearchWrapper.classList.remove('hidden');
-        itemIdInput.value = '';
-    });
 
     let debounceTimer;
     searchInput.addEventListener('input', function () {

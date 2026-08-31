@@ -24,5 +24,14 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
             'email_verified_at' => now(),
         ]);
+
+        User::create([
+            'name' => 'General Manager Palawi',
+            'email' => 'gm@palawi.test',
+            'password' => Hash::make('password123'),
+            'role' => 'gm',
+            'is_active' => true,
+            'email_verified_at' => now(),
+         ]);
     }
 }

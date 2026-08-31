@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreItemRequest;
 use App\Http\Requests\UpdateItemRequest;
-use App\Models\Category;
 use App\Models\Item;
-use App\Models\Location;
+use Illuminate\Http\Request;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ItemController extends Controller
@@ -21,33 +19,10 @@ class ItemController extends Controller
         return view('admin.items.index', compact('items'));
     }
 
-    public function create()
-    {
-        $categories = Category::orderBy('nama_kategori')->get();
-        $locations = Location::orderBy('nama_lokasi')->get();
-
-        return view('admin.items.create', compact('categories', 'locations'));
-    }
-
-    public function store(StoreItemRequest $request)
-{
-    $item = Item::create($request->validated());
-
-    $item->transactions()->create([
-        'user_id' => auth()->id(),
-        'jenis_transaksi' => 'Stock In',
-        'keterangan' => 'Penerimaan barang baru',
-    ]);
-
-    return redirect()
-        ->route('barang.index')
-        ->with('success', 'Barang berhasil ditambahkan dan tercatat sebagai Stock In.');
-    }
-
     public function edit(Item $item)
     {
-        $categories = Category::orderBy('nama_kategori')->get();
-        $locations = Location::orderBy('nama_lokasi')->get();
+        $categories = \App\Models\Category::orderBy('nama_kategori')->get();
+        $locations = \App\Models\Location::orderBy('nama_lokasi')->get();
 
         return view('admin.items.edit', compact('item', 'categories', 'locations'));
     }
@@ -70,7 +45,8 @@ class ItemController extends Controller
             ->route('barang.index')
             ->with('success', 'Barang berhasil dinonaktifkan.');
     }
-     public function showQr(Item $item)
+
+    public function showQr(Item $item)
     {
         return response(
             QrCode::format('svg')->size(300)->generate($item->item_id)

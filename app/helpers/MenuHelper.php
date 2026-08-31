@@ -57,17 +57,6 @@ class MenuHelper
                 'path' => '/admin/lokasi',
             ],
             [
-                'icon' => 'forms',
-                'name' => 'Transaksi',
-                'subItems' => [
-                    ['name' => 'Stock In', 'path' => '/admin/stock-in'],
-                    ['name' => 'Stock Out', 'path' => '/admin/transaksi/stock-out'],
-                    ['name' => 'Mutasi', 'path' => '/admin/transaksi/mutasi'],
-                    ['name' => 'Perbaikan', 'path' => '/admin/transaksi/perbaikan'],
-                    ['name' => 'Kerusakan', 'path' => '/admin/transaksi/kerusakan'],
-                ],
-            ],
-            [
                 'icon' => 'ecommerce',
                 'name' => 'Pengadaan',
                 'path' => '/admin/pengadaan',

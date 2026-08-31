@@ -107,7 +107,7 @@
             <img id="qr-modal-image" src="" alt="QR Code" class="mx-auto w-56 h-56">
 
             
-                id="qr-modal-download"
+               <a id="qr-modal-download"
                 href="#"
                 class="inline-block mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >

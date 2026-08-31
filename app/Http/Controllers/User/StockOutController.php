@@ -13,7 +13,7 @@ class StockOutController extends Controller
     public function index()
     {
         $transactions = Transaction::with(['item'])
-            ->where('jenis_transaksi', 'Stock Out')
+            ->where('jenis_transaksi','stock_out')
             ->where('user_id', Auth::id())
             ->latest()
             ->paginate(15);
@@ -49,7 +49,7 @@ class StockOutController extends Controller
         Transaction::create([
             'item_id' => $item->id,
             'user_id' => Auth::id(),
-            'jenis_transaksi' => 'Stock Out',
+            'jenis_transaksi' => 'stock_out',
             'status' => 'menunggu_approval',
             'keterangan' => $validated['keterangan'],
             'tanggal_kembali_estimasi' => $validated['tanggal_kembali_estimasi'],

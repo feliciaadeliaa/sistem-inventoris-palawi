@@ -13,7 +13,7 @@ class StockOutController extends Controller
     public function index()
     {
         $transactions = Transaction::with(['item', 'user'])
-            ->where('jenis_transaksi', 'Stock Out')
+            ->where('jenis_transaksi','stock_out')
             ->latest()
             ->paginate(15);
 
@@ -58,7 +58,7 @@ class StockOutController extends Controller
     public function confirmReturn(string $item_id)
     {
         $transaction = Transaction::whereHas('item', fn ($q) => $q->where('item_id', $item_id))
-            ->where('jenis_transaksi', 'Stock Out')
+            ->where('jenis_transaksi','stock_out')
             ->where('status', 'disetujui')
             ->latest()
             ->firstOrFail();

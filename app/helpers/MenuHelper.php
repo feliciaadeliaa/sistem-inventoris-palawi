@@ -21,6 +21,22 @@ class MenuHelper
             'path' => '/calendar',
             ],
             [
+                'icon' => 'tables',
+                'name' => 'Scan/Cari Barang',
+                'path' => '/barang/scan',
+            ],
+            [
+                'icon' => 'forms',
+                'name' => 'Transaksi',
+                'subItems' => [
+                    ['name' => 'Stock In', 'path' => '/admin/stock-in'],
+                    ['name' => 'Stock Out', 'path' => '/admin/transaksi/stock-out'],
+                    ['name' => 'Mutasi', 'path' => '/admin/transaksi/mutasi'],
+                    ['name' => 'Perbaikan', 'path' => '/admin/transaksi/perbaikan'],
+                    ['name' => 'Kerusakan', 'path' => '/admin/transaksi/kerusakan'],
+                ],
+            ],
+            [
                 'icon' => 'user-profile',
                 'name' => 'Manajemen User',
                 'path' => '/admin/users',
@@ -41,18 +57,14 @@ class MenuHelper
                 'path' => '/admin/lokasi',
             ],
             [
-                'icon' => 'pages',
-                'name' => 'Stock In',
-                'path' => '/admin/stock-in',
-            ],
-            [
                 'icon' => 'forms',
                 'name' => 'Transaksi',
                 'subItems' => [
+                    ['name' => 'Stock In', 'path' => '/admin/stock-in'],
                     ['name' => 'Stock Out', 'path' => '/admin/transaksi/stock-out'],
-                    ['name' => 'Mutasi Lokasi', 'path' => '/admin/transaksi/mutasi'],
-                    ['name' => 'Permintaan Perbaikan', 'path' => '/admin/transaksi/perbaikan'],
-                    ['name' => 'Laporan Kerusakan', 'path' => '/admin/transaksi/kerusakan'],
+                    ['name' => 'Mutasi', 'path' => '/admin/transaksi/mutasi'],
+                    ['name' => 'Perbaikan', 'path' => '/admin/transaksi/perbaikan'],
+                    ['name' => 'Kerusakan', 'path' => '/admin/transaksi/kerusakan'],
                 ],
             ],
             [
@@ -85,6 +97,11 @@ class MenuHelper
             'path' => '/calendar',
             ],
             [
+                'icon' => 'tables',
+                'name' => 'Scan/Cari Barang',
+                'path' => '/barang/scan',
+            ],
+            [
                 'icon' => 'forms',
                 'name' => 'Ajukan Transaksi',
                 'subItems' => [
@@ -94,9 +111,9 @@ class MenuHelper
                 ],
             ],
             [
-                'icon' => 'user-profile',
-                'name' => 'Profile Saya',
-                'path' => '/profile',
+                'icon' => 'task',
+                'name' => 'Riwayat Pengajuan Saya',
+                'path' => '/riwayat-pengajuan',
             ],
         ];
     }

@@ -46,9 +46,6 @@
 
             <p class="text-gray-400 text-sm mb-2">Proses transaksi</p>
             <div class="flex flex-wrap gap-3">
-                <button type="button" data-action="stock_in" class="hasil-action-btn border border-gray-600 text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-800">
-                    Stock In
-                </button>
                 <button type="button" data-action="stock_out" class="hasil-action-btn border border-gray-600 text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-800">
                     Stock Out
                 </button>
@@ -89,7 +86,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Peta tombol aksi: berbeda untuk Admin (proses langsung) dan User (ajukan)
     const actionRoutes = isAdmin ? {
-        stock_in: '/admin/stock-in',
         stock_out: '/admin/transaksi/stock-out',
         mutasi: '/admin/transaksi/mutasi',
         perbaikan: '/admin/transaksi/perbaikan',
@@ -194,7 +190,15 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.hasil-action-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             if (!currentItemId) return;
-            const base = actionRoutes[this.dataset.action];
+            const action = this.dataset.action;
+
+            // Peminjaman (Stock Out) sudah jadi — pakai path parameter, bukan query string
+            if (!isAdmin && action === 'peminjaman') {
+                window.location.href = `/transaksi/stock-out/ajukan/${encodeURIComponent(currentItemId)}`;
+                return;
+            }
+
+            const base = actionRoutes[action];
             window.location.href = `${base}?item_id=${encodeURIComponent(currentItemId)}`;
         });
     });

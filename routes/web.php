@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ItemController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\StockInController;
+use App\Http\Controllers\Admin\MutasiController;
 use App\Http\Controllers\Admin\StockOutController as AdminStockOutController;
 use App\Http\Controllers\User\StockOutController as UserStockOutController;
 use App\Http\Controllers\BarangLookupController;
@@ -77,6 +78,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin/transaksi')->name('admin.tra
     Route::patch('stock-out/{transaction}/approve', [AdminStockOutController::class, 'approve'])->name('stock-out.approve');
     Route::patch('stock-out/{transaction}/reject', [AdminStockOutController::class, 'reject'])->name('stock-out.reject');
     Route::post('stock-out/confirm-return/{item_id}', [AdminStockOutController::class, 'confirmReturn'])->name('stock-out.confirm-return');
+    Route::get('mutasi', [MutasiController::class, 'index'])->name('mutasi.index');
+    Route::post('mutasi', [MutasiController::class, 'store'])->name('mutasi.store');
 });
 
 require __DIR__.'/auth.php';

@@ -10,15 +10,17 @@ class Transaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'item_id',
-        'user_id',
-        'jenis_transaksi',
-        'status',
-        'keterangan',
-        'approved_by',
-        'approved_at',
-        'tanggal_kembali_estimasi',
-        'tanggal_kembali_aktual',
+    'item_id',
+    'user_id',
+    'jenis_transaksi',
+    'status',
+    'keterangan',
+    'approved_by',
+    'approved_at',
+    'tanggal_kembali_estimasi',
+    'tanggal_kembali_aktual',
+    'lokasi_asal_id',
+    'lokasi_tujuan_id',
     ];
 
     protected $casts = [
@@ -44,7 +46,15 @@ class Transaction extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
-    // ==== Scopes ====
+    public function lokasiAsal()
+{
+    return $this->belongsTo(Location::class, 'lokasi_asal_id');
+}
+
+public function lokasiTujuan()
+{
+    return $this->belongsTo(Location::class, 'lokasi_tujuan_id');
+}
 
     public function scopeJenis($query, string $jenis)
     {

@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\StockInController;
 use App\Http\Controllers\Admin\StockOutController as AdminStockOutController;
 use App\Http\Controllers\User\StockOutController as UserStockOutController;
+use App\Http\Controllers\BarangLookupController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -67,6 +68,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin/transaksi')->name('admin.tra
     Route::patch('stock-out/{transaction}/approve', [AdminStockOutController::class, 'approve'])->name('stock-out.approve');
     Route::patch('stock-out/{transaction}/reject', [AdminStockOutController::class, 'reject'])->name('stock-out.reject');
     Route::post('stock-out/confirm-return/{item_id}', [AdminStockOutController::class, 'confirmReturn'])->name('stock-out.confirm-return');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/barang/scan', [BarangLookupController::class, 'index'])->name('barang.scan');
+    Route::get('/barang/cari', [BarangLookupController::class, 'search'])->name('barang.cari');
+    Route::get('/barang/{item_id}/detail', [BarangLookupController::class, 'show'])->name('barang.detail');
 });
 
 require __DIR__.'/auth.php';

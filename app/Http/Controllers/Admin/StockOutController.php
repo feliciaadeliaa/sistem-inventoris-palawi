@@ -13,14 +13,14 @@ class StockOutController extends Controller
     public function index()
     {
         $transactions = Transaction::with(['item', 'user'])
-            ->where('jenis_transaksi','stock_out')
+            ->where('jenis_transaksi', 'stock_out')
             ->latest()
             ->paginate(15);
 
         return view('admin.stock-out.index', compact('transactions'));
     }
 
-    // Setujui pengajuan
+    // Admin proses tahap 1 - diteruskan ke GM, TIDAK langsung ubah status barang
     public function approve(Transaction $transaction)
     {
         if ($transaction->status !== 'menunggu_approval') {
@@ -28,17 +28,15 @@ class StockOutController extends Controller
         }
 
         $transaction->update([
-            'status' => 'disetujui',
+            'status' => 'diproses',
             'approved_by' => Auth::id(),
             'approved_at' => now(),
         ]);
 
-        $transaction->item->update(['status' => 'dipinjam']);
-
-        return back()->with('success', 'Pengajuan disetujui, status barang diperbarui jadi Dipinjam.');
+        return back()->with('success', 'Pengajuan diproses, diteruskan ke GM untuk persetujuan akhir.');
     }
 
-    // Tolak pengajuan
+    // Tolak pengajuan (admin masih bisa tolak di tahap awal)
     public function reject(Transaction $transaction)
     {
         if ($transaction->status !== 'menunggu_approval') {
@@ -53,5 +51,4 @@ class StockOutController extends Controller
 
         return back()->with('success', 'Pengajuan ditolak.');
     }
-
 }

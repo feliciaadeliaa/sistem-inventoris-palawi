@@ -8,15 +8,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class UserMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  Closure(Request): (Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || auth()->user()->role !== 'user') {
-            abort(403, 'Akses ditolak. Halaman ini khusus User.');
+        if (!auth()->check() || !in_array(auth()->user()->role, ['user', 'senior_analis', 'gm'])) {
+            abort(403, 'Akses ditolak.');
         }
 
         return $next($request);

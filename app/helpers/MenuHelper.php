@@ -70,7 +70,7 @@ class MenuHelper
     }
 
     /**
-     * Menu untuk role User (akses terbatas)
+     * Menu untuk role User (akses terbatas) — juga dipakai Senior Analis untuk sementara
      */
     public static function getUserMenuItems()
     {
@@ -107,16 +107,36 @@ class MenuHelper
         ];
     }
 
+    /**
+     * Menu untuk role GM — menu user (bisa ajukan transaksi) + halaman Approval
+     */
+    public static function getGmMenuItems()
+    {
+        $items = self::getUserMenuItems();
+
+        $items[] = [
+            'icon' => 'task',
+            'name' => 'Approval',
+            'path' => '/gm/approval',
+        ];
+
+        return $items;
+    }
+
     public static function getMenuGroups()
     {
-        $isAdmin = auth()->check() && auth()->user()->role === 'admin';
+        $role = auth()->check() ? auth()->user()->role : null;
+
+        $items = match ($role) {
+            'admin' => self::getAdminMenuItems(),
+            'gm' => self::getGmMenuItems(),
+            default => self::getUserMenuItems(),
+        };
 
         return [
             [
                 'title' => 'Menu',
-                'items' => $isAdmin
-                    ? self::getAdminMenuItems()
-                    : self::getUserMenuItems(),
+                'items' => $items,
             ],
         ];
     }

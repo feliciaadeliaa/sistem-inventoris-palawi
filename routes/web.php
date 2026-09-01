@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\StockInController;
 use App\Http\Controllers\Admin\MutasiController;
 use App\Http\Controllers\Admin\StockOutController as AdminStockOutController;
 use App\Http\Controllers\User\StockOutController as UserStockOutController;
+use App\Http\Controllers\Gm\ApprovalController as GmApprovalController;
 use App\Http\Controllers\BarangLookupController;
 use Illuminate\Support\Facades\Route;
 
@@ -78,6 +79,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin/transaksi')->name('admin.tra
     Route::patch('stock-out/{transaction}/reject', [AdminStockOutController::class, 'reject'])->name('stock-out.reject');
     Route::get('mutasi', [MutasiController::class, 'index'])->name('mutasi.index');
     Route::post('mutasi', [MutasiController::class, 'store'])->name('mutasi.store');
+});
+
+Route::middleware(['auth', 'gm'])->prefix('gm')->name('gm.')->group(function () {
+    Route::get('approval', [GmApprovalController::class, 'index'])->name('approval.index');
+    Route::patch('approval/stock-out/{transaction}/approve', [GmApprovalController::class, 'approveStockOut'])->name('approval.stock-out.approve');
+    Route::patch('approval/stock-out/{transaction}/reject', [GmApprovalController::class, 'rejectStockOut'])->name('approval.stock-out.reject');
+    Route::patch('approval/mutasi/{transaction}/acknowledge', [GmApprovalController::class, 'acknowledgeMutasi'])->name('approval.mutasi.acknowledge');
 });
 
 require __DIR__.'/auth.php';

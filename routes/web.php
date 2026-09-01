@@ -41,7 +41,7 @@ Route::middleware('auth')->group(function () {
 // Sisi User - khusus role 'user'
 Route::middleware(['auth', 'user'])->prefix('transaksi')->name('peminjaman.')->group(function () {
     Route::get('stock-out', [UserStockOutController::class, 'index'])->name('index');
-    Route::get('stock-out/ajukan/{item_id}', [UserStockOutController::class, 'create'])->name('create');
+    Route::get('stock-out/ajukan/{item_id?}', [UserStockOutController::class, 'create'])->name('create');
     Route::post('stock-out', [UserStockOutController::class, 'store'])->name('store');
 });
 
@@ -85,7 +85,8 @@ Route::middleware(['auth', 'gm'])->prefix('gm')->name('gm.')->group(function () 
     Route::get('approval', [GmApprovalController::class, 'index'])->name('approval.index');
     Route::patch('approval/stock-out/{transaction}/approve', [GmApprovalController::class, 'approveStockOut'])->name('approval.stock-out.approve');
     Route::patch('approval/stock-out/{transaction}/reject', [GmApprovalController::class, 'rejectStockOut'])->name('approval.stock-out.reject');
-    Route::patch('approval/mutasi/{transaction}/acknowledge', [GmApprovalController::class, 'acknowledgeMutasi'])->name('approval.mutasi.acknowledge');
+    Route::patch('approval/mutasi/{transaction}/approve', [GmApprovalController::class, 'approveMutasi'])->name('approval.mutasi.approve');
+    Route::patch('approval/mutasi/{transaction}/reject', [GmApprovalController::class, 'rejectMutasi'])->name('approval.mutasi.reject');
 });
 
 require __DIR__.'/auth.php';

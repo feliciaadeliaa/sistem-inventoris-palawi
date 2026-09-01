@@ -24,7 +24,7 @@
     @endif
 
     <div class="mb-4 flex justify-end">
-        <a href="{{ route('peminjaman.create', ['item_id' => 1]) }}"
+        <a href="{{ route('peminjaman.create') }}"
             class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
             + Ajukan Peminjaman Baru
         </a>
@@ -85,13 +85,13 @@
                                     $trx->status === 'menunggu_approval',
 
                                 'bg-blue-100 text-blue-800' =>
-                                    $trx->status === 'disetujui',
+                                    $trx->status === 'diproses',
+
+                                'bg-green-100 text-green-800' =>
+                                    in_array($trx->status, ['disetujui', 'dikembalikan']),
 
                                 'bg-red-100 text-red-800' =>
                                     $trx->status === 'ditolak',
-
-                                'bg-green-100 text-green-800' =>
-                                    $trx->status === 'dikembalikan',
                             ])>
 
                                 {{ str_replace('_', ' ', ucfirst($trx->status)) }}

@@ -11,12 +11,12 @@ class StockInController extends Controller
     public function index()
     {
         $transactions = Transaction::with(['item', 'user'])
-            ->where('jenis_transaksi', 'stock_out')
+            ->where('jenis_transaksi', 'Stock Out')
             ->whereIn('status', ['disetujui', 'dikembalikan'])
             ->latest()
-        ->paginate(15);
+            ->paginate(15);
 
-    return view('admin.stock-in.index', compact('transactions'));
+        return view('admin.stock-in.index', compact('transactions'));
     }
 
     // Konfirmasi pengembalian (scan ulang QR barang)

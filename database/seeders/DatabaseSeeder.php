@@ -33,5 +33,14 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
             'email_verified_at' => now(),
          ]);
+
+        User::create([
+            'name' => 'Senior Analis Palawi',
+            'email' => 'senioranalis@palawi.test',
+            'password' => Hash::make('password123'),
+            'role' => 'senior_analis',
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
     }
 }

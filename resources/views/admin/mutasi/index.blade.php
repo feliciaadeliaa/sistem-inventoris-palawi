@@ -3,7 +3,7 @@
 @section('content')
 <div class="mb-6">
     <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Mutasi Lokasi</h2>
-    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Dicatat langsung tanpa approval berlapis</p>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Menunggu approval General Manager sebelum lokasi barang berubah</p>
 </div>
 
 @if (session('success'))
@@ -67,7 +67,7 @@
             </div>
 
             <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-5 py-2.5 rounded-lg">
-                Catat Mutasi
+                Ajukan Mutasi
             </button>
         </form>
     </div>
@@ -80,6 +80,7 @@
             <tr>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nama Barang</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Lokasi Asal &rarr; Tujuan</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
             </tr>
         </thead>
@@ -90,11 +91,21 @@
                     <td class="px-4 py-3 text-gray-800 dark:text-gray-200">
                         {{ $trx->lokasiAsal->nama_lokasi ?? '-' }} &rarr; {{ $trx->lokasiTujuan->nama_lokasi ?? '-' }}
                     </td>
+                    <td class="px-4 py-3">
+                        <span @class([
+                            'px-2 py-1 rounded text-xs font-semibold',
+                            'bg-yellow-100 text-yellow-800' => $trx->status === 'menunggu_approval',
+                            'bg-green-100 text-green-800' => in_array($trx->status, ['disetujui', 'selesai']),
+                            'bg-red-100 text-red-800' => $trx->status === 'ditolak',
+                        ])>
+                            {{ str_replace('_', ' ', ucfirst($trx->status)) }}
+                        </span>
+                    </td>
                     <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->created_at->format('d M Y H:i') }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="3" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Belum ada riwayat mutasi.</td>
+                    <td colspan="4" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Belum ada riwayat mutasi.</td>
                 </tr>
             @endforelse
         </tbody>

@@ -13,13 +13,18 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ItemController extends Controller
 {
-    public function index()
+  public function index(Request $request)
     {
-        $items = Item::with(['category', 'location'])
-            ->latest()
-            ->paginate(15);
+    $items = Item::with(['category', 'location'])
+        ->when($request->filled('category_id'), function ($query) use ($request) {
+            $query->where('category_id', $request->category_id);
+        })
+        ->latest()
+        ->paginate(15);
 
-        return view('admin.items.index', compact('items'));
+    $categories = Category::orderBy('nama_kategori')->get();
+
+    return view('admin.items.index', compact('items', 'categories'));
     }
 
     public function create()

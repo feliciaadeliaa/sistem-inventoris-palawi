@@ -11,14 +11,14 @@ class ApprovalController extends Controller
     public function index()
     {
         $stockOutPending = Transaction::with(['item', 'user'])
-            ->where('jenis_transaksi', 'stock_out')
+            ->where('jenis_transaksi', 'Stock Out')
             ->where('status', 'diproses')
             ->latest()
             ->get();
 
         $mutasiPending = Transaction::with(['item', 'user', 'lokasiAsal', 'lokasiTujuan'])
             ->where('jenis_transaksi', 'Mutasi')
-            ->whereNull('gm_approved_at')
+            ->where('status', 'menunggu_approval')
             ->latest()
             ->get();
 
@@ -64,15 +64,37 @@ class ApprovalController extends Controller
         return back()->with('success', 'Pengajuan ditolak oleh GM.');
     }
 
-    // Mutasi: cuma pencatatan/pengesahan, tidak mengubah apapun di items
-    public function acknowledgeMutasi(Transaction $transaction)
+    // Mutasi: approval GM = final, langsung ubah lokasi barang
+    public function approveMutasi(Transaction $transaction)
     {
+        if ($transaction->status !== 'menunggu_approval') {
+            return back()->with('error', 'Mutasi ini sudah diproses sebelumnya.');
+        }
+
         $transaction->update([
+            'status' => 'disetujui',
             'gm_approved_by' => Auth::id(),
             'gm_approved_at' => now(),
         ]);
 
-        return back()->with('success', 'Mutasi telah disahkan oleh GM.');
+        $transaction->item->update(['location_id' => $transaction->lokasi_tujuan_id]);
+
+        return back()->with('success', 'Mutasi disetujui, lokasi barang diperbarui.');
+    }
+
+    public function rejectMutasi(Transaction $transaction)
+    {
+        if ($transaction->status !== 'menunggu_approval') {
+            return back()->with('error', 'Mutasi ini sudah diproses sebelumnya.');
+        }
+
+        $transaction->update([
+            'status' => 'ditolak',
+            'gm_approved_by' => Auth::id(),
+            'gm_approved_at' => now(),
+        ]);
+
+        return back()->with('success', 'Mutasi ditolak oleh GM.');
     }
 
  public function approveRepair(Transaction $transaction)

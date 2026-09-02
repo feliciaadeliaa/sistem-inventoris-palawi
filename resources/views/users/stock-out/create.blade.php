@@ -10,6 +10,12 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div class="bg-red-900/40 border border-red-700 text-red-300 text-sm rounded-lg px-4 py-3 mb-6">
+            {{ session('error') }}
+        </div>
+    @endif
+
     @if ($errors->any())
         <div class="bg-red-900/40 border border-red-700 text-red-300 text-sm rounded-lg px-4 py-3 mb-6">
             <ul class="list-disc list-inside space-y-1">
@@ -76,6 +82,7 @@
 
         <button
             type="submit"
+            id="submit-btn"
             class="w-full bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg px-4 py-3"
         >
             Kirim Pengajuan
@@ -95,15 +102,26 @@ document.addEventListener('DOMContentLoaded', function () {
     const itemSearchWrapper = document.getElementById('item-search-wrapper');
     const searchInput = document.getElementById('search-barang');
     const searchResults = document.getElementById('search-results');
+    const submitButton = document.getElementById('submit-btn');
 
     function pilihBarang(item) {
         itemIdInput.value = item.item_id;
         itemSelectedNama.textContent = item.nama_barang;
-        itemSelectedInfo.textContent = `${item.item_id} · ${item.lokasi}`;
+
+        if (item.sedang_diajukan) {
+            itemSelectedInfo.innerHTML = `${item.item_id} · ${item.lokasi} <span class="text-yellow-400 font-semibold">(Sedang diajukan pengguna lain)</span>`;
+        } else {
+            itemSelectedInfo.textContent = `${item.item_id} · ${item.lokasi}`;
+        }
+
         itemSelected.classList.remove('hidden');
         itemSearchWrapper.classList.add('hidden');
         searchResults.innerHTML = '';
         searchInput.value = '';
+
+        submitButton.disabled = item.sedang_diajukan;
+        submitButton.classList.toggle('opacity-50', item.sedang_diajukan);
+        submitButton.classList.toggle('cursor-not-allowed', item.sedang_diajukan);
     }
 
     let debounceTimer;
@@ -127,7 +145,12 @@ document.addEventListener('DOMContentLoaded', function () {
                             const btn = document.createElement('button');
                             btn.type = 'button';
                             btn.className = 'w-full text-left bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-3 hover:bg-gray-800';
-                            btn.innerHTML = `<span class="font-medium">${item.nama_barang}</span>
+
+                            const badge = item.sedang_diajukan
+                                ? '<span class="ml-2 text-xs bg-yellow-600 text-white px-2 py-0.5 rounded">Sedang diajukan</span>'
+                                : '';
+
+                            btn.innerHTML = `<span class="font-medium">${item.nama_barang}</span>${badge}
                                               <span class="block text-gray-400 text-sm">${item.item_id} · ${item.lokasi}</span>`;
                             btn.addEventListener('click', () => pilihBarang(item));
                             searchResults.appendChild(btn);

@@ -32,7 +32,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => 'required|in:admin,user',
+            'role' => 'required|in:admin,user,senior_analis,gm',
         ]);
 
         User::create([
@@ -57,7 +57,7 @@ public function edit(User $user)
     $validated = $request->validate([
         'name' => 'required|string|max:255',
         'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-        'role' => 'required|in:admin,user',
+        'role' => 'required|in:admin,user,senior_analis,gm',
     ]);
 
     $user->update($validated);

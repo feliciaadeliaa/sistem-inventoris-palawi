@@ -49,16 +49,16 @@ class MutasiController extends Controller
             'item_id' => $item->id,
             'user_id' => Auth::id(),
             'jenis_transaksi' => 'Mutasi',
-            'status' => 'selesai',
+            'status' => 'menunggu_approval',
             'keterangan' => $validated['keterangan'] ?? null,
             'lokasi_asal_id' => $item->location_id,
             'lokasi_tujuan_id' => $validated['lokasi_tujuan_id'],
         ]);
 
-        $item->update(['location_id' => $validated['lokasi_tujuan_id']]);
+        // Lokasi barang BELUM diubah di sini - menunggu approval GM
 
         return redirect()
             ->route('admin.transaksi.mutasi.index')
-            ->with('success', 'Mutasi lokasi berhasil dicatat.');
+            ->with('success', 'Mutasi lokasi berhasil diajukan, menunggu approval GM.');
     }
 }

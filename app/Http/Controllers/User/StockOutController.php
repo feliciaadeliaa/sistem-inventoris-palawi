@@ -13,7 +13,7 @@ class StockOutController extends Controller
     public function index()
     {
         $transactions = Transaction::with(['item'])
-            ->where('jenis_transaksi','stock_out')
+            ->where('jenis_transaksi', 'Stock Out')
             ->where('user_id', Auth::id())
             ->latest()
             ->paginate(15);
@@ -21,12 +21,30 @@ class StockOutController extends Controller
         return view('users.stock-out.index', compact('transactions'));
     }
 
-    public function create(string $item_id)
+    public function create(?string $item_id = null)
     {
-        $item = Item::where('item_id', $item_id)->firstOrFail();
+        $item = null;
 
-        if ($item->status !== 'tersedia') {
-            return back()->with('error', 'Barang ini sedang tidak tersedia untuk dipinjam.');
+        if ($item_id) {
+            $item = Item::where('item_id', $item_id)->first();
+
+            if (!$item) {
+                return redirect()->route('peminjaman.create')
+                    ->with('error', 'Barang tidak ditemukan.');
+            }
+
+            if ($item->status !== 'tersedia') {
+                return back()->with('error', 'Barang ini sedang tidak tersedia untuk dipinjam.');
+            }
+
+            $sedangDiajukan = Transaction::where('item_id', $item->id)
+                ->where('jenis_transaksi', 'Stock Out')
+                ->whereIn('status', ['menunggu_approval', 'diproses'])
+                ->exists();
+
+            if ($sedangDiajukan) {
+                return back()->with('error', 'Barang ini sudah diajukan pengguna lain dan sedang menunggu proses persetujuan.');
+            }
         }
 
         return view('users.stock-out.create', compact('item'));
@@ -46,10 +64,19 @@ class StockOutController extends Controller
             return back()->with('error', 'Barang ini sedang tidak tersedia untuk dipinjam.');
         }
 
+        $sedangDiajukan = Transaction::where('item_id', $item->id)
+            ->where('jenis_transaksi', 'Stock Out')
+            ->whereIn('status', ['menunggu_approval', 'diproses'])
+            ->exists();
+
+        if ($sedangDiajukan) {
+            return back()->with('error', 'Barang ini sudah diajukan pengguna lain dan sedang menunggu proses persetujuan.')->withInput();
+        }
+
         Transaction::create([
             'item_id' => $item->id,
             'user_id' => Auth::id(),
-            'jenis_transaksi' => 'stock_out',
+            'jenis_transaksi' => 'Stock Out',
             'status' => 'menunggu_approval',
             'keterangan' => $validated['keterangan'],
             'tanggal_kembali_estimasi' => $validated['tanggal_kembali_estimasi'],

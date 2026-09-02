@@ -13,7 +13,25 @@
         </div>
     @endif
 
-    <div class="mb-4 flex justify-end">
+    <div class="mb-4 flex items-center justify-between flex-wrap gap-3">
+        <form method="GET" action="{{ route('barang.index') }}" class="flex items-center gap-3">
+            <select name="category_id" onchange="this.form.submit()"
+                class="dark:bg-dark-900 h-10 rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 focus:outline-hidden dark:border-gray-700 dark:text-white/90">
+                <option value="">{{ __('-- Semua Kategori --') }}</option>
+                @foreach ($categories as $category)
+                    <option value="{{ $category->category_id }}" {{ request('category_id') == $category->category_id ? 'selected' : '' }}>
+                        {{ $category->nama_kategori }}
+                    </option>
+                @endforeach
+            </select>
+
+            @if (request()->filled('category_id'))
+                <a href="{{ route('barang.index') }}" class="text-sm text-gray-500 hover:underline dark:text-gray-400">
+                    {{ __('Reset filter') }}
+                </a>
+            @endif
+        </form>
+
         <a href="{{ route('barang.create') }}"
             class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
             + {{ __('Tambah Barang') }}
@@ -113,8 +131,7 @@
 
             <img id="qr-modal-image" src="" alt="QR Code" class="mx-auto w-56 h-56">
 
-            
-               <a id="qr-modal-download"
+            <a id="qr-modal-download"
                 href="#"
                 class="inline-block mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >

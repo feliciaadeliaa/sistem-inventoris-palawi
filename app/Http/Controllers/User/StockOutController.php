@@ -36,6 +36,15 @@ class StockOutController extends Controller
             if ($item->status !== 'tersedia') {
                 return back()->with('error', 'Barang ini sedang tidak tersedia untuk dipinjam.');
             }
+
+            $sedangDiajukan = Transaction::where('item_id', $item->id)
+                ->where('jenis_transaksi', 'Stock Out')
+                ->whereIn('status', ['menunggu_approval', 'diproses'])
+                ->exists();
+
+            if ($sedangDiajukan) {
+                return back()->with('error', 'Barang ini sudah diajukan pengguna lain dan sedang menunggu proses persetujuan.');
+            }
         }
 
         return view('users.stock-out.create', compact('item'));
@@ -53,6 +62,15 @@ class StockOutController extends Controller
 
         if ($item->status !== 'tersedia') {
             return back()->with('error', 'Barang ini sedang tidak tersedia untuk dipinjam.');
+        }
+
+        $sedangDiajukan = Transaction::where('item_id', $item->id)
+            ->where('jenis_transaksi', 'Stock Out')
+            ->whereIn('status', ['menunggu_approval', 'diproses'])
+            ->exists();
+
+        if ($sedangDiajukan) {
+            return back()->with('error', 'Barang ini sudah diajukan pengguna lain dan sedang menunggu proses persetujuan.')->withInput();
         }
 
         Transaction::create([

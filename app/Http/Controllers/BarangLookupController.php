@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Item;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 
 class BarangLookupController extends Controller
@@ -65,14 +66,20 @@ class BarangLookupController extends Controller
 
     private function formatItem(Item $item, bool $withHistory = false): array
     {
+        $sedangDiajukan = Transaction::where('item_id', $item->id)
+            ->where('jenis_transaksi', 'Stock Out')
+            ->whereIn('status', ['menunggu_approval', 'diproses'])
+            ->exists();
+
         $data = [
-            'id'           => $item->id,
-            'item_id'      => $item->item_id,
-            'nama_barang'  => $item->nama_barang,
-            'kategori'     => $item->category->nama_kategori ?? '-',
-            'lokasi'       => $item->location->nama_lokasi ?? '-',
-            'kondisi'      => $item->kondisi,
-            'status'       => $item->status,
+            'id'              => $item->id,
+            'item_id'         => $item->item_id,
+            'nama_barang'     => $item->nama_barang,
+            'kategori'        => $item->category->nama_kategori ?? '-',
+            'lokasi'          => $item->location->nama_lokasi ?? '-',
+            'kondisi'         => $item->kondisi,
+            'status'          => $item->status,
+            'sedang_diajukan' => $sedangDiajukan,
         ];
 
         // Riwayat transaksi hanya disertakan untuk Admin

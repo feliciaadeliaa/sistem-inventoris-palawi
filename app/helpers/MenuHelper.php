@@ -95,7 +95,7 @@ class MenuHelper
                 'name' => 'Ajukan Transaksi',
                 'subItems' => [
                     ['name' => 'Peminjaman', 'path' => '/transaksi/stock-out'],
-                    ['name' => 'Perbaikan', 'path' => '/ajukan/perbaikan'],
+                    ['name' => 'Perbaikan', 'path' => '/perbaikan/riwayat'],
                     ['name' => 'Lapor Kerusakan', 'path' => '/ajukan/kerusakan'],
                 ],
             ],

@@ -85,15 +85,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const isAdmin = @json(auth()->user()->role === 'admin');
 
     // Peta tombol aksi: berbeda untuk Admin (proses langsung) dan User (ajukan).
-    // Setiap entri adalah function yang menerima item_id dan mengembalikan URL tujuan,
+    // Setiap entri adalah function yang menerima item_id dan mengembalikan URL tujuan lengkap,
     // karena tiap route punya format berbeda (path parameter vs query string).
     const actionRoutes = isAdmin ? {
-        stock_out: '/admin/transaksi/stock-out',
-        mutasi: '/admin/transaksi/mutasi',
-        perbaikan: '/admin/transaksi/perbaikan',
-        kerusakan: '/admin/transaksi/kerusakan',
+        stock_out: (id) => `/admin/transaksi/stock-out?item_id=${encodeURIComponent(id)}`,
+        mutasi: (id) => `/admin/transaksi/mutasi?item_id=${encodeURIComponent(id)}`,
+        perbaikan: (id) => `/admin/transaksi/perbaikan?item_id=${encodeURIComponent(id)}`,
+        kerusakan: (id) => `/admin/transaksi/kerusakan?item_id=${encodeURIComponent(id)}`,
     } : {
-        // Route form Ajukan Peminjaman pakai path parameter: /transaksi/stock-out/{item_id}
         peminjaman: (id) => `/transaksi/stock-out/ajukan/${encodeURIComponent(id)}`,
         perbaikan: (id) => `/ajukan/perbaikan?item_id=${encodeURIComponent(id)}`,
         kerusakan: (id) => `/ajukan/kerusakan?item_id=${encodeURIComponent(id)}`,
@@ -194,15 +193,9 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.addEventListener('click', function () {
             if (!currentItemId) return;
             const action = this.dataset.action;
-
-            // Peminjaman (Stock Out) sudah jadi — pakai path parameter, bukan query string
-            if (!isAdmin && action === 'peminjaman') {
-                window.location.href = `/transaksi/stock-out/ajukan/${encodeURIComponent(currentItemId)}`;
-                return;
-            }
-
-            const base = actionRoutes[action];
-            window.location.href = `${base}?item_id=${encodeURIComponent(currentItemId)}`;
+            const buildUrl = actionRoutes[action];
+            if (!buildUrl) return;
+            window.location.href = buildUrl(currentItemId);
         });
     });
 

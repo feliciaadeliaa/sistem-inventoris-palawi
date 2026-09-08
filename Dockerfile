@@ -39,13 +39,14 @@ RUN composer install \
         --prefer-dist \
         --no-interaction
 
-FROM node:24-alpine AS assets
+FROM node:24-slim AS assets
 
 WORKDIR /app
 
 COPY package.json package-lock.json ./
 
-RUN npm ci
+RUN npm ci --include=optional \
+    && node -e "require('rolldown')"
 
 COPY vite.config.js ./
 COPY resources ./resources

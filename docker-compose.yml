@@ -1,0 +1,111 @@
+x-php-build: &php-build
+    context: .
+    dockerfile: Dockerfile
+    target: app
+
+x-php-environment: &php-environment
+    APP_ENV: production
+    APP_KEY: ${APP_KEY:?missing from .env}
+    APP_DEBUG: "false"
+    LOG_CHANNEL: stderr
+    LOG_LEVEL: info
+
+    DB_HOST: mysql
+    DB_PORT: "3306"
+
+    APP_URL: ${APP_URL:?missing from .env}
+
+x-logging: &logging
+    driver: json-file
+    options:
+        max-size: "10m"
+        max-file: "3"
+
+x-php-service: &php-service
+    build: *php-build
+    image: econique-inventory:latest
+    restart: unless-stopped
+    env_file:
+        - .env
+    environment: *php-environment
+    networks:
+        - econique-inventory-network
+    logging: *logging
+
+services:
+    mysql:
+        image: mysql:9.0
+
+        container_name: db-econique-inventory
+
+        restart: unless-stopped
+
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?missing from .env}
+            MYSQL_DATABASE: ${DB_DATABASE:?missing from .env}
+
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent",
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+            start_period: 60s
+
+        ports:
+            - "127.0.0.1:4408:3306"
+
+        volumes:
+            - mysql_data:/var/lib/mysql
+
+        networks:
+            - econique-inventory-network
+
+        logging: *logging
+
+    app:
+        <<: *php-service
+
+        container_name: econique-inventory
+
+        ports:
+            - "8001:8001"
+
+        environment:
+            <<: *php-environment
+            RUN_MIGRATIONS: "true"
+            PHP_CLI_SERVER_WORKERS: "8"
+
+        volumes:
+            - storage_app:/var/www/html/storage/app
+
+        depends_on:
+            mysql:
+                condition: service_healthy
+
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "php",
+                    "-r",
+                    "exit(@file_get_contents('http://127.0.0.1:8001/up') === false ? 1 : 0);",
+                ]
+            interval: 15s
+            timeout: 5s
+            retries: 5
+            start_period: 90s
+
+networks:
+    econique-inventory-network:
+        driver: bridge
+
+volumes:
+    mysql_data:
+        driver: local
+
+    storage_app:
+        driver: local

@@ -121,20 +121,34 @@
         @enderror
     </div>
 
-    <div>
-        <label for="kondisi" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            {{ __('Kondisi') }}
-        </label>
-        <select id="kondisi" name="kondisi"
-            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
-            <option value="baik" @selected(old('kondisi', $item->kondisi ?? 'baik') == 'baik')>{{ __('Baik') }}</option>
-            <option value="rusak_ringan" @selected(old('kondisi', $item->kondisi ?? '') == 'rusak_ringan')>{{ __('Rusak Ringan') }}</option>
-            <option value="rusak_berat" @selected(old('kondisi', $item->kondisi ?? '') == 'rusak_berat')>{{ __('Rusak Berat') }}</option>
-        </select>
-        @error('kondisi')
-            <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
-        @enderror
-    </div>
+<div>
+    <label for="kondisi" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+        {{ __('Kondisi') }}
+    </label>
+    <select id="kondisi" name="kondisi"
+        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90">
+        <option value="">{{ __('-- Pilih Kondisi --') }}</option>
+        @foreach (\App\Models\Item::KONDISI_LABELS as $kode => $label)
+            <option value="{{ $kode }}" @selected(old('kondisi', $item->kondisi ?? '') == $kode)>
+                {{ $kode }} - {{ $label }}
+            </option>
+        @endforeach
+    </select>
+    @error('kondisi')
+        <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
+    @enderror
+</div>
+
+<div>
+    <label for="nomor_aktiva_tetap" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+        {{ __('Nomor Aktiva Tetap') }}
+    </label>
+    <input type="text" id="nomor_aktiva_tetap" name="nomor_aktiva_tetap" value="{{ old('nomor_aktiva_tetap', $item->nomor_aktiva_tetap ?? '') }}" required
+        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+    @error('nomor_aktiva_tetap')
+        <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
+    @enderror
+</div>
 
     <div>
         <label for="tanggal_terima" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">

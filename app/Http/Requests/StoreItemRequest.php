@@ -21,7 +21,8 @@ class StoreItemRequest extends FormRequest
             'tahun_perolehan'  => ['required', 'digits:4', 'integer', 'min:1990', 'max:' . date('Y')],
             'masa_manfaat'     => ['required', 'integer', 'min:1', 'max:50'],
             'nilai_perolehan'  => ['required', 'numeric', 'min:0'],
-            'kondisi'          => ['required', 'in:baik,rusak_ringan,rusak_berat'],
+            'kondisi'            => ['required', 'in:B,BPR,RB,RSS'],
+            'nomor_aktiva_tetap' => ['required', 'string', 'max:100'],
             'tanggal_terima'   => ['required', 'date'],
         ];
     }

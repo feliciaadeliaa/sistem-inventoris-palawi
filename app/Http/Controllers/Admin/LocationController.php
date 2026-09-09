@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLocationRequest;
 use App\Http\Requests\UpdateLocationRequest;
 use App\Models\Location;
+use App\Imports\LocationsImport;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class LocationController extends Controller
 {
@@ -58,4 +61,33 @@ class LocationController extends Controller
             ->route('lokasi.index')
             ->with('success', 'Lokasi berhasil dihapus.');
     }
+    public function importForm()
+{
+    return view('admin.locations.import');
+}
+
+public function import(Request $request)
+{
+    $request->validate([
+        'file' => 'required|mimes:xlsx,xls,csv|max:5120',
+    ]);
+
+    $import = new LocationsImport();
+    Excel::import($import, $request->file('file'));
+
+    $failures = $import->failures();
+    $failureMessages = $failures->map(function ($failure) {
+        return "Baris {$failure->row()}: " . implode(', ', $failure->errors());
+    })->implode(' | ');
+
+    $message = "Berhasil import {$import->imported} data baru. Dilewati (duplikat): {$import->skipped}.";
+
+    if ($failureMessages) {
+        $message .= " Gagal: {$failureMessages}";
+    }
+
+    return redirect()
+        ->route('lokasi.index')
+        ->with('success', $message);
+}
 }

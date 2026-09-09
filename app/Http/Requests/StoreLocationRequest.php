@@ -15,6 +15,9 @@ class StoreLocationRequest extends FormRequest
     {
         return [
             'nama_lokasi' => ['required', 'string', 'max:255'],
+            'kode_lokasi' => ['nullable', 'string', 'max:50', 'unique:locations,kode_lokasi'],
+            'wilayah' => ['nullable', 'string', 'max:255'],
+            'unit_bisnis' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

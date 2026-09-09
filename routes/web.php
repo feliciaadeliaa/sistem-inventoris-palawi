@@ -76,6 +76,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::resource('lokasi', LocationController::class)
         ->parameters(['lokasi' => 'location'])
         ->except(['show']);
+
+    Route::get('lokasi-import', [LocationController::class, 'importForm'])->name('lokasi.import.form');
+    Route::post('lokasi-import', [LocationController::class, 'import'])->name('lokasi.import');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {

@@ -65,6 +65,7 @@
                         <th class="px-4 py-3 whitespace-nowrap">{{ __('Kategori') }}</th>
                         <th class="px-4 py-3 whitespace-nowrap">{{ __('Lokasi') }}</th>
                         <th class="px-4 py-3 whitespace-nowrap">{{ __('Golongan AT') }}</th>
+                        <th class="px-4 py-3 whitespace-nowrap">{{ __('Nomor Aktiva Tetap') }}</th>
                         <th class="px-4 py-3 whitespace-nowrap">{{ __('Tahun Perolehan') }}</th>
                         <th class="px-4 py-3 whitespace-nowrap">{{ __('Masa Manfaat') }}</th>
                         <th class="px-4 py-3 whitespace-nowrap">{{ __('Nilai Perolehan') }}</th>
@@ -85,11 +86,14 @@
                             <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{{ $item->category->nama_kategori }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{{ $item->location->nama_lokasi }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{{ $item->golongan_at }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{{ $item->nomor_aktiva_tetap ?? '-' }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{{ $item->tahun_perolehan }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{{ $item->masa_manfaat }} {{ __('tahun') }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">Rp {{ number_format($item->nilai_perolehan, 0, ',', '.') }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{{ $item->tanggal_terima->format('d/m/Y') }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap capitalize text-gray-600 dark:text-gray-400">{{ str_replace('_', ' ', $item->kondisi) }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">
+                                {{ $item->kondisi }} - {{ \App\Models\Item::KONDISI_LABELS[$item->kondisi] ?? '-' }}
+                            </td>
                             <td class="px-4 py-3 whitespace-nowrap capitalize text-gray-600 dark:text-gray-400">{{ str_replace('_', ' ', $item->status) }}</td>
                             <td class="px-4 py-3 whitespace-nowrap">
                                 <a href="{{ route('barang.edit', $item) }}" class="text-brand-500 hover:underline">{{ __('Edit') }}</a>
@@ -105,7 +109,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="13" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                            <td colspan="14" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
                                 {{ __('Belum ada data barang.') }}
                             </td>
                         </tr>

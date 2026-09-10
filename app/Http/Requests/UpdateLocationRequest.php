@@ -16,6 +16,7 @@ class UpdateLocationRequest extends StoreLocationRequest
             ],
             'wilayah' => ['nullable', 'string', 'max:255'],
             'unit_bisnis' => ['nullable', 'string', 'max:255'],
+            'sub_unit_bisnis' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

@@ -9,34 +9,39 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
-use Illuminate\Support\Facades\Log;
 
 class LocationsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure
 {
     use SkipsFailures;
 
     public $imported = 0;
-    public $skipped = 0;
+    public $updated = 0;
 
-public function model(array $row): Model|array|null
-{
-    \Log::info('IMPORT ROW KEYS: ' . json_encode($row));
+    public function model(array $row): Model|array|null
+    {
+        $kodeLokasi = $row['code'] ?? null;
 
-    $kodeLokasi = $row['code'] ?? null;
+        $data = [
+            'kode_lokasi'     => $kodeLokasi,
+            'nama_lokasi'     => $row['nama'] ?? '',
+            'wilayah'         => $row['wilayah'] ?? null,
+            'unit_bisnis'     => $row['unit_bisnis'] ?? null,
+            'sub_unit_bisnis' => $row['sub_unit_bisnis'] ?? null,
+        ];
 
-        if ($kodeLokasi && Location::where('kode_lokasi', $kodeLokasi)->exists()) {
-            $this->skipped++;
-            return null;
+        if ($kodeLokasi) {
+            $existing = Location::where('kode_lokasi', $kodeLokasi)->first();
+
+            if ($existing) {
+                $existing->update($data);
+                $this->updated++;
+                return null;
+            }
         }
 
         $this->imported++;
 
-        return new Location([
-            'kode_lokasi' => $kodeLokasi,
-            'nama_lokasi' => $row['nama'] ?? '',
-            'wilayah'     => $row['wilayah'] ?? null,
-            'unit_bisnis' => $row['unit_bisnis'] ?? null,
-        ]);
+        return new Location($data);
     }
 
     public function rules(): array

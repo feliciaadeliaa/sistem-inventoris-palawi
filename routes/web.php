@@ -47,12 +47,15 @@ Route::middleware(['auth', 'user'])->prefix('transaksi')->name('peminjaman.')->g
     Route::post('stock-out', [UserStockOutController::class, 'store'])->name('store');
 });
 
-// Sisi User - Ajukan perbaikan
-// NOTE: kerusakan (lapor rusak) sengaja belum didaftarkan di sini — alurnya beda, menyusul terpisah.
+// ==== SEMENTARA NONAKTIF - menunggu kejelasan alur dari kantor ====
+// Kode asli (AdminRepairRequestController, UserRepairRequestController) TIDAK dihapus,
+// cuma nggak dirouting dulu. Tinggal balikin kalau sudah jelas.
+
 Route::middleware(['auth', 'user'])->group(function () {
-    Route::get('/perbaikan/riwayat', [UserRepairRequestController::class, 'index'])->name('perbaikan.index');
-    Route::get('/ajukan/perbaikan', [UserRepairRequestController::class, 'create'])->name('perbaikan.create');
-    Route::post('/ajukan/perbaikan', [UserRepairRequestController::class, 'store'])->name('perbaikan.store');
+    Route::get('/perbaikan/riwayat', fn () => view('coming-soon', ['feature' => 'Perbaikan']))->name('perbaikan.index');
+    Route::get('/ajukan/perbaikan', fn () => view('coming-soon', ['feature' => 'Perbaikan']))->name('perbaikan.create');
+
+    Route::get('/ajukan/kerusakan', fn () => view('coming-soon', ['feature' => 'Lapor Kerusakan']))->name('kerusakan.create');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -79,6 +82,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
     Route::get('lokasi-import', [LocationController::class, 'importForm'])->name('lokasi.import.form');
     Route::post('lokasi-import', [LocationController::class, 'import'])->name('lokasi.import');
+
+    // Pengadaan - belum pernah dibangun, sementara coming soon
+    Route::get('pengadaan', fn () => view('coming-soon', ['feature' => 'Pengadaan']))->name('pengadaan.index');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -93,10 +99,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin/transaksi')->name('admin.tra
     Route::get('mutasi', [MutasiController::class, 'index'])->name('mutasi.index');
     Route::post('mutasi', [MutasiController::class, 'store'])->name('mutasi.store');
 
-    // Perbaikan (admin)
-    Route::get('perbaikan', [AdminRepairRequestController::class, 'index'])->name('perbaikan.index');
-    Route::patch('perbaikan/{transaction}/process', [AdminRepairRequestController::class, 'process'])->name('perbaikan.process');
-    Route::patch('perbaikan/{transaction}/complete', [AdminRepairRequestController::class, 'complete'])->name('perbaikan.complete');
+    // Perbaikan (admin) - sementara coming soon
+    Route::get('perbaikan', fn () => view('coming-soon', ['feature' => 'Perbaikan']))->name('perbaikan.index');
+
+    // Kerusakan - belum pernah dibangun, sementara coming soon
+    Route::get('kerusakan', fn () => view('coming-soon', ['feature' => 'Laporan Kerusakan']))->name('kerusakan.index');
 });
 
 Route::middleware(['auth', 'gm'])->prefix('gm')->name('gm.')->group(function () {

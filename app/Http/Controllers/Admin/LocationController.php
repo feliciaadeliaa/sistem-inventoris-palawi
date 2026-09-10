@@ -80,7 +80,7 @@ public function import(Request $request)
         return "Baris {$failure->row()}: " . implode(', ', $failure->errors());
     })->implode(' | ');
 
-    $message = "Berhasil import {$import->imported} data baru. Dilewati (duplikat): {$import->skipped}.";
+    $message = "Berhasil import {$import->imported} data baru. Diperbarui: {$import->updated}.";;
 
     if ($failureMessages) {
         $message .= " Gagal: {$failureMessages}";

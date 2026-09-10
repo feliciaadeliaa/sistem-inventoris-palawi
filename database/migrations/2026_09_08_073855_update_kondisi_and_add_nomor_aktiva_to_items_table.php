@@ -9,8 +9,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Ubah kolom kondisi dari enum lama jadi varchar, supaya bisa terima kode baru (B, BPR, RB, RSS)
-        DB::statement("ALTER TABLE items MODIFY kondisi VARCHAR(10) NOT NULL DEFAULT 'B'");
+        // Perbesar dulu ke VARCHAR(20) - cukup untuk nilai lama (rusak_ringan) maupun baru
+        DB::statement("ALTER TABLE items MODIFY kondisi VARCHAR(20) NOT NULL DEFAULT 'B'");
 
         // Konversi nilai lama ke kode baru
         DB::table('items')->where('kondisi', 'baik')->update(['kondisi' => 'B']);

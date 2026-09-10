@@ -18,6 +18,7 @@ class StoreLocationRequest extends FormRequest
             'kode_lokasi' => ['nullable', 'string', 'max:50', 'unique:locations,kode_lokasi'],
             'wilayah' => ['nullable', 'string', 'max:255'],
             'unit_bisnis' => ['nullable', 'string', 'max:255'],
+            'sub_unit_bisnis' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

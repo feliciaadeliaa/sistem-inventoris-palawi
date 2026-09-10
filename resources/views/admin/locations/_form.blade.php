@@ -46,6 +46,17 @@
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
     </div>
+
+    <div>
+        <label for="sub_unit_bisnis" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+            {{ __('Sub Unit Bisnis') }}
+        </label>
+        <input type="text" id="sub_unit_bisnis" name="sub_unit_bisnis" value="{{ old('sub_unit_bisnis', $location->sub_unit_bisnis ?? '') }}"
+            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+        @error('sub_unit_bisnis')
+            <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
+        @enderror
+    </div>
 </div>
 
 <div class="mt-6">

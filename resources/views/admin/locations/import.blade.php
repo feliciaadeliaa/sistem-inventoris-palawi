@@ -6,7 +6,7 @@
             {{ __('Import Data Lokasi') }}
         </h2>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {{ __('Upload file Excel (.xlsx) atau CSV. Kolom wajib: Code, Nama, Wilayah, Unit Bisnis. Data dengan kode yang sudah ada akan dilewati.') }}
+            {{ __('Upload file Excel (.xlsx) atau CSV. Kolom: Code, Nama, Wilayah, Unit Bisnis, Sub Unit Bisnis. Data dengan kode yang sudah ada akan DIPERBARUI (bukan dilewati).') }}
         </p>
     </div>
 

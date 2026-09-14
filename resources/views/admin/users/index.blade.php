@@ -11,8 +11,7 @@
             </p>
         </div>
 
-        <a href="{{ route('admin.users.create') }}"
-            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+         <a href="{{ route('admin.users.create') }}" class="bg-brand-500 text-white px-4 py-2 rounded hover:bg-brand-600">
             + Tambah User
         </a>
     </div>

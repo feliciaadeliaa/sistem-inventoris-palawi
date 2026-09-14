@@ -1,64 +1,93 @@
-{{-- resources/views/admin/categories/index.blade.php --}}
 @extends('layouts.app')
 
 @section('content')
-    <div class="mb-4 flex items-center justify-between">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-white leading-tight">
-            {{ __('Manajemen Kategori') }}
-        </h2>
-        <a href="{{ route('kategori.create') }}"
-            class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 rounded-lg px-5 py-2.5 text-sm font-medium text-white transition">
-            + {{ __('Tambah Kategori') }}
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">
+                Manajemen Kategori
+            </h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Kelola data kategori barang inventaris.
+            </p>
+        </div>
+
+        <a href="{{ route('kategori.create') }}" class="bg-brand-500 text-white px-4 py-2 rounded hover:bg-brand-600">
+            + Tambah Kategori
         </a>
     </div>
 
     @if (session('success'))
-        <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-500/10 dark:text-green-400">
+        <div class="mb-4 p-4 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 rounded-lg">
             {{ session('success') }}
         </div>
     @endif
 
     @if (session('error'))
-        <div class="mb-4 rounded-lg border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700 dark:border-error-800 dark:bg-error-500/10 dark:text-error-400">
+        <div class="mb-4 p-4 bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 rounded-lg">
             {{ session('error') }}
         </div>
     @endif
 
-    <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-x-auto">
-        <table class="w-full text-sm text-left">
-            <thead class="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead>
                 <tr>
-                    <th class="px-4 py-3">{{ __('Kode') }}</th>
-                    <th class="px-4 py-3">{{ __('Nama Kategori') }}</th>
-                    <th class="px-4 py-3">{{ __('Aksi') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                        Kode
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                        Nama Kategori
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                        Aksi
+                    </th>
                 </tr>
             </thead>
-            <tbody>
+
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                 @forelse ($categories as $category)
-                    <tr class="border-t border-gray-100 dark:border-gray-800">
-                        <td class="px-4 py-3 text-gray-800 dark:text-white/90">{{ $category->category_id }}</td>
-                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ $category->nama_kategori }}</td>
-                        <td class="px-4 py-3 flex items-center gap-3">
-                            <a href="{{ route('kategori.edit', $category) }}" class="text-brand-500 hover:underline">{{ __('Edit') }}</a>
-                            <form method="POST" action="{{ route('kategori.destroy', $category) }}" onsubmit="return confirm('{{ __('Yakin hapus kategori ini?') }}')">
-                                @csrf
-                                @method('delete')
-                                <button type="submit" class="text-error-500 hover:underline">{{ __('Hapus') }}</button>
-                            </form>
+                    <tr>
+                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">
+                            {{ $category->category_id }}
+                        </td>
+
+                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">
+                            {{ $category->nama_kategori }}
+                        </td>
+
+                        <td class="px-4 py-3">
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('kategori.edit', $category) }}"
+                                    class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+                                    Edit
+                                </a>
+
+                                <form action="{{ route('kategori.destroy', $category) }}" method="POST" class="inline"
+                                    onsubmit="return confirm('Yakin hapus kategori ini?')">
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button type="submit"
+                                        class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                                        Hapus
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="3" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
-                            {{ __('Belum ada data kategori.') }}
+                        <td colspan="3"
+                            class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                            Belum ada data kategori.
                         </td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
-    </div>
 
-    <div class="mt-4">
-        {{ $categories->links() }}
+        <div class="mt-4">
+            {{ $categories->links() }}
+        </div>
     </div>
 @endsection

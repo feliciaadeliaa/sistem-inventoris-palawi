@@ -125,9 +125,13 @@
                                     >
                                         {{ __('Lihat QR') }}
                                     </button>
-                                    <a href="{{ route('barang.qr.download', $item) }}"
+                                    <a href="{{ route('barang.qr.download', ['item' => $item, 'format' => 'png']) }}"
                                         class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
-                                        {{ __('Download') }}
+                                        PNG
+                                    </a>
+                                    <a href="{{ route('barang.qr.download', ['item' => $item, 'format' => 'pdf']) }}"
+                                        class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600">
+                                        PDF
                                     </a>
                                 </div>
                             </td>

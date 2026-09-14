@@ -7,67 +7,60 @@ class MenuHelper
     /**
      * Menu untuk role Admin (akses penuh)
      */
-    public static function getAdminMenuItems()
-    {
-        return [
-            [
-                'icon' => 'dashboard',
-                'name' => 'Dashboard',
-                'path' => '/dashboard',
-            ],
-            [
+   public static function getAdminMenuItems()
+{
+    return [
+        [
+            'icon' => 'dashboard',
+            'name' => 'Dashboard',
+            'path' => '/dashboard',
+        ],
+        [
             'icon' => 'calendar',
             'name' => 'Calendar',
             'path' => '/calendar',
-            ],
-            [
-                'icon' => 'tables',
-                'name' => 'Scan/Cari Barang',
-                'path' => '/barang/scan',
-            ],
-            [
-                'icon' => 'forms',
-                'name' => 'Transaksi',
-                'subItems' => [
-                    ['name' => 'Stock In', 'path' => '/admin/stock-in'],
-                    ['name' => 'Stock Out', 'path' => '/admin/transaksi/stock-out'],
-                    ['name' => 'Mutasi', 'path' => '/admin/transaksi/mutasi'],
-                    ['name' => 'Perbaikan', 'path' => '/admin/transaksi/perbaikan'],
-                    ['name' => 'Kerusakan', 'path' => '/admin/transaksi/kerusakan'],
-                ],
-            ],
-            [
-                'icon' => 'user-profile',
-                'name' => 'Manajemen User',
-                'path' => '/admin/users',
-            ],
-            [
-                'icon' => 'tables',
-                'name' => 'Master Data Barang',
-                'path' => '/admin/barang',
-            ],
-            [
+        ],
+        [
             'icon' => 'tables',
-            'name' => 'Manajemen Kategori',
-            'path' => '/admin/kategori',
+            'name' => 'Scan/Cari Barang',
+            'path' => '/barang/scan',
+        ],
+        [
+            'icon' => 'user-profile',
+            'name' => 'Manajemen User',
+            'path' => '/admin/users',
+        ],
+        [
+            'icon' => 'tables',
+            'name' => 'Data Master',
+            'subItems' => [
+                ['name' => 'Asset', 'path' => '/admin/barang'],
+                ['name' => 'Kategori', 'path' => '/admin/kategori'],
+                ['name' => 'Lokasi', 'path' => '/admin/lokasi'],
             ],
-            [
-                'icon' => 'tables',
-                'name' => 'Manajemen Lokasi',
-                'path' => '/admin/lokasi',
+        ],
+        [
+            'icon' => 'forms',
+            'name' => 'Transaksi',
+            'subItems' => [
+                ['name' => 'Stock In', 'path' => '/admin/stock-in'],
+                ['name' => 'Stock Out', 'path' => '/admin/transaksi/stock-out'],
+                ['name' => 'Mutasi', 'path' => '/admin/transaksi/mutasi'],
+                ['name' => 'Perbaikan', 'path' => '/admin/transaksi/perbaikan'],
+                ['name' => 'Kerusakan', 'path' => '/admin/transaksi/kerusakan'],
+                ['name' => 'Pengadaan', 'path' => '/admin/pengadaan'],
             ],
-            [
-                'icon' => 'ecommerce',
-                'name' => 'Pengadaan',
-                'path' => '/admin/pengadaan',
+        ],
+        [
+            'icon' => 'charts',
+            'name' => 'Laporan',
+            'subItems' => [
+                ['name' => 'Ekspor & Laporan Umum', 'path' => '/admin/laporan'],
+                ['name' => 'Penyusutan', 'path' => '/admin/laporan/penyusutan'],
             ],
-            [
-                'icon' => 'charts',
-                'name' => 'Laporan & Ekspor',
-                'path' => '/admin/laporan',
-            ],
-        ];
-    }
+        ],
+    ];
+}
 
     /**
      * Menu untuk role User (akses terbatas) — juga dipakai Senior Analis untuk sementara
@@ -120,8 +113,27 @@ class MenuHelper
             'path' => '/gm/approval',
         ];
 
+        $items[] = [
+            'icon' => 'charts',
+            'name' => 'Laporan Penyusutan',
+            'path' => '/admin/laporan/penyusutan',
+        ];
+
         return $items;
     }
+
+    public static function getFinanceMenuItems()
+    {
+    $items = self::getUserMenuItems();
+
+    $items[] = [
+        'icon' => 'charts',
+        'name' => 'Laporan Penyusutan',
+        'path' => '/admin/laporan/penyusutan',
+    ];
+
+    return $items;
+}
 
     public static function getMenuGroups()
     {

@@ -1,110 +1,135 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="mb-4">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-white leading-tight">
-            {{ __('Master Data Barang') }}
-        </h2>
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">
+                Master Data Barang
+            </h2>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Kelola data aset dan barang inventaris.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button type="submit" form="print-labels-form"
+                class="bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-2 rounded">
+                Cetak Label Terpilih
+            </button>
+            <a href="{{ route('barang.create') }}" class="bg-brand-500 text-white px-4 py-2 rounded hover:bg-brand-600">
+                + Tambah Barang
+            </a>
+        </div>
     </div>
 
     @if (session('success'))
-        <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-500/10 dark:text-green-400">
+        <div class="mb-4 p-4 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 rounded-lg">
             {{ session('success') }}
         </div>
     @endif
 
-    <div class="mb-4 flex items-center justify-between flex-wrap gap-3">
-        <form method="GET" action="{{ route('barang.index') }}" class="flex items-center gap-3">
-            <select name="category_id" onchange="this.form.submit()"
-                class="dark:bg-dark-900 h-10 rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 focus:outline-hidden dark:border-gray-700 dark:text-white/90">
-                <option value="">{{ __('-- Semua Kategori --') }}</option>
-                @foreach ($categories as $category)
-                    <option value="{{ $category->category_id }}" {{ request('category_id') == $category->category_id ? 'selected' : '' }}>
-                        {{ $category->nama_kategori }}
-                    </option>
-                @endforeach
-            </select>
+    {{-- Form cetak label: membungkus filter + tabel, karena checkbox ada di dalam tabel --}}
+    <form id="print-labels-form" action="{{ route('barang.print-labels') }}" method="GET" target="_blank">
 
-            @if (request()->filled('category_id'))
-                <a href="{{ route('barang.index') }}" class="text-sm text-gray-500 hover:underline dark:text-gray-400">
-                    {{ __('Reset filter') }}
-                </a>
-            @endif
-        </form>
+        {{-- Filter kategori (kiri) + Pilih Semua (kanan) --}}
+        <div class="mb-4 flex items-center justify-between flex-wrap gap-3">
+            <div class="flex items-center gap-3">
+                <select name="category_id" onchange="this.form.submit()"
+                    class="dark:bg-dark-900 h-11 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 focus:outline-hidden dark:border-gray-700 dark:text-white/90">
+                    <option value="">{{ __('-- Semua Kategori --') }}</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category->category_id }}" {{ request('category_id') == $category->category_id ? 'selected' : '' }}>
+                            {{ $category->nama_kategori }}
+                        </option>
+                    @endforeach
+                </select>
 
-        <a href="{{ route('barang.create') }}"
-            class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
-            + {{ __('Tambah Barang') }}
-        </a>
-    </div>
+                @if (request()->filled('category_id'))
+                    <a href="{{ route('barang.index') }}" class="text-sm text-gray-500 hover:underline dark:text-gray-400">
+                        {{ __('Reset filter') }}
+                    </a>
+                @endif
+            </div>
 
-    {{-- Form cetak label: SATU form membungkus seluruh tabel, checkbox per baris di dalamnya --}}
-    <form action="{{ route('barang.print-labels') }}" method="GET" target="_blank">
-
-        <div class="mb-3 flex items-center justify-between">
             <label class="text-sm text-gray-600 dark:text-gray-400">
                 <input type="checkbox" onclick="document.querySelectorAll('.qr-checkbox').forEach(cb => cb.checked = this.checked)">
                 {{ __('Pilih Semua') }}
             </label>
-
-            <button type="submit"
-                class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
-                {{ __('Cetak Label Terpilih') }}
-            </button>
         </div>
 
-        <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-x-auto">
-            <table class="w-full text-sm text-left">
-                <thead class="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+        {{-- Card putih HANYA membungkus tabel --}}
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="sticky top-0 z-10 bg-white dark:bg-gray-800">
                     <tr>
-                        <th class="px-4 py-3 whitespace-nowrap">
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                             <span class="sr-only">{{ __('Pilih') }}</span>
                         </th>
-                        <th class="px-4 py-3 whitespace-nowrap">{{ __('Item ID') }}</th>
-                        <th class="px-4 py-3 whitespace-nowrap">{{ __('Nama Barang') }}</th>
-                        <th class="px-4 py-3 whitespace-nowrap">{{ __('Kategori') }}</th>
-                        <th class="px-4 py-3 whitespace-nowrap">{{ __('Lokasi') }}</th>
-                        <th class="px-4 py-3 whitespace-nowrap">{{ __('Golongan AT') }}</th>
-                        <th class="px-4 py-3 whitespace-nowrap">{{ __('Nomor Aktiva Tetap') }}</th>
-                        <th class="px-4 py-3 whitespace-nowrap">{{ __('Tahun Perolehan') }}</th>
-                        <th class="px-4 py-3 whitespace-nowrap">{{ __('Masa Manfaat') }}</th>
-                        <th class="px-4 py-3 whitespace-nowrap">{{ __('Nilai Perolehan') }}</th>
-                        <th class="px-4 py-3 whitespace-nowrap">{{ __('Tanggal Terima') }}</th>
-                        <th class="px-4 py-3 whitespace-nowrap">{{ __('Kondisi') }}</th>
-                        <th class="px-4 py-3 whitespace-nowrap">{{ __('Status') }}</th>
-                        <th class="px-4 py-3 whitespace-nowrap">{{ __('Aksi') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Item ID') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Nama Barang') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Kategori') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Lokasi') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Golongan AT') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Nomor Aktiva Tetap') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Tahun Perolehan') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Masa Manfaat') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Nilai Perolehan') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Tanggal Terima') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Kondisi') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Status') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{ __('Aksi') }}</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse ($items as $item)
-                        <tr class="border-t border-gray-100 dark:border-gray-800">
+                        <tr>
                             <td class="px-4 py-3 whitespace-nowrap">
                                 <input type="checkbox" name="ids[]" value="{{ $item->id }}" class="qr-checkbox">
                             </td>
-                            <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-white/90">{{ $item->item_id }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-white/90">{{ $item->nama_barang }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{{ $item->category->nama_kategori }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{{ $item->location->nama_lokasi }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{{ $item->golongan_at }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{{ $item->nomor_aktiva_tetap ?? '-' }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{{ $item->tahun_perolehan }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{{ $item->masa_manfaat }} {{ __('tahun') }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">Rp {{ number_format($item->nilai_perolehan, 0, ',', '.') }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">{{ $item->tanggal_terima->format('d/m/Y') }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">
-                                {{ $item->kondisi }} - {{ \App\Models\Item::KONDISI_LABELS[$item->kondisi] ?? '-' }}
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap capitalize text-gray-600 dark:text-gray-400">{{ str_replace('_', ' ', $item->status) }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ $item->item_id }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ $item->nama_barang }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ $item->category->nama_kategori }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ $item->location->nama_lokasi }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ $item->golongan_at }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">-</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ $item->tahun_perolehan }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ $item->masa_manfaat }} {{ __('tahun') }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">Rp {{ number_format($item->nilai_perolehan, 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ $item->tanggal_terima->format('d/m/Y') }}</td>
                             <td class="px-4 py-3 whitespace-nowrap">
-                                <a href="{{ route('barang.edit', $item) }}" class="text-brand-500 hover:underline">{{ __('Edit') }}</a>
-                                <button
-                                    type="button"
-                                    onclick="openQrModal('{{ route('barang.qr', $item) }}', '{{ $item->nama_barang }}')"
-                                    class="text-green-600 hover:underline"
-                                >
-                                    {{ __('Lihat QR') }}
-                                </button>
-                                <a href="{{ route('barang.qr.download', $item) }}" class="text-green-600 hover:underline">{{ __('Download') }}</a>
+                                <span class="px-2 py-1 rounded text-xs font-semibold
+                                    {{ $item->kondisi === 'baik'
+                                        ? 'bg-green-100 text-green-800'
+                                        : ($item->kondisi === 'rusak_ringan' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                    {{ str_replace('_', ' ', $item->kondisi) }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span class="px-2 py-1 rounded text-xs font-semibold
+                                    {{ $item->status === 'tersedia'
+                                        ? 'bg-green-100 text-green-800'
+                                        : ($item->status === 'dipinjam' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">
+                                    {{ str_replace('_', ' ', $item->status) }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('barang.edit', $item) }}"
+                                        class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+                                        {{ __('Edit') }}
+                                    </a>
+                                    <button
+                                        type="button"
+                                        onclick="openQrModal('{{ route('barang.qr', $item) }}', '{{ $item->nama_barang }}')"
+                                        class="px-3 py-1 bg-brand-500 text-white rounded hover:bg-brand-600"
+                                    >
+                                        {{ __('Lihat QR') }}
+                                    </button>
+                                    <a href="{{ route('barang.qr.download', $item) }}"
+                                        class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                                        {{ __('Download') }}
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -116,12 +141,13 @@
                     @endforelse
                 </tbody>
             </table>
-        </div>
-    </form>
 
-    <div class="mt-4">
-        {{ $items->links() }}
-    </div>
+            <div class="mt-4">
+                {{ $items->links() }}
+            </div>
+        </div>
+
+    </form>
 
     {{-- Modal QR --}}
     <div id="qr-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">

@@ -102,17 +102,17 @@
         @include('layouts.backdrop')
         @include('layouts.sidebar')
 
-        <div class="flex-1 transition-all duration-300 ease-in-out"
-            :class="{
-                'xl:ml-[290px]': $store.sidebar.isExpanded || $store.sidebar.isHovered,
-                'xl:ml-[90px]': !$store.sidebar.isExpanded && !$store.sidebar.isHovered,
-                'ml-0': $store.sidebar.isMobileOpen
-            }">
-            @include('layouts.app-header')
-            <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
-                @yield('content')
-            </div>
-        </div>
+        <div class="flex-1 min-w-0 transition-all duration-300 ease-in-out"
+    :class="{
+        'xl:ml-[290px]': $store.sidebar.isExpanded || $store.sidebar.isHovered,
+        'xl:ml-[90px]': !$store.sidebar.isExpanded && !$store.sidebar.isHovered,
+        'ml-0': $store.sidebar.isMobileOpen
+    }">
+    @include('layouts.app-header')
+    <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+        @yield('content')
+    </div>
+</div>
     </div>
 
 </body>

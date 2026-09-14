@@ -2,26 +2,26 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto py-8 px-4">
-    <h1 class="text-2xl font-semibold text-white mb-6">Scan atau cari barang</h1>
+    <h1 class="text-2xl font-semibold text-gray-800 dark:text-white mb-6">Scan atau cari barang</h1>
 
     {{-- Area Kamera Scan QR --}}
-    <div class="border-2 border-dashed border-gray-600 rounded-xl flex flex-col items-center justify-center py-16 mb-6 bg-gray-900/40">
+    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl flex flex-col items-center justify-center py-16 mb-6 bg-gray-50 dark:bg-gray-900/40">
         <div id="qr-reader" class="w-full max-w-xs"></div>
-        <div id="qr-placeholder" class="flex flex-col items-center text-gray-400">
+        <div id="qr-placeholder" class="flex flex-col items-center text-gray-500 dark:text-gray-400">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2M8 12h8" />
             </svg>
             <span>Area kamera scan QR</span>
-            <button id="btn-start-scan" type="button" class="mt-4 text-sm text-green-500 underline">
+            <button id="btn-start-scan" type="button" class="mt-4 text-sm text-green-600 dark:text-green-500 underline">
                 Aktifkan kamera
             </button>
         </div>
     </div>
 
     <div class="flex items-center gap-4 mb-6">
-        <div class="flex-1 border-t border-gray-700"></div>
-        <span class="text-gray-500 text-sm">atau</span>
-        <div class="flex-1 border-t border-gray-700"></div>
+        <div class="flex-1 border-t border-gray-300 dark:border-gray-700"></div>
+        <span class="text-gray-500 dark:text-gray-500 text-sm">atau</span>
+        <div class="flex-1 border-t border-gray-300 dark:border-gray-700"></div>
     </div>
 
     {{-- Search bar --}}
@@ -29,46 +29,46 @@
         type="text"
         id="search-barang"
         placeholder="Cari nama atau kode barang"
-        class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-3 mb-6 focus:outline-none focus:ring-2 focus:ring-green-600"
+        class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-white placeholder:text-gray-400 rounded-lg px-4 py-3 mb-6 focus:outline-none focus:ring-2 focus:ring-brand-500"
         autocomplete="off"
     >
     <div id="search-results" class="mb-6 space-y-2"></div>
 
     {{-- Hasil scan / hasil pilih --}}
-    <div id="hasil-scan" class="hidden border border-gray-700 rounded-xl p-5 bg-gray-900/40">
-        <p class="text-gray-400 text-sm mb-2">Hasil scan</p>
-        <h2 id="hasil-nama" class="text-white text-lg font-semibold"></h2>
-        <p id="hasil-info" class="text-gray-400 text-sm mb-4"></p>
+    <div id="hasil-scan" class="hidden border border-gray-200 dark:border-gray-700 rounded-xl p-5 bg-white dark:bg-gray-900/40">
+        <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">Hasil scan</p>
+        <h2 id="hasil-nama" class="text-gray-800 dark:text-white text-lg font-semibold"></h2>
+        <p id="hasil-info" class="text-gray-500 dark:text-gray-400 text-sm mb-4"></p>
 
         @if(auth()->user()->role === 'admin')
             {{-- Admin: riwayat transaksi barang ini --}}
             <div id="riwayat-transaksi" class="mb-4 space-y-2"></div>
 
-            <p class="text-gray-400 text-sm mb-2">Proses transaksi</p>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">Proses transaksi</p>
             <div class="flex flex-wrap gap-3">
-                <button type="button" data-action="stock_out" class="hasil-action-btn border border-gray-600 text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-800">
+                <button type="button" data-action="stock_out" class="hasil-action-btn border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
                     Stock Out
                 </button>
-                <button type="button" data-action="mutasi" class="hasil-action-btn border border-gray-600 text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-800">
+                <button type="button" data-action="mutasi" class="hasil-action-btn border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
                     Mutasi
                 </button>
-                <button type="button" data-action="perbaikan" class="hasil-action-btn border border-gray-600 text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-800">
+                <button type="button" data-action="perbaikan" class="hasil-action-btn border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
                     Perbaikan
                 </button>
-                <button type="button" data-action="kerusakan" class="hasil-action-btn border border-gray-600 text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-800">
+                <button type="button" data-action="kerusakan" class="hasil-action-btn border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
                     Kerusakan
                 </button>
             </div>
         @else
             {{-- User: ajukan transaksi --}}
             <div class="flex flex-wrap gap-3">
-                <button type="button" data-action="peminjaman" class="hasil-action-btn border border-gray-600 text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-800">
+                <button type="button" data-action="peminjaman" class="hasil-action-btn border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
                     Ajukan peminjaman
                 </button>
-                <button type="button" data-action="perbaikan" class="hasil-action-btn border border-gray-600 text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-800">
+                <button type="button" data-action="perbaikan" class="hasil-action-btn border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
                     Ajukan perbaikan
                 </button>
-                <button type="button" data-action="kerusakan" class="hasil-action-btn border border-gray-600 text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-800">
+                <button type="button" data-action="kerusakan" class="hasil-action-btn border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
                     Lapor rusak
                 </button>
             </div>
@@ -84,14 +84,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const detailUrlTemplate = "{{ route('barang.detail', ['item_id' => '__ITEM_ID__']) }}";
     const isAdmin = @json(auth()->user()->role === 'admin');
 
-    // Peta tombol aksi: berbeda untuk Admin (proses langsung) dan User (ajukan).
-    // Setiap entri adalah function yang menerima item_id dan mengembalikan URL tujuan lengkap,
-    // karena tiap route punya format berbeda (path parameter vs query string).
     const actionRoutes = isAdmin ? {
-        stock_out: (id) => `/admin/transaksi/stock-out?item_id=${encodeURIComponent(id)}`,
-        mutasi: (id) => `/admin/transaksi/mutasi?item_id=${encodeURIComponent(id)}`,
-        perbaikan: (id) => `/admin/transaksi/perbaikan?item_id=${encodeURIComponent(id)}`,
-        kerusakan: (id) => `/admin/transaksi/kerusakan?item_id=${encodeURIComponent(id)}`,
+        stock_out: '/admin/transaksi/stock-out',
+        mutasi: '/admin/transaksi/mutasi',
+        perbaikan: '/admin/transaksi/perbaikan',
+        kerusakan: '/admin/transaksi/kerusakan',
     } : {
         peminjaman: (id) => `/transaksi/stock-out/ajukan/${encodeURIComponent(id)}`,
         perbaikan: (id) => `/ajukan/perbaikan?item_id=${encodeURIComponent(id)}`,
@@ -136,17 +133,17 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!container) return;
 
         if (transactions.length === 0) {
-            container.innerHTML = '<p class="text-gray-500 text-sm">Belum ada riwayat transaksi.</p>';
+            container.innerHTML = '<p class="text-gray-500 dark:text-gray-500 text-sm">Belum ada riwayat transaksi.</p>';
             return;
         }
 
         container.innerHTML = transactions.map(t => `
-            <div class="flex items-center justify-between bg-gray-800/60 rounded-lg px-3 py-2 text-sm">
+            <div class="flex items-center justify-between bg-gray-100 dark:bg-gray-800/60 rounded-lg px-3 py-2 text-sm">
                 <div>
-                    <span class="text-white font-medium">${jenisLabel[t.jenis_transaksi] || t.jenis_transaksi}</span>
-                    <span class="block text-gray-400">${t.user} · ${t.tanggal}</span>
+                    <span class="text-gray-800 dark:text-white font-medium">${jenisLabel[t.jenis_transaksi] || t.jenis_transaksi}</span>
+                    <span class="block text-gray-500 dark:text-gray-400">${t.user} · ${t.tanggal}</span>
                 </div>
-                <span class="text-gray-300 text-xs border border-gray-600 rounded px-2 py-1">
+                <span class="text-gray-600 dark:text-gray-300 text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1">
                     ${statusLabel[t.status] || t.status}
                 </span>
             </div>
@@ -175,31 +172,34 @@ document.addEventListener('DOMContentLoaded', function () {
                     items.forEach(item => {
                         const btn = document.createElement('button');
                         btn.type = 'button';
-                        btn.className = 'w-full text-left bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-3 hover:bg-gray-800';
+                        btn.className = 'w-full text-left bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-white rounded-lg px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800';
                         btn.innerHTML = `<span class="font-medium">${item.nama_barang}</span>
-                                          <span class="block text-gray-400 text-sm">${item.item_id} · ${item.lokasi}</span>`;
+                                          <span class="block text-gray-500 dark:text-gray-400 text-sm">${item.item_id} · ${item.lokasi}</span>`;
                         btn.addEventListener('click', () => tampilkanHasil(item));
                         searchResults.appendChild(btn);
                     });
                 })
                 .catch(() => {
-                    searchResults.innerHTML = '<p class="text-red-400 text-sm">Gagal mencari barang.</p>';
+                    searchResults.innerHTML = '<p class="text-red-500 dark:text-red-400 text-sm">Gagal mencari barang.</p>';
                 });
         }, 300);
     });
 
-    // --- Tombol aksi (peminjaman/perbaikan/lapor rusak, atau proses transaksi utk Admin) ---
     document.querySelectorAll('.hasil-action-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             if (!currentItemId) return;
             const action = this.dataset.action;
-            const buildUrl = actionRoutes[action];
-            if (!buildUrl) return;
-            window.location.href = buildUrl(currentItemId);
+
+            if (!isAdmin && action === 'peminjaman') {
+                window.location.href = `/transaksi/stock-out/ajukan/${encodeURIComponent(currentItemId)}`;
+                return;
+            }
+
+            const base = actionRoutes[action];
+            window.location.href = `${base}?item_id=${encodeURIComponent(currentItemId)}`;
         });
     });
 
-    // --- Scan kamera QR ---
     const btnStartScan = document.getElementById('btn-start-scan');
     const qrPlaceholder = document.getElementById('qr-placeholder');
     let html5QrCode;
@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     .then(item => tampilkanHasil(item))
                     .catch(() => alert('Barang tidak ditemukan untuk kode: ' + decodedText));
             },
-            () => { /* diabaikan: dipanggil terus saat belum ada QR terdeteksi */ }
+            () => { /* diabaikan */ }
         ).catch(() => {
             alert('Tidak bisa mengakses kamera. Pastikan izin kamera sudah diberikan.');
             qrPlaceholder.classList.remove('hidden');

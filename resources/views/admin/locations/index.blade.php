@@ -33,6 +33,64 @@
         </div>
     @endif
 
+    {{-- Filter --}}
+    <form method="GET" action="{{ route('lokasi.index') }}" class="mb-4 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Cari (Kode / Nama)</label>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode atau nama lokasi..."
+                    class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Wilayah</label>
+                <select name="wilayah" class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+                    <option value="">-- Semua --</option>
+                    @foreach ($wilayahOptions as $wilayah)
+                        <option value="{{ $wilayah }}" {{ request('wilayah') == $wilayah ? 'selected' : '' }}>
+                            {{ $wilayah }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Unit Bisnis</label>
+                <select name="unit_bisnis" class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+                    <option value="">-- Semua --</option>
+                    @foreach ($unitBisnisOptions as $unit)
+                        <option value="{{ $unit }}" {{ request('unit_bisnis') == $unit ? 'selected' : '' }}>
+                            {{ $unit }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Sub Unit Bisnis</label>
+                <select name="sub_unit_bisnis" class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+                    <option value="">-- Semua --</option>
+                    @foreach ($subUnitBisnisOptions as $sub)
+                        <option value="{{ $sub }}" {{ request('sub_unit_bisnis') == $sub ? 'selected' : '' }}>
+                            {{ $sub }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 mt-4">
+            <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded">
+                Terapkan Filter
+            </button>
+            @if (request()->anyFilled(['search', 'wilayah', 'unit_bisnis', 'sub_unit_bisnis']))
+                <a href="{{ route('lokasi.index') }}" class="text-sm text-gray-500 hover:underline dark:text-gray-400">
+                    Reset filter
+                </a>
+            @endif
+        </div>
+    </form>
+
     <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>

@@ -10,14 +10,31 @@ use App\Imports\LocationsImport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
+
 class LocationController extends Controller
 {
-    public function index()
-    {
-        $locations = Location::orderBy('nama_lokasi')->paginate(15);
+    public function index(Request $request)
+{
+    $locations = Location::query()
+        ->when($request->filled('search'), function ($q) use ($request) {
+            $q->where(function ($sub) use ($request) {
+                $sub->where('nama_lokasi', 'like', "%{$request->search}%")
+                    ->orWhere('kode_lokasi', 'like', "%{$request->search}%");
+            });
+        })
+        ->when($request->filled('wilayah'), fn ($q) => $q->where('wilayah', $request->wilayah))
+        ->when($request->filled('unit_bisnis'), fn ($q) => $q->where('unit_bisnis', $request->unit_bisnis))
+        ->when($request->filled('sub_unit_bisnis'), fn ($q) => $q->where('sub_unit_bisnis', $request->sub_unit_bisnis))
+        ->orderBy('nama_lokasi')
+        ->paginate(15)
+        ->withQueryString();
 
-        return view('admin.locations.index', compact('locations'));
-    }
+    $wilayahOptions = Location::whereNotNull('wilayah')->where('wilayah', '!=', '')->distinct()->orderBy('wilayah')->pluck('wilayah');
+    $unitBisnisOptions = Location::whereNotNull('unit_bisnis')->where('unit_bisnis', '!=', '')->distinct()->orderBy('unit_bisnis')->pluck('unit_bisnis');
+    $subUnitBisnisOptions = Location::whereNotNull('sub_unit_bisnis')->where('sub_unit_bisnis', '!=', '')->distinct()->orderBy('sub_unit_bisnis')->pluck('sub_unit_bisnis');
+
+    return view('admin.locations.index', compact('locations', 'wilayahOptions', 'unitBisnisOptions', 'subUnitBisnisOptions'));
+}
 
     public function create()
     {

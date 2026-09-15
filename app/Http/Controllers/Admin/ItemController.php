@@ -17,19 +17,30 @@ use ZipArchive;
 
 class ItemController extends Controller
 {
-    public function index(Request $request)
-    {
-        $items = Item::with(['category', 'location'])
-            ->when($request->filled('category_id'), function ($query) use ($request) {
-                $query->where('category_id', $request->category_id);
-            })
-            ->latest()
-            ->paginate(15);
+public function index(Request $request)
+{
+    $items = Item::with(['category', 'location'])
+        ->when($request->filled('category_id'), fn ($q) => $q->where('category_id', $request->category_id))
+        ->when($request->filled('location_id'), fn ($q) => $q->where('location_id', $request->location_id))
+        ->when($request->filled('kondisi'), fn ($q) => $q->where('kondisi', $request->kondisi))
+        ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
+        ->when($request->filled('golongan_at'), fn ($q) => $q->where('golongan_at', $request->golongan_at))
+        ->when($request->filled('tahun_dari'), fn ($q) => $q->where('tahun_perolehan', '>=', $request->tahun_dari))
+        ->when($request->filled('tahun_sampai'), fn ($q) => $q->where('tahun_perolehan', '<=', $request->tahun_sampai))
+        ->latest()
+        ->paginate(15)
+        ->withQueryString();
 
-        $categories = Category::orderBy('nama_kategori')->get();
+    $categories = Category::orderBy('nama_kategori')->get();
+    $locations = Location::orderBy('nama_lokasi')->get();
+    $golonganOptions = Item::whereNotNull('golongan_at')
+        ->where('golongan_at', '!=', '')
+        ->distinct()
+        ->orderBy('golongan_at')
+        ->pluck('golongan_at');
 
-        return view('admin.items.index', compact('items', 'categories'));
-    }
+    return view('admin.items.index', compact('items', 'categories', 'locations', 'golonganOptions'));
+}
 
     public function create()
     {

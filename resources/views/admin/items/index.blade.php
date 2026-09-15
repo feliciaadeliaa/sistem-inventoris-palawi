@@ -11,19 +11,16 @@
             </p>
         </div>
 
-        <div class="flex items-center gap-3">
-            <div class="flex items-center rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden">
-                <button type="submit" form="print-labels-form" formaction="{{ route('barang.print-labels') }}" formtarget="_blank"
-                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border-r border-gray-300 dark:border-gray-700">
-                    Cetak PDF
-                </button>
-                <button type="submit" form="print-labels-form" formaction="{{ route('barang.print-labels-png') }}"
-                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                    Cetak PNG (ZIP)
-                </button>
-            </div>
-
-            <a href="{{ route('barang.create') }}" class="bg-brand-500 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-brand-600">
+        <div class="flex items-center gap-2">
+            <button type="submit" form="print-labels-form" formaction="{{ route('barang.print-labels') }}" formtarget="_blank"
+                class="bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-2 rounded">
+                Cetak as PDF
+            </button>
+            <button type="submit" form="print-labels-form" formaction="{{ route('barang.print-labels-png') }}"
+                class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded">
+                Cetak as PNG (ZIP)
+            </button>
+            <a href="{{ route('barang.create') }}" class="bg-brand-500 text-white px-4 py-2 rounded hover:bg-brand-600">
                 + Tambah Barang
             </a>
         </div>
@@ -35,36 +32,103 @@
         </div>
     @endif
 
-    {{-- Form cetak label: membungkus filter + tabel, karena checkbox ada di dalam tabel --}}
-    <form id="print-labels-form" action="{{ route('barang.print-labels') }}" method="GET" target="_blank">
-
-        {{-- Filter kategori (kiri) + Pilih Semua (kanan) --}}
-        <div class="mb-4 flex items-center justify-between flex-wrap gap-3">
-            <div class="flex items-center gap-3">
-                <select name="category_id" onchange="this.form.submit()"
-                    class="dark:bg-dark-900 h-11 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 focus:outline-hidden dark:border-gray-700 dark:text-white/90">
-                    <option value="">{{ __('-- Semua Kategori --') }}</option>
+    {{-- Filter --}}
+    <form method="GET" action="{{ route('barang.index') }}" class="mb-4 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Kategori</label>
+                <select name="category_id" class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+                    <option value="">-- Semua --</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->category_id }}" {{ request('category_id') == $category->category_id ? 'selected' : '' }}>
                             {{ $category->nama_kategori }}
                         </option>
                     @endforeach
                 </select>
-
-                @if (request()->filled('category_id'))
-                    <a href="{{ route('barang.index') }}" class="text-sm text-gray-500 hover:underline dark:text-gray-400">
-                        {{ __('Reset filter') }}
-                    </a>
-                @endif
             </div>
 
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Lokasi</label>
+                <select name="location_id" class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+                    <option value="">-- Semua --</option>
+                    @foreach ($locations as $location)
+                        <option value="{{ $location->id }}" {{ request('location_id') == $location->id ? 'selected' : '' }}>
+                            {{ $location->nama_lokasi }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Kondisi</label>
+                <select name="kondisi" class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+                    <option value="">-- Semua --</option>
+                    @foreach (\App\Models\Item::KONDISI_LABELS as $kode => $label)
+                        <option value="{{ $kode }}" {{ request('kondisi') == $kode ? 'selected' : '' }}>
+                            {{ $kode }} - {{ $label }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Status</label>
+                <select name="status" class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+                    <option value="">-- Semua --</option>
+                    @foreach (\App\Models\Item::STATUS_LABELS as $kode => $label)
+                        <option value="{{ $kode }}" {{ request('status') == $kode ? 'selected' : '' }}>
+                            {{ $label }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Golongan AT</label>
+                <select name="golongan_at" class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+                    <option value="">-- Semua --</option>
+                    @foreach ($golonganOptions as $golongan)
+                        <option value="{{ $golongan }}" {{ request('golongan_at') == $golongan ? 'selected' : '' }}>
+                            {{ $golongan }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Tahun Perolehan</label>
+                <div class="flex items-center gap-1">
+                    <input type="number" name="tahun_dari" placeholder="Dari" value="{{ request('tahun_dari') }}"
+                        class="w-full h-10 rounded-lg border border-gray-300 bg-white px-2 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+                    <span class="text-gray-400">-</span>
+                    <input type="number" name="tahun_sampai" placeholder="Sampai" value="{{ request('tahun_sampai') }}"
+                        class="w-full h-10 rounded-lg border border-gray-300 bg-white px-2 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 mt-4">
+            <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded">
+                Terapkan Filter
+            </button>
+            @if (request()->anyFilled(['category_id', 'location_id', 'kondisi', 'status', 'golongan_at', 'tahun_dari', 'tahun_sampai']))
+                <a href="{{ route('barang.index') }}" class="text-sm text-gray-500 hover:underline dark:text-gray-400">
+                    Reset filter
+                </a>
+            @endif
+        </div>
+    </form>
+
+    {{-- Form cetak label: membungkus tabel, karena checkbox ada di dalamnya --}}
+    <form id="print-labels-form" method="GET">
+
+        <div class="mb-4 flex items-center justify-end">
             <label class="text-sm text-gray-600 dark:text-gray-400">
                 <input type="checkbox" onclick="document.querySelectorAll('.qr-checkbox').forEach(cb => cb.checked = this.checked)">
                 {{ __('Pilih Semua') }}
             </label>
         </div>
 
-        {{-- Card putih HANYA membungkus tabel --}}
         <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="sticky top-0 z-10 bg-white dark:bg-gray-800">
@@ -98,17 +162,17 @@
                             <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ $item->category->nama_kategori }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ $item->location->nama_lokasi }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ $item->golongan_at }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">-</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ $item->nomor_aktiva_tetap ?? '-' }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ $item->tahun_perolehan }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ $item->masa_manfaat }} {{ __('tahun') }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">Rp {{ number_format($item->nilai_perolehan, 0, ',', '.') }}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">{{ $item->tanggal_terima->format('d/m/Y') }}</td>
                             <td class="px-4 py-3 whitespace-nowrap">
                                 <span class="px-2 py-1 rounded text-xs font-semibold
-                                    {{ $item->kondisi === 'baik'
+                                    {{ $item->kondisi === 'B'
                                         ? 'bg-green-100 text-green-800'
-                                        : ($item->kondisi === 'rusak_ringan' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
-                                    {{ str_replace('_', ' ', $item->kondisi) }}
+                                        : ($item->kondisi === 'BPR' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                    {{ $item->kondisi }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap">
@@ -132,13 +196,9 @@
                                     >
                                         {{ __('Lihat QR') }}
                                     </button>
-                                    <a href="{{ route('barang.qr.download', ['item' => $item, 'format' => 'png']) }}"
+                                    <a href="{{ route('barang.qr.download', $item) }}"
                                         class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
-                                        PNG
-                                    </a>
-                                    <a href="{{ route('barang.qr.download', ['item' => $item, 'format' => 'pdf']) }}"
-                                        class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600">
-                                        PDF
+                                        {{ __('Download') }}
                                     </a>
                                 </div>
                             </td>

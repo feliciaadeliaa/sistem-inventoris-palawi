@@ -11,11 +11,19 @@ class Item extends Model
         'golongan_at', 'tahun_perolehan', 'masa_manfaat', 'nilai_perolehan',
         'kondisi', 'tanggal_terima', 'status', 'is_active',
     ];
+    
     public const KONDISI_LABELS = [
     'B'   => 'Baik',
     'BPR' => 'Butuh Perawatan',
     'RB'  => 'Rusak Berat',
     'RSS' => 'Rusak Sama Sekali',
+];
+
+public const STATUS_LABELS = [
+    'tersedia' => 'Tersedia',
+    'dipinjam' => 'Dipinjam',
+    'dalam_perbaikan' => 'Dalam Perbaikan',
+    'nonaktif' => 'Nonaktif',
 ];
 
     protected $casts = [

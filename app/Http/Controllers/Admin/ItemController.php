@@ -13,21 +13,22 @@ use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Writer\SvgWriter;
 use Barryvdh\DomPDF\Facade\Pdf;
+use ZipArchive;
 
 class ItemController extends Controller
 {
-  public function index(Request $request)
+    public function index(Request $request)
     {
-    $items = Item::with(['category', 'location'])
-        ->when($request->filled('category_id'), function ($query) use ($request) {
-            $query->where('category_id', $request->category_id);
-        })
-        ->latest()
-        ->paginate(15);
+        $items = Item::with(['category', 'location'])
+            ->when($request->filled('category_id'), function ($query) use ($request) {
+                $query->where('category_id', $request->category_id);
+            })
+            ->latest()
+            ->paginate(15);
 
-    $categories = Category::orderBy('nama_kategori')->get();
+        $categories = Category::orderBy('nama_kategori')->get();
 
-    return view('admin.items.index', compact('items', 'categories'));
+        return view('admin.items.index', compact('items', 'categories'));
     }
 
     public function create()
@@ -66,7 +67,6 @@ class ItemController extends Controller
 
     public function destroy(Item $item)
     {
-        // Soft-status, bukan hapus (sesuai Modul 2)
         $item->update(['is_active' => false, 'status' => 'nonaktif']);
 
         return redirect()
@@ -76,14 +76,19 @@ class ItemController extends Controller
 
     public function showQr(Item $item)
     {
-        return response(
-            QrCode::format('svg')->size(300)->generate($item->item_id)
-        )->header('Content-Type', 'image/svg+xml');
+        $result = Builder::create()
+            ->writer(new SvgWriter())
+            ->data($item->item_id)
+            ->size(300)
+            ->build();
+
+        return response($result->getString())
+            ->header('Content-Type', 'image/svg+xml');
     }
 
     public function downloadQr(Item $item, Request $request)
     {
-        $format = $request->query('format', 'png'); // default png
+        $format = $request->query('format', 'png');
 
         return match ($format) {
             'pdf' => $this->downloadQrAsPdf($item),
@@ -94,7 +99,19 @@ class ItemController extends Controller
 
     private function downloadQrAsPng(Item $item)
     {
-        // 1. Generate QR code sebagai gambar
+        $pngData = $this->generateLabelPngBinary($item);
+
+        return response($pngData)
+            ->header('Content-Type', 'image/png')
+            ->header('Content-Disposition', 'attachment; filename="qr-'.$item->item_id.'.png"');
+    }
+
+    /**
+     * Gambar 1 label (logo + QR + nomor aktiva + footer) dan kembalikan binary PNG-nya.
+     * Dipakai baik untuk download satuan maupun untuk dikumpulkan jadi ZIP massal.
+     */
+    private function generateLabelPngBinary(Item $item): string
+    {
         $qrResult = Builder::create()
             ->writer(new PngWriter())
             ->data($item->item_id)
@@ -106,10 +123,9 @@ class ItemController extends Controller
         $qrWidth  = imagesx($qrImage);
         $qrHeight = imagesy($qrImage);
 
-        // 2. Siapkan canvas kosong
         $padding    = 20;
         $logoHeight = 60;
-        $textBlock  = 60; // ruang untuk 3 baris teks di bawah QR
+        $textBlock  = 60;
         $canvasWidth  = $qrWidth + ($padding * 2);
         $canvasHeight = $padding + $logoHeight + 10 + $qrHeight + $textBlock + $padding;
 
@@ -118,7 +134,6 @@ class ItemController extends Controller
         $black  = imagecolorallocate($canvas, 0, 0, 0);
         imagefill($canvas, 0, 0, $white);
 
-        // 3. Tempel logo PT Palawi (di-resize proporsional, center)
         $logoPath = public_path('images/logo/logo-palawi.png');
         if (file_exists($logoPath)) {
             $logo = imagecreatefrompng($logoPath);
@@ -131,29 +146,24 @@ class ItemController extends Controller
             imagedestroy($logo);
         }
 
-        // 4. Tempel QR (center, di bawah logo)
         $qrX = $padding;
         $qrY = $padding + $logoHeight + 10;
         imagecopy($canvas, $qrImage, $qrX, $qrY, 0, 0, $qrWidth, $qrHeight);
         imagedestroy($qrImage);
 
-        // 5. Tulis teks: nama asset, nomor asset tetap, footer
         $fontPath = base_path('vendor/endroid/qr-code/assets/open_sans.ttf');
         $textY = $qrY + $qrHeight + 24;
 
-        $this->drawCenteredText($canvas, $item->nomor_asset_tetap ?? '-', $fontPath, 12, $black, $canvasWidth, $textY);
+        $this->drawCenteredText($canvas, $item->nomor_aktiva_tetap ?? '-', $fontPath, 12, $black, $canvasWidth, $textY);
         $textY += 20;
         $this->drawCenteredText($canvas, 'Asset milik PT Perhutani Alam Wisata Risorsis', $fontPath, 9, $black, $canvasWidth, $textY);
 
-        // 6. Output sebagai PNG
         ob_start();
         imagepng($canvas);
         $pngData = ob_get_clean();
         imagedestroy($canvas);
 
-        return response($pngData)
-            ->header('Content-Type', 'image/png')
-            ->header('Content-Disposition', 'attachment; filename="qr-'.$item->item_id.'.png"');
+        return $pngData;
     }
 
     private function drawCenteredText($canvas, string $text, string $fontPath, int $fontSize, int $color, int $canvasWidth, int $y): void
@@ -187,12 +197,15 @@ class ItemController extends Controller
 
         $pdf = Pdf::loadView('barang.qr-label-pdf', [
             'item'   => $item,
-            'qrData' => $result->getDataUri(), // base64 data-uri, langsung dipakai di <img src="">
+            'qrData' => $result->getDataUri(),
         ]);
 
         return $pdf->download('qr-'.$item->item_id.'.pdf');
     }
 
+    /**
+     * Cetak label sebagai 1 file PDF, grid 3x3 (maks 9 label per halaman).
+     */
     public function printLabels(Request $request)
     {
         $request->validate([
@@ -202,6 +215,71 @@ class ItemController extends Controller
 
         $items = Item::whereIn('id', $request->ids)->get();
 
-        return view('admin.items.print-labels', compact('items'));
+        $itemsWithQr = $items->map(function ($item) {
+            $result = Builder::create()
+                ->writer(new PngWriter())
+                ->data($item->item_id)
+                ->size(300)
+                ->build();
+
+            return [
+                'item' => $item,
+                'qrData' => $result->getDataUri(),
+            ];
+        });
+
+        // Bagi jadi grup 9 per halaman, tiap grup dibagi lagi jadi baris isi 3
+        $pages = $itemsWithQr->chunk(9)->map(fn ($page) => $page->chunk(3));
+
+        $pdf = Pdf::loadView('admin.items.print-labels-pdf', [
+            'pages' => $pages,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream('label-qr-barang.pdf');
+    }
+
+    /**
+     * Cetak label sebagai PNG massal, dibungkus jadi 1 file ZIP.
+     */
+    public function printLabelsPng(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:items,id',
+        ]);
+
+        $items = Item::whereIn('id', $request->ids)->get();
+
+        $tempDir = storage_path('app/temp');
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+
+        $zipFileName = 'label-qr-barang-' . now()->format('YmdHis') . '.zip';
+        $zipPath = $tempDir . '/' . $zipFileName;
+
+        $zip = new ZipArchive();
+        $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        $usedNames = [];
+
+        foreach ($items as $item) {
+            $pngData = $this->generateLabelPngBinary($item);
+
+            $baseName = 'qr-' . $item->item_id . '.png';
+            $fileName = $baseName;
+            $suffix = 1;
+            while (in_array($fileName, $usedNames)) {
+                $fileName = 'qr-' . $item->item_id . '-' . $suffix . '.png';
+                $suffix++;
+            }
+            $usedNames[] = $fileName;
+
+            $zip->addFromString($fileName, $pngData);
+        }
+
+        $zip->close();
+
+        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
     }
 }

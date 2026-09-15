@@ -11,12 +11,19 @@
             </p>
         </div>
 
-        <div class="flex items-center gap-2">
-            <button type="submit" form="print-labels-form"
-                class="bg-green-500 hover:bg-green-600 text-white text-sm font-medium px-4 py-2 rounded">
-                Cetak Label Terpilih
-            </button>
-            <a href="{{ route('barang.create') }}" class="bg-brand-500 text-white px-4 py-2 rounded hover:bg-brand-600">
+        <div class="flex items-center gap-3">
+            <div class="flex items-center rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden">
+                <button type="submit" form="print-labels-form" formaction="{{ route('barang.print-labels') }}" formtarget="_blank"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border-r border-gray-300 dark:border-gray-700">
+                    Cetak PDF
+                </button>
+                <button type="submit" form="print-labels-form" formaction="{{ route('barang.print-labels-png') }}"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    Cetak PNG (ZIP)
+                </button>
+            </div>
+
+            <a href="{{ route('barang.create') }}" class="bg-brand-500 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-brand-600">
                 + Tambah Barang
             </a>
         </div>

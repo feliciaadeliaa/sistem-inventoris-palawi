@@ -74,6 +74,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('barang/{item}/qr/download', [ItemController::class, 'downloadQr'])->name('barang.qr.download');
     Route::get('barang/print-labels', [ItemController::class, 'printLabels'])->name('barang.print-labels');
 
+    // Cetak label sebagai PNG (ZIP)
+    Route::get('barang/print-labels-png', [ItemController::class, 'printLabelsPng'])->name('barang.print-labels-png');
+
     Route::resource('kategori', CategoryController::class)
         ->parameters(['kategori' => 'category'])
         ->except(['show']);

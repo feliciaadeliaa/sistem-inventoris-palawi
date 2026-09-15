@@ -3,6 +3,13 @@
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: sans-serif; text-align: center; }
+    .label-page {
+        page-break-after: always;
+        padding-top: 100px;
+    }
+    .label-page:last-child {
+        page-break-after: auto;
+    }
     .label {
         width: 220px;
         padding: 12px;
@@ -32,15 +39,19 @@
 </style>
 </head>
 <body>
-    <div class="label">
-        <div class="logo-wrap">
-            <img src="{{ public_path('images/logo/logo-palawi.png') }}">
+    @foreach ($itemsWithQr as $data)
+        <div class="label-page">
+            <div class="label">
+                <div class="logo-wrap">
+                    <img src="{{ public_path('images/logo/logo-palawi.png') }}">
+                </div>
+                <div class="qr-wrap">
+                    <img src="{{ $data['qrData'] }}">
+                </div>
+                <div class="nomor">{{ $data['item']->nomor_aktiva_tetap ?? '-' }}</div>
+                <div class="footer">Asset milik PT Perhutani Alam Wisata Risorsis</div>
+            </div>
         </div>
-        <div class="qr-wrap">
-            <img src="{{ $qrData }}">
-        </div>
-        <div class="nomor">{{ $item->nomor_asset_tetap ?? '-' }}</div>
-        <div class="footer">Asset milik PT Perhutani Alam Wisata Risorsis</div>
-    </div>
+    @endforeach
 </body>
 </html>

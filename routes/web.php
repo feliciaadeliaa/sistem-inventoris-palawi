@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\StockInController;
 use App\Http\Controllers\Admin\MutasiController;
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\StockOutController as AdminStockOutController;
 use App\Http\Controllers\User\StockOutController as UserStockOutController;
 use App\Http\Controllers\Admin\RepairRequestController as AdminRepairRequestController;
@@ -108,6 +109,21 @@ Route::middleware(['auth', 'admin'])->prefix('admin/transaksi')->name('admin.tra
 
     // Kerusakan - belum pernah dibangun, sementara coming soon
     Route::get('kerusakan', fn () => view('coming-soon', ['feature' => 'Laporan Kerusakan']))->name('kerusakan.index');
+});
+
+// Laporan & Ekspor
+Route::middleware(['auth', 'admin'])->prefix('admin/laporan')->name('admin.laporan.')->group(function () {
+    Route::get('/', fn () => redirect()->route('admin.laporan.riwayat-barang.index'))->name('index');
+
+    Route::get('riwayat-barang/export-pdf', [LaporanController::class, 'exportRiwayatBarangPdf'])->name('riwayat-barang.export-pdf');
+    Route::get('riwayat-barang/export-excel', [LaporanController::class, 'exportRiwayatBarangExcel'])->name('riwayat-barang.export-excel');
+    Route::get('riwayat-barang', [LaporanController::class, 'riwayatBarangIndex'])->name('riwayat-barang.index');
+    Route::get('peminjaman-aktif/export-pdf', [LaporanController::class, 'exportPeminjamanAktifPdf'])->name('peminjaman-aktif.export-pdf');
+    Route::get('peminjaman-aktif/export-excel', [LaporanController::class, 'exportPeminjamanAktifExcel'])->name('peminjaman-aktif.export-excel');
+    Route::get('peminjaman-aktif', [LaporanController::class, 'peminjamanAktifIndex'])->name('peminjaman-aktif.index');
+        Route::get('permintaan-perbaikan', fn () => view('coming-soon', ['feature' => 'Laporan Permintaan Perbaikan']))->name('permintaan-perbaikan.index');
+    Route::get('pengurangan-fasilitas', fn () => view('coming-soon', ['feature' => 'Laporan Pengurangan Fasilitas']))->name('pengurangan-fasilitas.index');
+    Route::get('riwayat-barang/{item}', [LaporanController::class, 'riwayatBarangShow'])->name('riwayat-barang.show');
 });
 
 Route::middleware(['auth', 'gm'])->prefix('gm')->name('gm.')->group(function () {

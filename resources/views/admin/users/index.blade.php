@@ -89,8 +89,12 @@
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('admin.users.edit', $user) }}"
-                                    class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">
-                                    Edit
+                                    title="Edit"
+                                    class="p-2 rounded bg-yellow-500 text-white hover:bg-yellow-600 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                    </svg>
                                 </a>
 
                                 <form action="{{ route('admin.users.toggle-active', $user) }}"
@@ -100,11 +104,27 @@
                                     @method('PATCH')
 
                                     <button type="submit"
-                                        class="px-3 py-1 rounded text-white
+                                        title="{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}"
+                                        class="p-2 rounded text-white transition
                                         {{ $user->is_active
                                             ? 'bg-red-500 hover:bg-red-600'
                                             : 'bg-green-500 hover:bg-green-600' }}">
-                                        {{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                        @if ($user->is_active)
+                                            {{-- icon: user-x (nonaktifkan) --}}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                                <circle cx="9" cy="7" r="4" />
+                                                <line x1="17" y1="8" x2="22" y2="13" />
+                                                <line x1="22" y1="8" x2="17" y2="13" />
+                                            </svg>
+                                        @else
+                                            {{-- icon: user-check (aktifkan) --}}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                                <circle cx="9" cy="7" r="4" />
+                                                <polyline points="16 11 18 13 22 9" />
+                                            </svg>
+                                        @endif
                                     </button>
                                 </form>
                             </div>

@@ -299,6 +299,30 @@
 }
 
 /*
+  ==========================================================
+  STATUS COLOR MAP - Calendar (dan tempat lain yang butuh
+  status warna yang sama: legend, badge status, dsb)
+  ==========================================================
+  Satu sumber kebenaran: dipakai bareng oleh legend blade
+  (.event-status-*) dan JS FullCalendar (calendarInit.js
+  baca variabel ini lewat getComputedStyle).
+  Kalau mau ganti warna status, cukup ubah di sini saja.
+*/
+:root {
+  --status-dikembalikan: var(--color-brand-400);   /* #3da597 */
+  --status-diajukan: var(--color-orange-500);      /* #fb6514 */
+  --status-diproses: var(--color-brand-800);       /* #004e68 */
+  --status-disetujui: var(--color-secondary-600);  /* #028c4f */
+  --status-ditolak: var(--color-error-500);        /* #f04438 */
+}
+
+.event-status-dikembalikan { background-color: var(--status-dikembalikan); }
+.event-status-diajukan     { background-color: var(--status-diajukan); }
+.event-status-diproses     { background-color: var(--status-diproses); }
+.event-status-disetujui    { background-color: var(--status-disetujui); }
+.event-status-ditolak      { background-color: var(--status-ditolak); }
+
+/*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
   looks the same as it did with Tailwind CSS v3.

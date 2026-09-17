@@ -70,7 +70,7 @@
         'ml-0': $store.sidebar.isMobileOpen
     }">
     @include('layouts.app-header')
-    <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
+    <div class="min-h-screen bg-content p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
         @yield('content')
     </div>
 </div>

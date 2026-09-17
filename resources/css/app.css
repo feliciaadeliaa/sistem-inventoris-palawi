@@ -1,5 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap') layer(base);
 @import 'prismjs/themes/prism.min.css';
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
 @import 'tailwindcss';
 
 
@@ -9,6 +12,18 @@
 @source '../**/*.js';
 
 @custom-variant dark (&:is(.dark *));
+
+.bg-auth-gradient {
+    background: linear-gradient(101.66deg, #12324A 9.55%, #204E61 39.35%, #49837A 100.82%);
+}
+
+.bg-sidebar-gradient {
+    background: linear-gradient(180.95deg, #12324A 35.03%, #204E61 58.13%, #49837A 93.95%);
+}
+
+.bg-btn-gradient {
+    background: linear-gradient(276.46deg, #12324A 12.27%, #204E61 35.49%, #49837A 83.4%);
+}
 
 @theme {
   --font-*: initial;
@@ -67,19 +82,19 @@
     brand (teal) dan putih.
   */
 
-  /* BRAND - Teal (logo icon) R:0 G:153 B:141 */
-  --color-brand-25: #f0fcfb;
-  --color-brand-50: #e0faf8;
-  --color-brand-100: #b3f1ec;
-  --color-brand-200: #80e8e0;
-  --color-brand-300: #4dded3;
-  --color-brand-400: #26d1c3;
-  --color-brand-500: #00998d;
-  --color-brand-600: #028c81;
-  --color-brand-700: #02736a;
-  --color-brand-800: #015952;
-  --color-brand-900: #01403b;
-  --color-brand-950: #002421;
+/* BRAND - Teal-to-navy (palet desain baru dari tim) */
+  --color-brand-25: #f0fbfa;
+  --color-brand-50: #e0f6f4;
+  --color-brand-100: #b3e8e2;
+  --color-brand-200: #80d8ce;
+  --color-brand-300: #4dc8b9;
+  --color-brand-400: #3da597;
+  --color-brand-500: #00838c;
+  --color-brand-600: #017078;
+  --color-brand-700: #00617a;
+  --color-brand-800: #004e68;
+  --color-brand-900: #003f5f;
+  --color-brand-950: #002b3e;
 
   /* SECONDARY - Dark green "Perhutani" text, Pantone 349C */
   --color-secondary-25: #f0fcf7;
@@ -130,10 +145,10 @@
   --color-gray-400: #94a8a3;
   --color-gray-500: #647d77;
   --color-gray-600: #46605a;
-  --color-gray-700: #334b45;
-  --color-gray-800: #1c3530;
-  --color-gray-900: #0f231f;
-  --color-gray-950: #0a1917;
+  --color-gray-700: #103E56;
+  --color-gray-800: #103E56;
+  --color-gray-900: #103E56;
+  --color-gray-950: #103E56;
   --color-gray-dark: #17322c;
 
   --color-orange-25: #fffaf5;
@@ -239,6 +254,7 @@
   }
   body {
     @apply relative font-normal font-outfit z-1 bg-gray-50;
+    color: #103E56;
   }
 }
 
@@ -324,6 +340,23 @@
 
 @utility menu-dropdown-badge-pro-inactive {
   @apply bg-brand-50 group-hover:bg-brand-100;
+}
+
+/* Sidebar text override — sidebar selalu terang, terlepas dari warna teks global body */
+#sidebar {
+  color: white;
+}
+#sidebar h2 {
+  @apply text-white/50;
+}
+#sidebar .menu-item-inactive {
+  @apply text-white/80 hover:bg-white/10 hover:text-white;
+}
+#sidebar .menu-item-icon-inactive {
+  @apply text-white/70 group-hover:text-white;
+}
+#sidebar .menu-dropdown-item-inactive {
+  @apply text-white/70 hover:bg-white/10 hover:text-white;
 }
 
 @utility no-scrollbar {

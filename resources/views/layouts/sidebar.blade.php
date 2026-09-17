@@ -7,7 +7,7 @@
 @endphp
 
 <aside id="sidebar"
-    class="fixed flex flex-col mt-0 top-0 px-5 left-0 bg-white text-gray-900 h-screen transition-all duration-300 ease-in-out z-99999 border-r border-gray-200"
+    class="fixed flex flex-col mt-0 top-0 px-5 left-0 bg-sidebar-gradient h-screen transition-all duration-300 ease-in-out z-99999"
     x-data="{
         openSubmenus: {},
         init() {
@@ -58,15 +58,15 @@
     @mouseenter="if (!$store.sidebar.isExpanded) $store.sidebar.setHovered(true)"
     @mouseleave="$store.sidebar.setHovered(false)">
     <!-- Logo Section -->
-    <div class="pt-8 pb-7 flex"
+    <div class="pt-8 pb-2 flex"
         :class="(!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ?
         'xl:justify-center' :
-        'justify-start'">
+        'justify-center'">
         <a href="/">
             <img x-show="$store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen"
-                class="h-10 w-auto" src="/images/logo/logo.png" alt="Perhutani Alam Wisata Palawi Risorsis" />
+                class="h-36 w-auto" src="/images/logo/econique.png" alt="Perhutani Alam Wisata Palawi Risorsis" />
             <img x-show="!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen"
-                src="/images/logo/logo-icon.png" alt="Logo" class="h-9 w-auto" />
+                src="/images/logo/econique.png" alt="Logo" class="h-9 w-auto" />
         </a>
     </div>
 

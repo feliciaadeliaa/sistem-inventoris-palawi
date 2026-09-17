@@ -11,35 +11,9 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <!-- Theme Store -->
+    <!-- Alpine Stores -->
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.store('theme', {
-                init() {
-                    const savedTheme = localStorage.getItem('theme');
-                    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                    this.theme = savedTheme || systemTheme;
-                    this.updateTheme();
-                },
-                theme: 'light',
-                toggle() {
-                    this.theme = this.theme === 'light' ? 'dark' : 'light';
-                    localStorage.setItem('theme', this.theme);
-                    this.updateTheme();
-                },
-                updateTheme() {
-                    const html = document.documentElement;
-                    const body = document.body;
-                    if (this.theme === 'dark') {
-                        html.classList.add('dark');
-                        body.classList.add('dark', 'bg-gray-900');
-                    } else {
-                        html.classList.remove('dark');
-                        body.classList.remove('dark', 'bg-gray-900');
-                    }
-                }
-            });
-
             Alpine.store('sidebar', {
                 isExpanded: window.innerWidth >= 1280,
                 isMobileOpen: false,
@@ -66,23 +40,10 @@
             });
         });
     </script>
-
-    <!-- Apply dark mode immediately to prevent flash -->
-    <script>
-        (function() {
-            const savedTheme = localStorage.getItem('theme');
-            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            const theme = savedTheme || systemTheme;
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        })();
-    </script>
 </head>
 
 <body
+    class="font-sans"
     x-data="{ 'loaded': true }"
     x-init="$store.sidebar.isExpanded = window.innerWidth >= 1280;
     const checkMobile = () => {

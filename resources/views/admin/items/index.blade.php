@@ -3,10 +3,10 @@
 @section('content')
     <div class="flex flex-wrap items-start justify-between gap-3 mb-6">
         <div>
-            <h2 class="text-2xl font-semibold text-brand-900">
+            <h2 class="page-title">
                 Master Data Barang
             </h2>
-            <p class="mt-1 text-sm text-gray-500">
+            <p class="page-desc">
                 Kelola data aset dan barang inventaris.
             </p>
         </div>
@@ -193,20 +193,37 @@
                                         {{ str_replace('_', ' ', $item->status) }}
                                     </span>
                                 </td>
-                                <td class="sticky-col">
+<td class="sticky-col">
                                     <div class="flex items-center justify-end gap-1.5">
-                                        <a href="{{ route('barang.edit', $item) }}" class="btn btn-sm btn-primary">
-                                            {{ __('Edit') }}
+                                        <a href="{{ route('barang.edit', $item) }}" title="{{ __('Edit') }}" class="icon-btn icon-btn-edit">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                            </svg>
                                         </a>
                                         <button
                                             type="button"
+                                            title="{{ __('Lihat QR') }}"
                                             onclick="openQrModal('{{ route('barang.qr', $item) }}', '{{ $item->nama_barang }}')"
-                                            class="btn btn-sm btn-outline"
+                                            class="icon-btn icon-btn-outline"
                                         >
-                                            {{ __('Lihat QR') }}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="3" y="3" width="7" height="7" rx="1" />
+                                                <rect x="14" y="3" width="7" height="7" rx="1" />
+                                                <rect x="3" y="14" width="7" height="7" rx="1" />
+                                                <path d="M14 14h3v3h-3z" />
+                                                <path d="M21 14h.01" />
+                                                <path d="M14 21h.01" />
+                                                <path d="M21 21h.01" />
+                                                <path d="M18 18h.01" />
+                                            </svg>
                                         </button>
-                                        <a href="{{ route('barang.qr.download', $item) }}" class="btn btn-sm btn-ghost">
-                                            {{ __('Download') }}
+                                        <a href="{{ route('barang.qr.download', $item) }}" title="{{ __('Download') }}" class="icon-btn icon-btn-ghost">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M12 15V3" />
+                                                <path d="m7 10 5 5 5-5" />
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                            </svg>
                                         </a>
                                     </div>
                                 </td>

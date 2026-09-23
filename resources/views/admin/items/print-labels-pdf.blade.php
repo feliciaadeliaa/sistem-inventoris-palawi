@@ -11,44 +11,38 @@
         page-break-after: auto;
     }
 
-    table.grid {
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: fixed;
-    }
-
-    table.grid td {
-        width: 33.33%;
+        table.grid td {
+        width: 25%;
         text-align: center;
         vertical-align: top;
-        padding: 6px;
+        padding: 2px;
     }
 
     .label {
         border: 1px solid #333;
-        padding: 10px;
+        padding: 9px 1px;
         margin: 0 auto;
     }
 
     .logo-wrap {
         text-align: center;
-        margin-bottom: 6px;
+        margin-bottom: 1px;
     }
     .logo-wrap img {
-        width: 28px;
+        width: 20px;
     }
 
     .qr-wrap {
         text-align: center;
-        margin-bottom: 6px;
+        margin-bottom: 1px;
     }
     .qr-wrap img {
-        width: 130px;
+        width: 155px;
         max-width: 100%;
     }
 
-    .nomor { font-size: 11px; font-weight: bold; }
-    .footer { font-size: 8px; margin-top: 4px; color: #333; }
+    .nomor { font-size: 9px; font-weight: bold; margin-bottom: 2px; }
+    .footer { font-size: 6.5px; margin-bottom: 5px; color: #333; line-height: 1.1; }
 </style>
 </head>
 <body>
@@ -67,12 +61,12 @@
                                         <img src="{{ $data['qrData'] }}">
                                     </div>
                                     <div class="nomor">{{ $data['item']->nomor_aktiva_tetap ?? '-' }}</div>
-                                    <div class="footer">Asset milik PT Perhutani Alam Wisata Risorsis</div>
+                                    <div class="footer">PT Perhutani Alam Wisata Risorsis</div>
                                 </div>
                             </td>
                         @endforeach
-                        {{-- Isi sel kosong kalau baris terakhir kurang dari 3 --}}
-                        @for ($i = count($row); $i < 3; $i++)
+                        {{-- Isi sel kosong kalau baris terakhir kurang dari 4 --}}
+                        @for ($i = count($row); $i < 4; $i++)
                             <td></td>
                         @endfor
                     </tr>

@@ -103,99 +103,114 @@ public function index(Request $request)
 
         return match ($format) {
             'pdf' => $this->downloadQrAsPdf($item),
-            'svg' => $this->downloadQrAsSvg($item),
             default => $this->downloadQrAsPng($item),
         };
     }
 
     private function downloadQrAsPng(Item $item)
-    {
-        $pngData = $this->generateLabelPngBinary($item);
+{
+    $pngData = $this->generateLabelPngBinary($item);
 
-        return response($pngData)
-            ->header('Content-Type', 'image/png')
-            ->header('Content-Disposition', 'attachment; filename="qr-'.$item->item_id.'.png"');
+    return response($pngData)
+        ->header('Content-Type', 'image/png')
+        ->header('Content-Disposition', 'attachment; filename="qr-'.$item->item_id.'.png"');
+}
+
+/**
+ * Gambar 1 label (border + logo + QR + nomor aktiva + footer) dan kembalikan binary PNG-nya.
+ * Layout diselaraskan dengan template PDF: garis tepi rapat ke konten.
+ * Dipakai baik untuk download satuan maupun untuk dikumpulkan jadi ZIP massal.
+ */
+private function generateLabelPngBinary(Item $item): string
+{
+    $qrResult = Builder::create()
+        ->writer(new PngWriter())
+        ->data($item->item_id)
+        ->size(400)
+        ->margin(0)
+        ->build();
+
+    $qrImage  = imagecreatefromstring($qrResult->getString());
+    $qrWidth  = imagesx($qrImage);
+    $qrHeight = imagesy($qrImage);
+
+    // Jarak konten ke garis tepi dibuat rapat, senada dengan versi PDF
+    $borderPadding = 0; // jarak dari tepi kanvas ke garis tepi (border)
+    $innerPadding  = 36; // jarak dari garis tepi ke konten (logo/QR/teks)
+    $logoHeight    = 60;
+    $gapLogoQr     = 10;
+    $gapQrNomor    = 24;
+    $gapNomorFooter = 20;
+    $textBlock     = 60;
+
+    $contentWidth  = $qrWidth;
+    $contentHeight = $logoHeight + $gapLogoQr + $qrHeight + $textBlock;
+
+    $canvasWidth  = $contentWidth  + ($innerPadding * 2) + ($borderPadding * 2);
+    $canvasHeight = $contentHeight + ($innerPadding * 2) + ($borderPadding * 2);
+
+    $canvas = imagecreatetruecolor($canvasWidth, $canvasHeight);
+    $white  = imagecolorallocate($canvas, 255, 255, 255);
+    $black  = imagecolorallocate($canvas, 0, 0, 0);
+    $border = imagecolorallocate($canvas, 51, 51, 51); // #333, senada dengan border PDF
+    imagefill($canvas, 0, 0, $white);
+
+    // Gambar garis tepi (border), 1px, mengelilingi seluruh konten
+    imagerectangle(
+        $canvas,
+        $borderPadding,
+        $borderPadding,
+        $canvasWidth - $borderPadding - 1,
+        $canvasHeight - $borderPadding - 1,
+        $border
+    );
+
+    $contentX = $borderPadding + $innerPadding;
+    $currentY = $borderPadding + $innerPadding;
+
+    // Logo
+    $logoPath = public_path('images/logo/logo-palawi.png');
+    if (file_exists($logoPath)) {
+        $logo = imagecreatefrompng($logoPath);
+        $logoOrigW = imagesx($logo);
+        $logoOrigH = imagesy($logo);
+        $newLogoW  = intval($logoHeight * ($logoOrigW / $logoOrigH));
+        $logoX     = intval($contentX + ($contentWidth - $newLogoW) / 2);
+
+        imagecopyresampled($canvas, $logo, $logoX, $currentY, 0, 0, $newLogoW, $logoHeight, $logoOrigW, $logoOrigH);
+        imagedestroy($logo);
     }
+    $currentY += $logoHeight + $gapLogoQr;
 
-    /**
-     * Gambar 1 label (logo + QR + nomor aktiva + footer) dan kembalikan binary PNG-nya.
-     * Dipakai baik untuk download satuan maupun untuk dikumpulkan jadi ZIP massal.
-     */
-    private function generateLabelPngBinary(Item $item): string
+    // QR code
+    $qrX = $contentX;
+    $qrY = $currentY;
+    imagecopy($canvas, $qrImage, $qrX, $qrY, 0, 0, $qrWidth, $qrHeight);
+    imagedestroy($qrImage);
+    $currentY += $qrHeight;
+
+    // Nomor aset & footer
+    $fontPath = base_path('vendor/endroid/qr-code/assets/open_sans.ttf');
+    $textY = $currentY + $gapQrNomor;
+
+    $this->drawCenteredTextInBox($canvas, $item->nomor_aktiva_tetap ?? '-', $fontPath, 12, $black, $contentX, $contentWidth, $textY);
+    $textY += $gapNomorFooter;
+    $this->drawCenteredTextInBox($canvas, 'PT Perhutani Alam Wisata Risorsis', $fontPath, 9, $black, $contentX, $contentWidth, $textY);
+
+    ob_start();
+    imagepng($canvas);
+    $pngData = ob_get_clean();
+    imagedestroy($canvas);
+
+    return $pngData;
+}
+
+    private function drawCenteredTextInBox($canvas, $text, $fontPath, $size, $color, $boxX, $boxWidth, $y)
     {
-        $qrResult = Builder::create()
-            ->writer(new PngWriter())
-            ->data($item->item_id)
-            ->size(400)
-            ->margin(0)
-            ->build();
-
-        $qrImage  = imagecreatefromstring($qrResult->getString());
-        $qrWidth  = imagesx($qrImage);
-        $qrHeight = imagesy($qrImage);
-
-        $padding    = 20;
-        $logoHeight = 60;
-        $textBlock  = 60;
-        $canvasWidth  = $qrWidth + ($padding * 2);
-        $canvasHeight = $padding + $logoHeight + 10 + $qrHeight + $textBlock + $padding;
-
-        $canvas = imagecreatetruecolor($canvasWidth, $canvasHeight);
-        $white  = imagecolorallocate($canvas, 255, 255, 255);
-        $black  = imagecolorallocate($canvas, 0, 0, 0);
-        imagefill($canvas, 0, 0, $white);
-
-        $logoPath = public_path('images/logo/logo-palawi.png');
-        if (file_exists($logoPath)) {
-            $logo = imagecreatefrompng($logoPath);
-            $logoOrigW = imagesx($logo);
-            $logoOrigH = imagesy($logo);
-            $newLogoW  = intval($logoHeight * ($logoOrigW / $logoOrigH));
-            $logoX     = intval(($canvasWidth - $newLogoW) / 2);
-
-            imagecopyresampled($canvas, $logo, $logoX, $padding, 0, 0, $newLogoW, $logoHeight, $logoOrigW, $logoOrigH);
-            imagedestroy($logo);
-        }
-
-        $qrX = $padding;
-        $qrY = $padding + $logoHeight + 10;
-        imagecopy($canvas, $qrImage, $qrX, $qrY, 0, 0, $qrWidth, $qrHeight);
-        imagedestroy($qrImage);
-
-        $fontPath = base_path('vendor/endroid/qr-code/assets/open_sans.ttf');
-        $textY = $qrY + $qrHeight + 24;
-
-        $this->drawCenteredText($canvas, $item->nomor_aktiva_tetap ?? '-', $fontPath, 12, $black, $canvasWidth, $textY);
-        $textY += 20;
-        $this->drawCenteredText($canvas, 'Asset milik PT Perhutani Alam Wisata Risorsis', $fontPath, 9, $black, $canvasWidth, $textY);
-
-        ob_start();
-        imagepng($canvas);
-        $pngData = ob_get_clean();
-        imagedestroy($canvas);
-
-        return $pngData;
-    }
-
-    private function drawCenteredText($canvas, string $text, string $fontPath, int $fontSize, int $color, int $canvasWidth, int $y): void
-    {
-        $bbox = imagettfbbox($fontSize, 0, $fontPath, $text);
-        $textWidth = abs($bbox[2] - $bbox[0]);
-        $x = intval(($canvasWidth - $textWidth) / 2);
-        imagettftext($canvas, $fontSize, 0, $x, $y, $color, $fontPath, $text);
-    }
-
-    private function downloadQrAsSvg(Item $item)
-    {
-        $result = Builder::create()
-            ->writer(new SvgWriter())
-            ->data($item->item_id)
-            ->size(500)
-            ->build();
-
-        return response($result->getString())
-            ->header('Content-Type', 'image/svg+xml')
-            ->header('Content-Disposition', 'attachment; filename="qr-'.$item->item_id.'.svg"');
+        $bbox = imagettfbbox($size, 0, $fontPath, $text);
+        $textWidth = $bbox[2] - $bbox[0];
+        $x = intval($boxX + ($boxWidth - $textWidth) / 2);
+        imagettftext($canvas, $size, 0, $x, $y, $color, $fontPath, $text);
     }
 
     private function downloadQrAsPdf(Item $item)
@@ -214,9 +229,6 @@ public function index(Request $request)
         return $pdf->download('qr-'.$item->item_id.'.pdf');
     }
 
-    /**
-     * Cetak label sebagai 1 file PDF, grid 3x3 (maks 9 label per halaman).
-     */
     public function printLabels(Request $request)
     {
         $request->validate([
@@ -239,8 +251,7 @@ public function index(Request $request)
             ];
         });
 
-        // Bagi jadi grup 9 per halaman, tiap grup dibagi lagi jadi baris isi 3
-        $pages = $itemsWithQr->chunk(9)->map(fn ($page) => $page->chunk(3));
+        $pages = $itemsWithQr->chunk(20)->map(fn ($page) => $page->chunk(4));
 
         $pdf = Pdf::loadView('admin.items.print-labels-pdf', [
             'pages' => $pages,

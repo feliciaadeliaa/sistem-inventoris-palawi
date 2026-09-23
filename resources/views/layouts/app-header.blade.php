@@ -1,5 +1,5 @@
 <header
-    class="sticky top-0 flex w-full bg-white border-gray-200 z-99999 xl:border-b"
+    class="sticky top-0 flex w-full bg-white border-gray-200 z-40 xl:z-99999 xl:border-b"
     x-data="{
         isApplicationMenuOpen: false,
         toggleApplicationMenu() {
@@ -50,7 +50,7 @@
 
             <!-- Logo (mobile only) -->
             <a href="/" class="xl:hidden">
-                <img src="/images/logo/logo.png" alt="Logo" class="h-9 w-auto" />
+                <img src="/images/logo/econique-horizontal.png" alt="Logo" class="h-8 w-auto" />
             </a>
 
             <!-- Application Menu Toggle (mobile only) -->

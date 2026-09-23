@@ -20,29 +20,47 @@ class BarangLookupController extends Controller
      * AJAX: cari barang berdasarkan nama atau kode (item_id).
      * GET /barang/cari?q=...
      */
-    public function search(Request $request)
-    {
-        $query = trim($request->get('q', ''));
+public function search(Request $request)
+{
+    $query = trim($request->get('q', ''));
 
-        if ($query === '') {
-            return response()->json([]);
-        }
+    $hasFilter = $request->filled('category_id')
+        || $request->filled('location_id')
+        || $request->filled('kondisi')
+        || $request->filled('status')
+        || $request->filled('golongan_at')
+        || $request->filled('tahun_dari')
+        || $request->filled('tahun_sampai');
 
-        $items = Item::with(['category', 'location'])
-            ->where('is_active', true)
-            ->where(function ($q) use ($query) {
-                $q->where('nama_barang', 'like', "%{$query}%")
-                  ->orWhere('item_id', 'like', "%{$query}%");
-            })
-            ->limit(10)
-            ->get();
-
-        $isAdmin = $request->user()->role === 'admin';
-
-        return response()->json(
-            $items->map(fn (Item $item) => $this->formatItem($item, $isAdmin))
-        );
+    // Kalau tidak ada keyword sama sekali dan tidak ada filter, jangan query berat.
+    if ($query === '' && ! $hasFilter) {
+        return response()->json([]);
     }
+
+    $items = Item::with(['category', 'location'])
+        ->where('is_active', true)
+        ->when($query !== '', function ($q) use ($query) {
+            $q->where(function ($sub) use ($query) {
+                $sub->where('nama_barang', 'like', "%{$query}%")
+                    ->orWhere('item_id', 'like', "%{$query}%");
+            });
+        })
+        ->when($request->filled('category_id'), fn ($q) => $q->where('category_id', $request->category_id))
+        ->when($request->filled('location_id'), fn ($q) => $q->where('location_id', $request->location_id))
+        ->when($request->filled('kondisi'), fn ($q) => $q->where('kondisi', $request->kondisi))
+        ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
+        ->when($request->filled('golongan_at'), fn ($q) => $q->where('golongan_at', $request->golongan_at))
+        ->when($request->filled('tahun_dari'), fn ($q) => $q->where('tahun_perolehan', '>=', $request->tahun_dari))
+        ->when($request->filled('tahun_sampai'), fn ($q) => $q->where('tahun_perolehan', '<=', $request->tahun_sampai))
+        ->limit(20)
+        ->get();
+
+    $isAdmin = $request->user()->role === 'admin';
+
+    return response()->json(
+        $items->map(fn (Item $item) => $this->formatItem($item, $isAdmin))
+    );
+}
 
     /**
      * AJAX: detail barang berdasarkan item_id (hasil scan QR).

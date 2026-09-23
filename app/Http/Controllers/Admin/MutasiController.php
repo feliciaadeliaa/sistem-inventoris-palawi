@@ -12,24 +12,28 @@ use Illuminate\Support\Facades\Auth;
 class MutasiController extends Controller
 {
     public function index(Request $request)
-    {
-        $locations = Location::orderBy('nama_lokasi')->get();
+{
+    $locations = Location::orderBy('nama_lokasi')->get();
+    $categories = \App\Models\Category::orderBy('nama_kategori')->get();
+    $golonganOptions = Item::distinct()->pluck('golongan_at')->filter()->sort()->values();
 
-        $selectedItem = null;
-        if ($request->filled('item_id')) {
-            $selectedItem = Item::with('location')
-                ->where('item_id', $request->item_id)
-                ->where('is_active', true)
-                ->first();
-        }
-
-        $riwayat = Transaction::with(['item', 'lokasiAsal', 'lokasiTujuan'])
-            ->where('jenis_transaksi', 'Mutasi')
-            ->latest()
-            ->paginate(10);
-
-        return view('admin.mutasi.index', compact('locations', 'selectedItem', 'riwayat'));
+    $selectedItem = null;
+    if ($request->filled('item_id')) {
+        $selectedItem = Item::with('location')
+            ->where('item_id', $request->item_id)
+            ->where('is_active', true)
+            ->first();
     }
+
+    $riwayat = Transaction::with(['item', 'lokasiAsal', 'lokasiTujuan'])
+        ->where('jenis_transaksi', 'Mutasi')
+        ->latest()
+        ->paginate(10);
+
+    return view('admin.mutasi.index', compact(
+        'locations', 'categories', 'golonganOptions', 'selectedItem', 'riwayat'
+    ));
+}
 
     public function store(Request $request)
     {

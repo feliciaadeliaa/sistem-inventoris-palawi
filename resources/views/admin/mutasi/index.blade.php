@@ -17,7 +17,69 @@
     </div>
 @endif
 
+
 <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-8">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+    <div>
+        <label class="form-label">Kategori</label>
+        <select id="filter-category" class="form-control">
+            <option value="">-- Semua --</option>
+            @foreach ($categories as $category)
+                <option value="{{ $category->category_id }}">{{ $category->nama_kategori }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    <div>
+        <label class="form-label">Lokasi</label>
+        <select id="filter-location" class="form-control">
+            <option value="">-- Semua --</option>
+            @foreach ($locations as $location)
+                <option value="{{ $location->id }}">{{ $location->nama_lokasi }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    <div>
+        <label class="form-label">Kondisi</label>
+        <select id="filter-kondisi" class="form-control">
+            <option value="">-- Semua --</option>
+            @foreach (\App\Models\Item::KONDISI_LABELS as $kode => $label)
+                <option value="{{ $kode }}">{{ $kode }} - {{ $label }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    <div>
+        <label class="form-label">Status</label>
+        <select id="filter-status" class="form-control">
+            <option value="">-- Semua --</option>
+            @foreach (\App\Models\Item::STATUS_LABELS as $kode => $label)
+                <option value="{{ $kode }}">{{ $label }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    <div>
+        <label class="form-label">Golongan AT</label>
+        <select id="filter-golongan" class="form-control">
+            <option value="">-- Semua --</option>
+            @foreach ($golonganOptions as $golongan)
+                <option value="{{ $golongan }}">{{ $golongan }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    <div>
+        <label class="form-label">Tahun Perolehan</label>
+        <div class="flex items-center gap-1">
+            <input type="number" id="filter-tahun-dari" placeholder="Dari" class="form-control">
+            <span class="text-gray-400">-</span>
+            <input type="number" id="filter-tahun-sampai" placeholder="Sampai" class="form-control">
+        </div>
+    </div>
+</div>
+
     <input
         type="text"
         id="search-barang"
@@ -122,6 +184,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const formMutasi = document.getElementById('form-mutasi');
     let debounceTimer;
 
+    const filterIds = [
+        'filter-category', 'filter-location', 'filter-kondisi',
+        'filter-status', 'filter-golongan', 'filter-tahun-dari', 'filter-tahun-sampai'
+    ];
+
     function pilihBarang(item) {
         document.getElementById('input-item-id').value = item.item_id;
         document.getElementById('info-nama').textContent = item.nama_barang;
@@ -132,29 +199,58 @@ document.addEventListener('DOMContentLoaded', function () {
         searchInput.value = item.nama_barang;
     }
 
-    searchInput.addEventListener('input', function () {
-        clearTimeout(debounceTimer);
-        const q = this.value.trim();
-        if (q.length < 2) {
+    function buildParams() {
+        const params = new URLSearchParams();
+        const q = searchInput.value.trim();
+        if (q) params.set('q', q);
+
+        params.set('category_id', document.getElementById('filter-category').value);
+        params.set('location_id', document.getElementById('filter-location').value);
+        params.set('kondisi', document.getElementById('filter-kondisi').value);
+        params.set('status', document.getElementById('filter-status').value);
+        params.set('golongan_at', document.getElementById('filter-golongan').value);
+        params.set('tahun_dari', document.getElementById('filter-tahun-dari').value);
+        params.set('tahun_sampai', document.getElementById('filter-tahun-sampai').value);
+
+        return params;
+    }
+
+    function renderResults(items) {
+        searchResults.innerHTML = '';
+        items.forEach(item => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'w-full text-left border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-600';
+            btn.innerHTML = `<span class="font-medium">${item.nama_barang}</span>
+                              <span class="block text-gray-500 dark:text-gray-400 text-sm">${item.item_id} &bull; ${item.lokasi}</span>`;
+            btn.addEventListener('click', () => pilihBarang(item));
+            searchResults.appendChild(btn);
+        });
+    }
+
+    function runSearch() {
+        const params = buildParams();
+        const q = params.get('q') || '';
+        const hasFilter = ['category_id', 'location_id', 'kondisi', 'status', 'golongan_at', 'tahun_dari', 'tahun_sampai']
+            .some(key => params.get(key));
+
+        if (q.length < 2 && !hasFilter) {
             searchResults.innerHTML = '';
             return;
         }
-        debounceTimer = setTimeout(() => {
-            fetch(`${searchUrl}?q=${encodeURIComponent(q)}`)
-                .then(res => res.json())
-                .then(items => {
-                    searchResults.innerHTML = '';
-                    items.forEach(item => {
-                        const btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.className = 'w-full text-left border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-600';
-                        btn.innerHTML = `<span class="font-medium">${item.nama_barang}</span>
-                                          <span class="block text-gray-500 dark:text-gray-400 text-sm">${item.item_id} &bull; ${item.lokasi}</span>`;
-                        btn.addEventListener('click', () => pilihBarang(item));
-                        searchResults.appendChild(btn);
-                    });
-                });
-        }, 300);
+
+        fetch(`${searchUrl}?${params.toString()}`)
+            .then(res => res.json())
+            .then(renderResults);
+    }
+
+    searchInput.addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(runSearch, 300);
+    });
+
+    filterIds.forEach(id => {
+        document.getElementById(id).addEventListener('change', runSearch);
     });
 });
 </script>

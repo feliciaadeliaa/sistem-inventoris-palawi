@@ -89,6 +89,33 @@
 .badge-red    { @apply bg-error-50 text-error-700; }
 .badge-blue   { @apply bg-blue-light-50 text-blue-light-700; }
 .badge-slate  { @apply bg-gray-100 text-gray-600; }
+.badge-purple { @apply bg-purple-100 text-purple-700; }
+
+.stat-label { @apply text-xs text-gray-500; }
+.stat-value { @apply text-2xl font-bold mt-1; }
+.stat-value-brand { @apply text-brand-600; }
+.stat-value-green { @apply text-secondary-600; }
+.stat-value-blue  { @apply text-blue-light-600; }
+.stat-value-amber { @apply text-warning-600; }
+.stat-value-red   { @apply text-error-600; }
+.stat-value-gray  { @apply text-gray-500; }
+
+.panel-title { @apply font-semibold text-gray-800 mb-4; }
+
+.list-row       { @apply flex items-center justify-between border-b border-gray-100 pb-2 last:border-0; }
+.list-row-block { @apply border-b border-gray-100 pb-2 last:border-0; }
+
+.page-title { @apply text-xl font-semibold text-gray-800; }
+.page-desc  { @apply mt-1 text-sm text-gray-500; }
+
+.icon-btn {
+    @apply inline-flex items-center justify-center rounded-lg p-2 transition disabled:opacity-50 disabled:cursor-not-allowed;
+}
+.icon-btn-edit   { @apply bg-brand-50 text-brand-700 hover:bg-brand-100; }
+.icon-btn-danger { @apply bg-error-50 text-error-600 hover:bg-error-100; }
+.icon-btn-success { @apply bg-secondary-50 text-secondary-700 hover:bg-secondary-100; }
+.icon-btn-outline { @apply border border-gray-300 bg-white text-brand-700 hover:bg-brand-50; }
+.icon-btn-ghost    { @apply text-gray-500 hover:bg-gray-100 hover:text-gray-700; }
 
 @theme {
   --font-*: initial;

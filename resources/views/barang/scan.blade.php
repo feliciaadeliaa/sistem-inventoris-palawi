@@ -2,26 +2,26 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto py-8 px-4">
-    <h1 class="text-2xl font-semibold text-gray-800 dark:text-white mb-6">Scan atau cari barang</h1>
+    <h1 class="page-title mb-6">Scan atau cari barang</h1>
 
     {{-- Area Kamera Scan QR --}}
-    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl flex flex-col items-center justify-center py-16 mb-6 bg-gray-50 dark:bg-gray-900/40">
+    <div class="border-2 border-dashed border-brand-200 rounded-xl flex flex-col items-center justify-center py-16 mb-6 bg-brand-50/40">
         <div id="qr-reader" class="w-full max-w-xs"></div>
-        <div id="qr-placeholder" class="flex flex-col items-center text-gray-500 dark:text-gray-400">
+        <div id="qr-placeholder" class="flex flex-col items-center text-gray-500">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2M8 12h8" />
             </svg>
             <span>Area kamera scan QR</span>
-            <button id="btn-start-scan" type="button" class="mt-4 text-sm text-green-600 dark:text-green-500 underline">
+            <button id="btn-start-scan" type="button" class="btn btn-sm btn-outline mt-4">
                 Aktifkan kamera
             </button>
         </div>
     </div>
 
     <div class="flex items-center gap-4 mb-6">
-        <div class="flex-1 border-t border-gray-300 dark:border-gray-700"></div>
-        <span class="text-gray-500 dark:text-gray-500 text-sm">atau</span>
-        <div class="flex-1 border-t border-gray-300 dark:border-gray-700"></div>
+        <div class="flex-1 border-t border-gray-300"></div>
+        <span class="text-gray-500 text-sm">atau</span>
+        <div class="flex-1 border-t border-gray-300"></div>
     </div>
 
     {{-- Search bar --}}
@@ -29,46 +29,46 @@
         type="text"
         id="search-barang"
         placeholder="Cari nama atau kode barang"
-        class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-white placeholder:text-gray-400 rounded-lg px-4 py-3 mb-6 focus:outline-none focus:ring-2 focus:ring-brand-500"
+        class="form-control h-auto px-4 py-3 mb-6"
         autocomplete="off"
     >
     <div id="search-results" class="mb-6 space-y-2"></div>
 
     {{-- Hasil scan / hasil pilih --}}
-    <div id="hasil-scan" class="hidden border border-gray-200 dark:border-gray-700 rounded-xl p-5 bg-white dark:bg-gray-900/40">
-        <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">Hasil scan</p>
-        <h2 id="hasil-nama" class="text-gray-800 dark:text-white text-lg font-semibold"></h2>
-        <p id="hasil-info" class="text-gray-500 dark:text-gray-400 text-sm mb-4"></p>
+    <div id="hasil-scan" class="hidden card card-pad">
+        <p class="stat-label mb-2">Hasil scan</p>
+        <h2 id="hasil-nama" class="text-gray-800 text-lg font-semibold"></h2>
+        <p id="hasil-info" class="text-gray-500 text-sm mb-4"></p>
 
         @if(auth()->user()->role === 'admin')
             {{-- Admin: riwayat transaksi barang ini --}}
             <div id="riwayat-transaksi" class="mb-4 space-y-2"></div>
 
-            <p class="text-gray-500 dark:text-gray-400 text-sm mb-2">Proses transaksi</p>
+            <p class="stat-label mb-2">Proses transaksi</p>
             <div class="flex flex-wrap gap-3">
-                <button type="button" data-action="stock_out" class="hasil-action-btn border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+                <button type="button" data-action="stock_out" class="hasil-action-btn btn btn-outline">
                     Stock Out
                 </button>
-                <button type="button" data-action="mutasi" class="hasil-action-btn border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+                <button type="button" data-action="mutasi" class="hasil-action-btn btn btn-outline">
                     Mutasi
                 </button>
-                <button type="button" data-action="perbaikan" class="hasil-action-btn border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+                <button type="button" data-action="perbaikan" class="hasil-action-btn btn btn-outline">
                     Perbaikan
                 </button>
-                <button type="button" data-action="kerusakan" class="hasil-action-btn border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+                <button type="button" data-action="kerusakan" class="hasil-action-btn btn btn-outline">
                     Kerusakan
                 </button>
             </div>
         @else
             {{-- User: ajukan transaksi --}}
             <div class="flex flex-wrap gap-3">
-                <button type="button" data-action="peminjaman" class="hasil-action-btn border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+                <button type="button" data-action="peminjaman" class="hasil-action-btn btn btn-outline">
                     Ajukan peminjaman
                 </button>
-                <button type="button" data-action="perbaikan" class="hasil-action-btn border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+                <button type="button" data-action="perbaikan" class="hasil-action-btn btn btn-outline">
                     Ajukan perbaikan
                 </button>
-                <button type="button" data-action="kerusakan" class="hasil-action-btn border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white text-sm rounded-lg px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+                <button type="button" data-action="kerusakan" class="hasil-action-btn btn btn-outline">
                     Lapor rusak
                 </button>
             </div>
@@ -103,6 +103,14 @@ document.addEventListener('DOMContentLoaded', function () {
         dikembalikan: 'Dikembalikan',
     };
 
+    const statusBadgeClass = {
+        selesai: 'badge-green',
+        menunggu_approval: 'badge-amber',
+        disetujui: 'badge-green',
+        ditolak: 'badge-red',
+        dikembalikan: 'badge-blue',
+    };
+
     const jenisLabel = {
         stock_in: 'Stock In',
         stock_out: 'Stock Out',
@@ -133,17 +141,17 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!container) return;
 
         if (transactions.length === 0) {
-            container.innerHTML = '<p class="text-gray-500 dark:text-gray-500 text-sm">Belum ada riwayat transaksi.</p>';
+            container.innerHTML = '<p class="text-gray-500 text-sm">Belum ada riwayat transaksi.</p>';
             return;
         }
 
         container.innerHTML = transactions.map(t => `
-            <div class="flex items-center justify-between bg-gray-100 dark:bg-gray-800/60 rounded-lg px-3 py-2 text-sm">
+            <div class="flex items-center justify-between bg-brand-50/60 rounded-lg px-3 py-2 text-sm">
                 <div>
-                    <span class="text-gray-800 dark:text-white font-medium">${jenisLabel[t.jenis_transaksi] || t.jenis_transaksi}</span>
-                    <span class="block text-gray-500 dark:text-gray-400">${t.user} · ${t.tanggal}</span>
+                    <span class="text-gray-800 font-medium">${jenisLabel[t.jenis_transaksi] || t.jenis_transaksi}</span>
+                    <span class="block text-gray-500">${t.user} · ${t.tanggal}</span>
                 </div>
-                <span class="text-gray-600 dark:text-gray-300 text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1">
+                <span class="badge ${statusBadgeClass[t.status] || 'badge-slate'}">
                     ${statusLabel[t.status] || t.status}
                 </span>
             </div>
@@ -172,15 +180,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     items.forEach(item => {
                         const btn = document.createElement('button');
                         btn.type = 'button';
-                        btn.className = 'w-full text-left bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-white rounded-lg px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800';
+                        btn.className = 'w-full text-left bg-white border border-gray-200 text-gray-800 rounded-lg px-4 py-3 hover:bg-brand-50 transition';
                         btn.innerHTML = `<span class="font-medium">${item.nama_barang}</span>
-                                          <span class="block text-gray-500 dark:text-gray-400 text-sm">${item.item_id} · ${item.lokasi}</span>`;
+                                          <span class="block text-gray-500 text-sm">${item.item_id} · ${item.lokasi}</span>`;
                         btn.addEventListener('click', () => tampilkanHasil(item));
                         searchResults.appendChild(btn);
                     });
                 })
                 .catch(() => {
-                    searchResults.innerHTML = '<p class="text-red-500 dark:text-red-400 text-sm">Gagal mencari barang.</p>';
+                    searchResults.innerHTML = '<p class="text-error-600 text-sm">Gagal mencari barang.</p>';
                 });
         }, 300);
     });

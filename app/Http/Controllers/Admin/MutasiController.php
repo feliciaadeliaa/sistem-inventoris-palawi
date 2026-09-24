@@ -1,39 +1,49 @@
 <?php
-
+// app/Http/Controllers/Admin/MutasiController.php
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\MutasiExport;
 use App\Http\Controllers\Controller;
 use App\Models\Item;
 use App\Models\Location;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MutasiController extends Controller
 {
     public function index(Request $request)
-{
-    $locations = Location::orderBy('nama_lokasi')->get();
-    $categories = \App\Models\Category::orderBy('nama_kategori')->get();
-    $golonganOptions = Item::distinct()->pluck('golongan_at')->filter()->sort()->values();
+    {
+        $locations = Location::orderBy('nama_lokasi')->get();
+        $categories = \App\Models\Category::orderBy('nama_kategori')->get();
+        $golonganOptions = Item::distinct()->pluck('golongan_at')->filter()->sort()->values();
 
-    $selectedItem = null;
-    if ($request->filled('item_id')) {
-        $selectedItem = Item::with('location')
-            ->where('item_id', $request->item_id)
-            ->where('is_active', true)
-            ->first();
+        $selectedItem = null;
+        if ($request->filled('item_id')) {
+            $selectedItem = Item::with('location')
+                ->where('item_id', $request->item_id)
+                ->where('is_active', true)
+                ->first();
+        }
+
+        $riwayatQuery = Transaction::with(['item', 'lokasiAsal', 'lokasiTujuan'])
+            ->where('jenis_transaksi', 'Mutasi');
+
+        if ($request->filled('date_from')) {
+            $riwayatQuery->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $riwayatQuery->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $sort = $request->get('sort', 'desc');
+        $riwayat = $riwayatQuery->orderBy('created_at', $sort)->paginate(10)->withQueryString();
+
+        return view('admin.mutasi.index', compact(
+            'locations', 'categories', 'golonganOptions', 'selectedItem', 'riwayat'
+        ));
     }
-
-    $riwayat = Transaction::with(['item', 'lokasiAsal', 'lokasiTujuan'])
-        ->where('jenis_transaksi', 'Mutasi')
-        ->latest()
-        ->paginate(10);
-
-    return view('admin.mutasi.index', compact(
-        'locations', 'categories', 'golonganOptions', 'selectedItem', 'riwayat'
-    ));
-}
 
     public function store(Request $request)
     {
@@ -59,10 +69,19 @@ class MutasiController extends Controller
             'lokasi_tujuan_id' => $validated['lokasi_tujuan_id'],
         ]);
 
-        // Lokasi barang BELUM diubah di sini - menunggu approval GM
-
         return redirect()
             ->route('admin.transaksi.mutasi.index')
             ->with('success', 'Mutasi lokasi berhasil diajukan, menunggu approval GM.');
+    }
+
+    public function export(Request $request)
+    {
+        $ids = array_filter(explode(',', $request->get('selected_ids', '')));
+        $filters = $request->only(['date_from', 'date_to', 'sort']);
+
+        return Excel::download(
+            new MutasiExport($filters, $ids),
+            'mutasi-' . now()->format('Ymd_His') . '.xlsx'
+        );
     }
 }

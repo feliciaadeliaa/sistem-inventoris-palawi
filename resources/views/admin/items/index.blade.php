@@ -122,13 +122,20 @@
     {{-- Form cetak label: membungkus tabel, karena checkbox ada di dalamnya --}}
     <form id="print-labels-form" method="GET">
 
-        <div class="mb-4 flex items-center justify-start pl-4">
-            <label class="flex items-center gap-2 text-sm text-gray-600">
-                <input type="checkbox" class="h-4 w-4 rounded border-gray-300 accent-brand-600"
-                    onclick="document.querySelectorAll('.qr-checkbox').forEach(cb => cb.checked = this.checked)">
-                {{ __('Pilih Semua') }}
-            </label>
+    <div class="mb-4 flex items-center justify-between pl-4 pr-2">
+        <label class="flex items-center gap-2 text-sm text-gray-600">
+            <input type="checkbox" id="select-all-checkbox"
+                class="h-4 w-4 rounded border-gray-300 accent-brand-600">
+            {{ __('Pilih Semua (halaman ini)') }}
+        </label>
+
+        <div class="flex items-center gap-3 text-sm text-gray-600">
+            <span><span id="selected-count" class="font-semibold text-brand-700">0</span> {{ __('item terpilih') }}</span>
+            <button type="button" id="clear-selection-btn" class="text-red-500 hover:underline text-xs">
+                {{ __('Reset Pilihan') }}
+            </button>
         </div>
+    </div>
 
         <div class="card overflow-hidden">
             <div class="overflow-x-auto">
@@ -281,4 +288,91 @@
             document.getElementById('qr-modal').classList.remove('flex');
         }
     </script>
+
+    <script>
+    const QR_SELECTION_KEY = 'barang_selected_qr_ids';
+
+    function getSelectedIds() {
+        try {
+            return new Set(JSON.parse(sessionStorage.getItem(QR_SELECTION_KEY)) || []);
+        } catch (e) {
+            return new Set();
+        }
+    }
+
+    function saveSelectedIds(idsSet) {
+        sessionStorage.setItem(QR_SELECTION_KEY, JSON.stringify(Array.from(idsSet)));
+    }
+
+    function updateCounter() {
+        document.getElementById('selected-count').textContent = getSelectedIds().size;
+    }
+
+    function updateSelectAllState() {
+        const checkboxes = document.querySelectorAll('.qr-checkbox');
+        const selectAll = document.getElementById('select-all-checkbox');
+        if (!checkboxes.length) {
+            selectAll.checked = false;
+            return;
+        }
+        selectAll.checked = Array.from(checkboxes).every(cb => cb.checked);
+    }
+
+    function syncCheckboxesWithStorage() {
+        const selected = getSelectedIds();
+        document.querySelectorAll('.qr-checkbox').forEach(cb => {
+            cb.checked = selected.has(cb.value);
+        });
+        updateSelectAllState();
+        updateCounter();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        syncCheckboxesWithStorage();
+
+        // Checkbox per baris
+        document.querySelectorAll('.qr-checkbox').forEach(cb => {
+            cb.addEventListener('change', () => {
+                const selected = getSelectedIds();
+                cb.checked ? selected.add(cb.value) : selected.delete(cb.value);
+                saveSelectedIds(selected);
+                updateSelectAllState();
+                updateCounter();
+            });
+        });
+
+        // Pilih semua (khusus baris di halaman ini)
+        document.getElementById('select-all-checkbox').addEventListener('change', function () {
+            const selected = getSelectedIds();
+            document.querySelectorAll('.qr-checkbox').forEach(cb => {
+                cb.checked = this.checked;
+                this.checked ? selected.add(cb.value) : selected.delete(cb.value);
+            });
+            saveSelectedIds(selected);
+            updateCounter();
+        });
+
+        // Reset semua pilihan (lintas halaman)
+        document.getElementById('clear-selection-btn').addEventListener('click', () => {
+            sessionStorage.removeItem(QR_SELECTION_KEY);
+            syncCheckboxesWithStorage();
+        });
+
+        // Sebelum submit cetak, sisipkan ID dari halaman lain yang tidak sedang tertampil
+        document.getElementById('print-labels-form').addEventListener('submit', function () {
+            const currentPageIds = new Set(
+                Array.from(document.querySelectorAll('.qr-checkbox')).map(cb => cb.value)
+            );
+            getSelectedIds().forEach(id => {
+                if (!currentPageIds.has(id)) {
+                    const hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = 'ids[]';
+                    hidden.value = id;
+                    this.appendChild(hidden);
+                }
+            });
+        });
+    });
+</script>
 @endsection

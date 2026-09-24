@@ -1,23 +1,26 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="mb-4">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-white leading-tight">
+    <div class="mb-6">
+        <h2 class="page-title">
             {{ __('Profile') }}
         </h2>
+        <p class="page-desc">
+            {{ __('Kelola informasi akun dan keamanan kamu.') }}
+        </p>
     </div>
 
     @if (session('status') === 'profile-updated')
-        <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-500/10 dark:text-green-400">
+        <div class="mb-4 p-4 bg-secondary-50 text-secondary-700 rounded-lg text-sm">
             {{ __('Profil berhasil diperbarui.') }}
         </div>
     @endif
 
     <div class="grid grid-cols-1 gap-6">
 
-        <!-- Avatar + Info Dasar -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-            <h3 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90">
+        {{-- Avatar + Info Dasar --}}
+        <div class="card card-pad">
+            <h3 class="panel-title">
                 {{ __('Informasi Profil') }}
             </h3>
 
@@ -25,52 +28,52 @@
                 @csrf
                 @method('patch')
 
-                <!-- Avatar -->
+                {{-- Avatar --}}
                 <div class="flex items-center gap-5">
                     <img
                         src="{{ $user->avatar ? asset('storage/' . $user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random' }}"
                         alt="{{ $user->name }}"
-                        class="h-20 w-20 rounded-full object-cover"
+                        class="h-20 w-20 rounded-full object-cover border border-gray-200"
                     />
                     <div class="flex-1">
-                        <label for="avatar" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        <label for="avatar" class="form-label">
                             {{ __('Foto Profil') }}
                         </label>
                         <input type="file" id="avatar" name="avatar" accept="image/*"
-                            class="block w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand-600 hover:file:bg-brand-100 dark:text-gray-400 dark:file:bg-white/5 dark:file:text-brand-400" />
+                            class="block w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand-600 hover:file:bg-brand-100" />
                         @error('avatar')
                             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
-                <!-- Name -->
+                {{-- Name --}}
                 <div>
-                    <label for="name" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    <label for="name" class="form-label">
                         {{ __('Nama') }}
                     </label>
                     <input type="text" id="name" name="name" value="{{ old('name', $user->name) }}" required
-                        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                        class="form-control" />
                     @error('name')
                         <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Email -->
+                {{-- Email --}}
                 <div>
-                    <label for="email" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    <label for="email" class="form-label">
                         {{ __('Email') }}
                     </label>
                     <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}" required
-                        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                        class="form-control" />
                     @error('email')
                         <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
                     @enderror
 
                     @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
-                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        <p class="mt-2 text-sm text-gray-600">
                             {{ __('Email kamu belum diverifikasi.') }}
-                            <button form="send-verification" class="text-brand-500 underline hover:text-brand-600">
+                            <button form="send-verification" class="text-brand-600 underline hover:text-brand-700">
                                 {{ __('Klik untuk kirim ulang email verifikasi.') }}
                             </button>
                         </p>
@@ -78,8 +81,7 @@
                 </div>
 
                 <div>
-                    <button type="submit"
-                        class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 rounded-lg px-5 py-2.5 text-sm font-medium text-white transition">
+                    <button type="submit" class="btn btn-primary">
                         {{ __('Simpan') }}
                     </button>
                 </div>
@@ -92,9 +94,9 @@
             @endif
         </div>
 
-        <!-- Ganti Password -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-            <h3 class="mb-5 text-lg font-medium text-gray-800 dark:text-white/90">
+        {{-- Ganti Password --}}
+        <div class="card card-pad">
+            <h3 class="panel-title">
                 {{ __('Ubah Password') }}
             </h3>
 
@@ -103,58 +105,57 @@
                 @method('put')
 
                 <div>
-                    <label for="current_password" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    <label for="current_password" class="form-label">
                         {{ __('Password Saat Ini') }}
                     </label>
                     <input type="password" id="current_password" name="current_password" autocomplete="current-password"
-                        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                        class="form-control" />
                     @error('current_password', 'updatePassword')
                         <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label for="password" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    <label for="password" class="form-label">
                         {{ __('Password Baru') }}
                     </label>
                     <input type="password" id="password" name="password" autocomplete="new-password"
-                        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                        class="form-control" />
                     @error('password', 'updatePassword')
                         <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <label for="password_confirmation" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    <label for="password_confirmation" class="form-label">
                         {{ __('Konfirmasi Password Baru') }}
                     </label>
                     <input type="password" id="password_confirmation" name="password_confirmation" autocomplete="new-password"
-                        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                        class="form-control" />
                     @error('password_confirmation', 'updatePassword')
                         <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <button type="submit"
-                        class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 rounded-lg px-5 py-2.5 text-sm font-medium text-white transition">
+                    <button type="submit" class="btn btn-primary">
                         {{ __('Simpan Password') }}
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- Hapus Akun -->
-        <div class="rounded-2xl border border-error-200 bg-white p-6 dark:border-error-800 dark:bg-white/[0.03]">
-            <h3 class="mb-2 text-lg font-medium text-gray-800 dark:text-white/90">
+        {{-- Hapus Akun --}}
+        <div class="card card-pad border border-error-200">
+            <h3 class="panel-title mb-2">
                 {{ __('Hapus Akun') }}
             </h3>
-            <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">
+            <p class="mb-5 text-sm text-gray-500">
                 {{ __('Setelah akun dihapus, semua data akan hilang secara permanen. Pastikan kamu sudah yakin sebelum melanjutkan.') }}
             </p>
 
             <button type="button" onclick="document.getElementById('delete-account-form').classList.toggle('hidden')"
-                class="rounded-lg border border-error-500 px-5 py-2.5 text-sm font-medium text-error-500 transition hover:bg-error-50 dark:hover:bg-error-500/10">
+                class="btn border border-error-500 bg-white text-error-500 hover:bg-error-50">
                 {{ __('Hapus Akun Saya') }}
             </button>
 
@@ -163,18 +164,17 @@
                 @method('delete')
 
                 <div>
-                    <label for="delete_password" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    <label for="delete_password" class="form-label">
                         {{ __('Masukkan password untuk konfirmasi') }}
                     </label>
                     <input type="password" id="delete_password" name="password"
-                        class="dark:bg-dark-900 shadow-theme-xs focus:border-error-300 focus:ring-error-500/10 h-11 w-full max-w-sm rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                        class="form-control max-w-sm" />
                     @error('password', 'userDeletion')
                         <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <button type="submit"
-                    class="rounded-lg bg-error-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-error-600">
+                <button type="submit" class="btn bg-error-500 text-white hover:bg-error-600">
                     {{ __('Konfirmasi Hapus Akun') }}
                 </button>
             </form>

@@ -95,14 +95,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('stock-in', [StockInController::class, 'index'])->name('stock-in.index');
     Route::patch('stock-in/{transaction}/confirm-return', [StockInController::class, 'confirmReturn'])->name('stock-in.confirm-return');
+    Route::get('stock-in/export', [StockInController::class, 'export'])->name('stock-in.export');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin/transaksi')->name('admin.transaksi.')->group(function () {
     Route::get('stock-out', [AdminStockOutController::class, 'index'])->name('stock-out.index');
     Route::patch('stock-out/{transaction}/approve', [AdminStockOutController::class, 'approve'])->name('stock-out.approve');
     Route::patch('stock-out/{transaction}/reject', [AdminStockOutController::class, 'reject'])->name('stock-out.reject');
+    Route::get('stock-out/export', [AdminStockOutController::class, 'export'])->name('stock-out.export');
+
     Route::get('mutasi', [MutasiController::class, 'index'])->name('mutasi.index');
     Route::post('mutasi', [MutasiController::class, 'store'])->name('mutasi.store');
+    Route::get('mutasi/export', [MutasiController::class, 'export'])->name('mutasi.export');
 
     // Perbaikan (admin) - sementara coming soon
     Route::get('perbaikan', fn () => view('coming-soon', ['feature' => 'Perbaikan']))->name('perbaikan.index');

@@ -7,6 +7,8 @@ use App\Models\Item;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Exports\PeminjamanSayaExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StockOutController extends Controller
 {
@@ -84,5 +86,16 @@ class StockOutController extends Controller
 
         return redirect()->route('peminjaman.index')
             ->with('success', 'Pengajuan peminjaman berhasil dikirim, menunggu approval admin.');
+    }
+
+    public function export(Request $request)
+    {
+        $ids = array_filter(explode(',', $request->get('selected_ids', '')));
+        $filters = $request->only(['date_from', 'date_to', 'sort']);
+
+        return Excel::download(
+            new PeminjamanSayaExport($filters, $ids),
+            'riwayat-peminjaman-' . now()->format('Ymd_His') . '.xlsx'
+        );
     }
 }

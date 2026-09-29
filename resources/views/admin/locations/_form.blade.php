@@ -1,67 +1,94 @@
 @php
     $location = $location ?? null;
+    $isEdit = $location && $location->exists;
 @endphp
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl">
+    {{-- Kode klaster: 1 digit --}}
     <div>
-        <label for="nama_lokasi" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            {{ __('Nama Lokasi') }}
+        <label for="kode_unit_bisnis" class="form-label">
+            {{ __('Kode Klaster') }}
         </label>
-        <input type="text" id="nama_lokasi" name="nama_lokasi" value="{{ old('nama_lokasi', $location->nama_lokasi ?? '') }}" required
-            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-        @error('nama_lokasi')
+        @if ($isEdit)
+            <input type="text" id="kode_unit_bisnis" value="{{ $location->kode_unit_bisnis }}" readonly
+                class="form-control bg-gray-50" />
+        @else
+            <input type="text" id="kode_unit_bisnis" name="kode_unit_bisnis"
+                value="{{ old('kode_unit_bisnis') }}" required
+                maxlength="1" inputmode="numeric" pattern="[0-9]" placeholder="1"
+                class="form-control" />
+            <p class="mt-1.5 text-sm text-gray-400">{{ __('1 digit angka, contoh: 1') }}</p>
+        @endif
+        @error('kode_unit_bisnis')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
     </div>
 
+    {{-- Nama klaster --}}
     <div>
-        <label for="kode_lokasi" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            {{ __('Kode Lokasi') }}
+        <label for="unit_bisnis" class="form-label">
+            {{ __('Nama Klaster') }}
         </label>
-        <input type="text" id="kode_lokasi" name="kode_lokasi" value="{{ old('kode_lokasi', $location->kode_lokasi ?? '') }}"
-            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-        @error('kode_lokasi')
-            <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
-        @enderror
-    </div>
-
-    <div>
-        <label for="wilayah" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            {{ __('Wilayah') }}
-        </label>
-        <input type="text" id="wilayah" name="wilayah" value="{{ old('wilayah', $location->wilayah ?? '') }}"
-            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-        @error('wilayah')
-            <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
-        @enderror
-    </div>
-
-    <div>
-        <label for="unit_bisnis" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            {{ __('Unit Bisnis') }}
-        </label>
-        <input type="text" id="unit_bisnis" name="unit_bisnis" value="{{ old('unit_bisnis', $location->unit_bisnis ?? '') }}"
-            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+        @if ($isEdit)
+            <input type="text" id="unit_bisnis" value="{{ $location->unit_bisnis }}" readonly
+                class="form-control bg-gray-50" />
+        @else
+            <input type="text" id="unit_bisnis" name="unit_bisnis"
+                value="{{ old('unit_bisnis') }}" required
+                placeholder="KLASTER MALANG"
+                class="form-control" />
+            <p class="mt-1.5 text-sm text-gray-400">{{ __('Satu kode klaster harus punya nama yang sama.') }}</p>
+        @endif
         @error('unit_bisnis')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
     </div>
 
+    {{-- Kode lokasi: 2 digit --}}
     <div>
-        <label for="sub_unit_bisnis" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            {{ __('Sub Unit Bisnis') }}
+        <label for="kode_lokasi" class="form-label">
+            {{ __('Kode Lokasi') }}
         </label>
-        <input type="text" id="sub_unit_bisnis" name="sub_unit_bisnis" value="{{ old('sub_unit_bisnis', $location->sub_unit_bisnis ?? '') }}"
-            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-        @error('sub_unit_bisnis')
+        @if ($isEdit)
+            <input type="text" id="kode_lokasi" value="{{ $location->kode_lokasi }}" readonly
+                class="form-control bg-gray-50" />
+        @else
+            <input type="text" id="kode_lokasi" name="kode_lokasi"
+                value="{{ old('kode_lokasi') }}" required
+                maxlength="2" inputmode="numeric" pattern="[0-9]{2}" placeholder="01"
+                class="form-control" />
+            <p class="mt-1.5 text-sm text-gray-400">{{ __('2 digit angka dan unik, contoh: 01') }}</p>
+        @endif
+        @error('kode_lokasi')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
     </div>
+
+    {{-- Nama wisata --}}
+    <div>
+        <label for="nama_wisata" class="form-label">
+            {{ __('Nama Wisata') }}
+        </label>
+        <input type="text" id="nama_wisata" name="nama_wisata"
+            value="{{ old('nama_wisata', $location->nama_wisata ?? '') }}" required
+            class="form-control" />
+        @error('nama_wisata')
+            <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
+        @enderror
+    </div>
+
+    @if ($isEdit)
+        <div class="md:col-span-2">
+            <p class="text-sm text-gray-500">
+                {{ __('Kode klaster dan kode lokasi membentuk nomor aktiva tetap, jadi tidak bisa diubah. Kode gabungan:') }}
+                <span class="font-medium text-gray-700">{{ $location->kode_gabungan }}</span>
+            </p>
+        </div>
+    @endif
 </div>
 
 <div class="mt-6">
-    <button type="submit"
-        class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 rounded-lg px-5 py-2.5 text-sm font-medium text-white transition">
+    <button type="submit" class="btn btn-primary">
         {{ __('Simpan') }}
     </button>
 </div>

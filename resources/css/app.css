@@ -806,14 +806,14 @@
   @apply text-gray-900 bg-white;
 }
 .fc-theme-standard th {
-  @apply !border-x-0 border-t !border-gray-200 bg-gray-50 !text-left;
+  @apply !border-x-0 border-t !border-gray-200 bg-brand-50 !text-left;
 }
 .fc-theme-standard td,
 .fc-theme-standard .fc-scrollgrid {
   @apply !border-gray-200;
 }
 .fc .fc-col-header-cell-cushion {
-  @apply !px-5 !py-4 text-sm font-medium uppercase text-gray-400;
+  @apply !px-5 !py-4 text-xs font-semibold uppercase tracking-wide text-brand-700;
 }
 .fc .fc-daygrid-day.fc-day-today {
   @apply bg-transparent;

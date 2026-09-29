@@ -1,22 +1,21 @@
 <?php
-// app/Http/Requests/UpdateLocationRequest.php
+
 namespace App\Http\Requests;
 
-use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateLocationRequest extends StoreLocationRequest
+class UpdateLocationRequest extends FormRequest
 {
+    public function authorize(): bool
+    {
+        return true;
+    }
+
     public function rules(): array
     {
+        // Saat edit hanya Nama Wisata yang boleh berubah.
         return [
-            'nama_lokasi' => ['required', 'string', 'max:255'],
-            'kode_lokasi' => [
-                'nullable', 'string', 'max:50',
-                Rule::unique('locations', 'kode_lokasi')->ignore($this->route('location')),
-            ],
-            'wilayah' => ['nullable', 'string', 'max:255'],
-            'unit_bisnis' => ['nullable', 'string', 'max:255'],
-            'sub_unit_bisnis' => ['nullable', 'string', 'max:255'],
+            'nama_wisata' => ['required', 'string', 'max:255'],
         ];
     }
 }

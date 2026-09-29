@@ -15,6 +15,15 @@ class StockOutController extends Controller
     {
         $query = Transaction::with(['item', 'user'])->where('jenis_transaksi', 'Stock Out');
 
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where(function ($sub) use ($search) {
+                $sub->whereHas('item', fn ($i) => $i->where('nama_barang', 'like', "%{$search}%"))
+                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"))
+                    ->orWhere('keterangan', 'like', "%{$search}%");
+            });
+        }
+
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }

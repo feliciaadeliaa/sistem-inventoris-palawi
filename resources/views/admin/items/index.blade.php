@@ -11,7 +11,7 @@
             </p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
+               <div class="flex flex-wrap items-center gap-2">
             <button type="submit" form="print-labels-form" formaction="{{ route('barang.print-labels') }}" formtarget="_blank"
                 class="btn btn-outline">
                 Cetak as PDF
@@ -20,6 +20,9 @@
                 class="btn btn-outline">
                 Cetak as PNG (ZIP)
             </button>
+            <a href="{{ route('barang.import.form') }}" class="btn btn-outline">
+                Import Excel
+            </a>
             <a href="{{ route('barang.create') }}" class="btn btn-primary">
                 + Tambah Barang
             </a>
@@ -122,23 +125,24 @@
     {{-- Form cetak label: membungkus tabel, karena checkbox ada di dalamnya --}}
     <form id="print-labels-form" method="GET">
 
-    <div class="mb-4 flex items-center justify-between pl-4 pr-2">
-        <label class="flex items-center gap-2 text-sm text-gray-600">
-            <input type="checkbox" id="select-all-checkbox"
-                class="h-4 w-4 rounded border-gray-300 accent-brand-600">
-            {{ __('Pilih Semua (halaman ini)') }}
-        </label>
-
-        <div class="flex items-center gap-3 text-sm text-gray-600">
-            <span><span id="selected-count" class="font-semibold text-brand-700">0</span> {{ __('item terpilih') }}</span>
-            <button type="button" id="clear-selection-btn" class="text-red-500 hover:underline text-xs">
-                {{ __('Reset Pilihan') }}
-            </button>
-        </div>
-    </div>
-
         <div class="card overflow-hidden">
             <div class="overflow-x-auto">
+
+                <div class="mb-4 flex items-center justify-between px-4 pt-4">
+                    <label class="flex items-center gap-2 text-sm text-gray-600">
+                        <input type="checkbox" id="select-all-checkbox"
+                            class="h-4 w-4 rounded border-gray-300 accent-brand-600">
+                        {{ __('Pilih Semua (halaman ini)') }}
+                    </label>
+
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <span><span id="selected-count" class="font-semibold text-brand-700">0</span> {{ __('item terpilih') }}</span>
+                        <button type="button" id="clear-selection-btn" class="text-red-500 hover:underline text-xs">
+                            {{ __('Reset Pilihan') }}
+                        </button>
+                    </div>
+                </div>
+
                 <table class="table-app">
                     <thead>
                         <tr>

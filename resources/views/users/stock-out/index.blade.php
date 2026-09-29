@@ -1,133 +1,211 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="mb-6">
-        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">
-            Riwayat Peminjaman Saya
-        </h2>
 
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Lihat riwayat pengajuan peminjaman barang Anda.
-        </p>
+    <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+        <div>
+            <h2 class="page-title">Riwayat Peminjaman Saya</h2>
+            <p class="page-desc">Lihat riwayat pengajuan peminjaman barang Anda.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{{ route('peminjaman.create') }}" class="btn btn-primary">
+                + Ajukan Peminjaman Baru
+            </a>
+            <button type="button" id="btn-download" class="btn btn-outline">
+                Download Excel
+            </button>
+        </div>
     </div>
 
     @if (session('success'))
-        <div class="mb-4 p-4 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 rounded-lg">
+        <div class="mb-4 p-4 bg-success-50 text-success-700 rounded-lg">
             {{ session('success') }}
         </div>
     @endif
-
     @if (session('error'))
-        <div class="mb-4 p-4 bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 rounded-lg">
+        <div class="mb-4 p-4 bg-error-50 text-error-700 rounded-lg">
             {{ session('error') }}
         </div>
     @endif
 
-    <div class="mb-4 flex justify-end">
-        <a href="{{ route('peminjaman.create') }}"
-            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-            + Ajukan Peminjaman Baru
-        </a>
+    {{-- Panel Filter --}}
+    <div class="card card-pad mb-6">
+        <form method="GET">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+
+                <div class="md:col-span-2">
+                    <label class="form-label">Tanggal Transaksi</label>
+                    <div class="flex items-center gap-1">
+                        <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control w-full">
+                        <span class="text-gray-400">-</span>
+                        <input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control w-full">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Urutkan</label>
+                    <select name="sort" class="form-control">
+                        <option value="desc" {{ request('sort', 'desc') == 'desc' ? 'selected' : '' }}>Terbaru</option>
+                        <option value="asc" {{ request('sort') == 'asc' ? 'selected' : '' }}>Terlama</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Terapkan Filter
+            </button>
+        </form>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm overflow-x-auto">
+    {{-- Tabel --}}
+    <div class="card card-pad overflow-x-auto">
 
-        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <div class="mb-4 flex items-center justify-between px-4">
+            <label class="flex items-center gap-2 text-sm text-gray-600">
+                <input type="checkbox" id="select-all" class="h-4 w-4 rounded border-gray-300 accent-brand-600">
+                Pilih Semua (halaman ini)
+            </label>
 
+            <div class="flex items-center gap-3 text-sm text-gray-600">
+                <span><span id="selected-count" class="font-semibold text-brand-700">0</span> item terpilih</span>
+                <button type="button" id="clear-selection-btn" class="text-red-500 hover:underline text-xs">
+                    Reset Pilihan
+                </button>
+            </div>
+        </div>
+
+        <table class="table-app">
             <thead>
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                        Barang
-                    </th>
-
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                        Keterangan
-                    </th>
-
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                        Estimasi Kembali
-                    </th>
-
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                        Status
-                    </th>
-
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                        Tanggal Kembali Aktual
-                    </th>
+                    <th></th>
+                    <th>Barang</th>
+                    <th>Keterangan</th>
+                    <th>Estimasi Kembali</th>
+                    <th>Status</th>
+                    <th>Tanggal Kembali Aktual</th>
                 </tr>
             </thead>
-
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-
+            <tbody>
                 @forelse ($transactions as $trx)
-
                     <tr>
-
-                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">
+                        <td><input type="checkbox" class="row-checkbox h-4 w-4 rounded border-gray-300 accent-brand-600" value="{{ $trx->id }}"></td>
+                        <td class="font-medium text-gray-800">
                             {{ $trx->item->nama_barang }}
                         </td>
-
-                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">
+                        <td>
                             {{ $trx->keterangan }}
                         </td>
-
-                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">
+                        <td>
                             {{ $trx->tanggal_kembali_estimasi?->format('d M Y') ?? '-' }}
                         </td>
-
-                        <td class="px-4 py-3">
-
+                        <td>
                             <span @class([
-                                'px-2 py-1 rounded text-xs font-semibold',
-
-                                'bg-yellow-100 text-yellow-800' =>
-                                    $trx->status === 'menunggu_approval',
-
-                                'bg-blue-100 text-blue-800' =>
-                                    $trx->status === 'diproses',
-
-                                'bg-green-100 text-green-800' =>
-                                    in_array($trx->status, ['disetujui', 'dikembalikan']),
-
-                                'bg-red-100 text-red-800' =>
-                                    $trx->status === 'ditolak',
+                                'badge',
+                                'badge-amber' => $trx->status === 'menunggu_approval',
+                                'badge-blue' => $trx->status === 'diproses',
+                                'badge-green' => in_array($trx->status, ['disetujui', 'dikembalikan']),
+                                'badge-red' => $trx->status === 'ditolak',
                             ])>
-
                                 {{ str_replace('_', ' ', ucfirst($trx->status)) }}
-
                             </span>
-
                         </td>
-
-                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">
+                        <td>
                             {{ $trx->tanggal_kembali_aktual?->format('d M Y') ?? '-' }}
                         </td>
-
                     </tr>
-
                 @empty
-
                     <tr>
-
-                        <td colspan="5"
-                            class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
-
+                        <td colspan="6" class="text-center text-gray-500">
                             Belum ada pengajuan peminjaman.
-
                         </td>
-
                     </tr>
-
                 @endforelse
-
             </tbody>
-
         </table>
 
         <div class="mt-4">
             {{ $transactions->links() }}
         </div>
-
     </div>
+
+    @push('scripts')
+    <script>
+const PEMINJAMAN_SELECTION_KEY = 'peminjaman_saya_selected_ids';
+
+function getSelectedIds() {
+    try {
+        return new Set(JSON.parse(sessionStorage.getItem(PEMINJAMAN_SELECTION_KEY)) || []);
+    } catch (e) {
+        return new Set();
+    }
+}
+
+function saveSelectedIds(idsSet) {
+    sessionStorage.setItem(PEMINJAMAN_SELECTION_KEY, JSON.stringify(Array.from(idsSet)));
+}
+
+function updateCounter() {
+    document.getElementById('selected-count').textContent = getSelectedIds().size;
+}
+
+function updateSelectAllState() {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    const selectAll = document.getElementById('select-all');
+    if (!checkboxes.length) {
+        selectAll.checked = false;
+        return;
+    }
+    selectAll.checked = Array.from(checkboxes).every(cb => cb.checked);
+}
+
+function syncCheckboxesWithStorage() {
+    const selected = getSelectedIds();
+    document.querySelectorAll('.row-checkbox').forEach(cb => {
+        cb.checked = selected.has(cb.value);
+    });
+    updateSelectAllState();
+    updateCounter();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    syncCheckboxesWithStorage();
+
+    document.querySelectorAll('.row-checkbox').forEach(cb => {
+        cb.addEventListener('change', () => {
+            const selected = getSelectedIds();
+            cb.checked ? selected.add(cb.value) : selected.delete(cb.value);
+            saveSelectedIds(selected);
+            updateSelectAllState();
+            updateCounter();
+        });
+    });
+
+    document.getElementById('select-all').addEventListener('change', function () {
+        const selected = getSelectedIds();
+        document.querySelectorAll('.row-checkbox').forEach(cb => {
+            cb.checked = this.checked;
+            this.checked ? selected.add(cb.value) : selected.delete(cb.value);
+        });
+        saveSelectedIds(selected);
+        updateCounter();
+    });
+
+    document.getElementById('clear-selection-btn').addEventListener('click', () => {
+        sessionStorage.removeItem(PEMINJAMAN_SELECTION_KEY);
+        syncCheckboxesWithStorage();
+    });
+
+    document.getElementById('btn-download').addEventListener('click', function () {
+        const selected = Array.from(getSelectedIds());
+        const params = new URLSearchParams(window.location.search);
+        if (selected.length > 0) {
+            params.set('selected_ids', selected.join(','));
+        }
+        window.location.href = `{{ route('peminjaman.export') }}?${params.toString()}`;
+    });
+});
+    </script>
+    @endpush
 @endsection

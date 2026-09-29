@@ -1,23 +1,25 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-xl mx-auto py-8 px-4">
-    <h1 class="text-2xl font-semibold text-white mb-6">Ajukan Peminjaman</h1>
+<div class="max-w-xl mx-auto">
+    <div class="mb-6">
+        <h2 class="page-title">Ajukan Peminjaman</h2>
+    </div>
 
     @if (session('success'))
-        <div class="bg-green-900/40 border border-green-700 text-green-300 text-sm rounded-lg px-4 py-3 mb-6">
+        <div class="mb-4 p-4 bg-success-50 text-success-700 rounded-lg text-sm">
             {{ session('success') }}
         </div>
     @endif
 
     @if (session('error'))
-        <div class="bg-red-900/40 border border-red-700 text-red-300 text-sm rounded-lg px-4 py-3 mb-6">
+        <div class="mb-4 p-4 bg-error-50 text-error-700 rounded-lg text-sm">
             {{ session('error') }}
         </div>
     @endif
 
     @if ($errors->any())
-        <div class="bg-red-900/40 border border-red-700 text-red-300 text-sm rounded-lg px-4 py-3 mb-6">
+        <div class="mb-4 p-4 bg-error-50 text-error-700 rounded-lg text-sm">
             <ul class="list-disc list-inside space-y-1">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -26,68 +28,70 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('peminjaman.store') }}">
-        @csrf
+    <div class="card card-pad">
+        <form method="POST" action="{{ route('peminjaman.store') }}">
+            @csrf
 
-        {{-- Pilih Barang --}}
-        <label class="block text-gray-300 text-sm mb-2">Barang</label>
+            {{-- Pilih Barang --}}
+            <label class="form-label">Barang</label>
 
-        <div id="item-selected" class="{{ $item ? '' : 'hidden' }} border border-gray-700 rounded-lg px-4 py-3 mb-3 bg-gray-900/40 flex items-center justify-between">
-            <div>
-                <p id="item-selected-nama" class="text-white font-medium">{{ $item->nama_barang ?? '' }}</p>
-                <p id="item-selected-info" class="text-gray-400 text-sm">
-                    {{ $item->item_id ?? '' }} · {{ $item->location->nama_lokasi ?? '' }}
-                </p>
+            <div id="item-selected" class="{{ $item ? '' : 'hidden' }} border border-gray-200 rounded-lg px-4 py-3 mb-3 bg-brand-50/50 flex items-center justify-between">
+                <div>
+                    <p id="item-selected-nama" class="text-gray-800 font-medium">{{ $item->nama_barang ?? '' }}</p>
+                    <p id="item-selected-info" class="text-gray-500 text-sm">
+                        {{ $item->item_id ?? '' }} &middot; {{ $item->location->nama_lokasi ?? '' }}
+                    </p>
+                </div>
             </div>
-        </div>
 
-        <div id="item-search-wrapper" class="{{ $item ? 'hidden' : '' }}">
+            <div id="item-search-wrapper" class="{{ $item ? 'hidden' : '' }}">
+                <input
+                    type="text"
+                    id="search-barang"
+                    placeholder="Cari nama atau kode barang"
+                    class="form-control h-auto px-4 py-3 mb-2"
+                    autocomplete="off"
+                >
+                <div id="search-results" class="space-y-2 mb-3"></div>
+            </div>
+
+            <input type="hidden" name="item_id" id="item_id" value="{{ old('item_id', $item->item_id ?? '') }}">
+
+            {{-- Tanggal Kembali --}}
+            <label for="tanggal_kembali_estimasi" class="form-label mt-4">
+                Perkiraan Tanggal Kembali
+            </label>
             <input
-                type="text"
-                id="search-barang"
-                placeholder="Cari nama atau kode barang"
-                class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-3 mb-2 focus:outline-none focus:ring-2 focus:ring-green-600"
-                autocomplete="off"
+                type="date"
+                name="tanggal_kembali_estimasi"
+                id="tanggal_kembali_estimasi"
+                value="{{ old('tanggal_kembali_estimasi') }}"
+                min="{{ now()->format('Y-m-d') }}"
+                class="form-control mb-4"
+                required
             >
-            <div id="search-results" class="space-y-2 mb-3"></div>
-        </div>
 
-        <input type="hidden" name="item_id" id="item_id" value="{{ old('item_id', $item->item_id ?? '') }}">
+            {{-- Keterangan --}}
+            <label for="keterangan" class="form-label">
+                Keterangan (opsional)
+            </label>
+            <textarea
+                name="keterangan"
+                id="keterangan"
+                rows="3"
+                placeholder="Contoh: dipakai untuk presentasi klien tanggal 5 Sept"
+                class="form-control h-auto py-2 mb-6"
+            >{{ old('keterangan') }}</textarea>
 
-        {{-- Tanggal Kembali --}}
-        <label for="tanggal_kembali_estimasi" class="block text-gray-300 text-sm mb-2 mt-4">
-            Perkiraan Tanggal Kembali
-        </label>
-        <input
-            type="date"
-            name="tanggal_kembali_estimasi"
-            id="tanggal_kembali_estimasi"
-            value="{{ old('tanggal_kembali_estimasi') }}"
-            min="{{ now()->format('Y-m-d') }}"
-            class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-green-600"
-            required
-        >
-
-        {{-- Keterangan --}}
-        <label for="keterangan" class="block text-gray-300 text-sm mb-2">
-            Keterangan (opsional)
-        </label>
-        <textarea
-            name="keterangan"
-            id="keterangan"
-            rows="3"
-            placeholder="Contoh: dipakai untuk presentasi klien tanggal 5 Sept"
-            class="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-3 mb-6 focus:outline-none focus:ring-2 focus:ring-green-600"
-        >{{ old('keterangan') }}</textarea>
-
-        <button
-            type="submit"
-            id="submit-btn"
-            class="w-full bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg px-4 py-3"
-        >
-            Kirim Pengajuan
-        </button>
-    </form>
+            <button
+                type="submit"
+                id="submit-btn"
+                class="btn btn-primary w-full"
+            >
+                Kirim Pengajuan
+            </button>
+        </form>
+    </div>
 </div>
 
 @push('scripts')
@@ -109,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function () {
         itemSelectedNama.textContent = item.nama_barang;
 
         if (item.sedang_diajukan) {
-            itemSelectedInfo.innerHTML = `${item.item_id} · ${item.lokasi} <span class="text-yellow-400 font-semibold">(Sedang diajukan pengguna lain)</span>`;
+            itemSelectedInfo.innerHTML = `${item.item_id} &middot; ${item.lokasi} <span class="text-warning-600 font-semibold">(Sedang diajukan pengguna lain)</span>`;
         } else {
             itemSelectedInfo.textContent = `${item.item_id} · ${item.lokasi}`;
         }
@@ -144,14 +148,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         .forEach(item => {
                             const btn = document.createElement('button');
                             btn.type = 'button';
-                            btn.className = 'w-full text-left bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-3 hover:bg-gray-800';
+                            btn.className = 'w-full text-left border border-gray-300 bg-white text-gray-800 rounded-lg px-4 py-3 hover:bg-gray-50';
 
                             const badge = item.sedang_diajukan
-                                ? '<span class="ml-2 text-xs bg-yellow-600 text-white px-2 py-0.5 rounded">Sedang diajukan</span>'
+                                ? '<span class="ml-2 text-xs bg-warning-100 text-warning-700 px-2 py-0.5 rounded">Sedang diajukan</span>'
                                 : '';
 
                             btn.innerHTML = `<span class="font-medium">${item.nama_barang}</span>${badge}
-                                              <span class="block text-gray-400 text-sm">${item.item_id} · ${item.lokasi}</span>`;
+                                              <span class="block text-gray-500 text-sm">${item.item_id} &middot; ${item.lokasi}</span>`;
                             btn.addEventListener('click', () => pilihBarang(item));
                             searchResults.appendChild(btn);
                         });

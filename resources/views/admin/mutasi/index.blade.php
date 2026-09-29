@@ -4,24 +4,24 @@
 
 <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
     <div>
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Mutasi Lokasi</h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Menunggu approval General Manager sebelum lokasi barang berubah</p>
+        <h2 class="page-title">Mutasi Lokasi</h2>
+        <p class="page-desc">Menunggu approval General Manager sebelum lokasi barang berubah</p>
     </div>
 </div>
 
 @if (session('success'))
-    <div class="mb-4 p-4 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 rounded">
+    <div class="mb-4 p-4 bg-success-50 text-success-700 rounded-lg">
         {{ session('success') }}
     </div>
 @endif
 @if (session('error'))
-    <div class="mb-4 p-4 bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 rounded">
+    <div class="mb-4 p-4 bg-error-50 text-error-700 rounded-lg">
         {{ session('error') }}
     </div>
 @endif
 
 
-<div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-8">
+<div class="card card-pad mb-8">
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
     <div>
         <label class="form-label">Kategori</label>
@@ -88,16 +88,16 @@
         id="search-barang"
         placeholder="Cari nama atau kode barang"
         value="{{ $selectedItem->nama_barang ?? '' }}"
-        class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-3 mb-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
+        class="form-control h-auto px-4 py-3 mb-2"
         autocomplete="off"
     >
     <div id="search-results" class="space-y-2 mb-4"></div>
 
     <div id="form-mutasi" class="{{ $selectedItem ? '' : 'hidden' }}">
-        <div class="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-            <p class="text-sm text-gray-500 dark:text-gray-400">Barang dipilih</p>
-            <p id="info-nama" class="font-semibold text-gray-800 dark:text-white">{{ $selectedItem->nama_barang ?? '' }}</p>
-            <p id="info-kode" class="text-sm text-gray-500 dark:text-gray-400">
+        <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <p class="text-sm text-gray-500">Barang dipilih</p>
+            <p id="info-nama" class="font-semibold text-gray-800">{{ $selectedItem->nama_barang ?? '' }}</p>
+            <p id="info-kode" class="text-sm text-gray-500">
                 {{ $selectedItem->item_id ?? '' }} &bull; Lokasi saat ini: <span id="info-lokasi">{{ $selectedItem->location->nama_lokasi ?? '' }}</span>
             </p>
         </div>
@@ -108,15 +108,14 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end mb-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lokasi Asal</label>
+                    <label class="form-label">Lokasi Asal</label>
                     <input type="text" id="lokasi-asal-display" readonly
                         value="{{ $selectedItem->location->nama_lokasi ?? '' }}"
-                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-400 bg-gray-100 cursor-not-allowed">
+                        class="form-control bg-gray-100 text-gray-500 cursor-not-allowed">
                 </div>
                 <div>
-                    <label for="lokasi_tujuan_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lokasi Tujuan</label>
-                    <select name="lokasi_tujuan_id" id="lokasi_tujuan_id" required
-                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                    <label for="lokasi_tujuan_id" class="form-label">Lokasi Tujuan</label>
+                    <select name="lokasi_tujuan_id" id="lokasi_tujuan_id" required class="form-control">
                         <option value="">-- Pilih Lokasi Baru --</option>
                         @foreach ($locations as $location)
                             <option value="{{ $location->id }}">{{ $location->nama_lokasi }}</option>
@@ -126,35 +125,34 @@
             </div>
 
             <div class="mb-4">
-                <label for="keterangan" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Keterangan (opsional)</label>
-                <textarea name="keterangan" id="keterangan" rows="2"
-                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"></textarea>
+                <label for="keterangan" class="form-label">Keterangan (opsional)</label>
+                <textarea name="keterangan" id="keterangan" rows="2" class="form-control h-auto py-2"></textarea>
             </div>
 
-            <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-5 py-2.5 rounded-lg">
+            <button type="submit" class="btn btn-primary">
                 Ajukan Mutasi
             </button>
         </form>
     </div>
 </div>
 
-<div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-6">
+<div class="card card-pad mb-6">
     <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-        <h3 class="font-semibold text-gray-800 dark:text-white">Riwayat Mutasi Terbaru</h3>
-        <button type="button" id="btn-download-mutasi" class="px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
+        <h3 class="panel-title mb-0">Riwayat Mutasi Terbaru</h3>
+        <button type="button" id="btn-download-mutasi" class="btn btn-outline">
             Download Excel
         </button>
     </div>
 
     <form method="GET">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-            <div class="md:col-span-2">
-                <label class="form-label">Tanggal Transaksi</label>
-                <div class="flex items-center gap-1">
-                    <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control w-full">
-                    <span class="text-gray-400">-</span>
-                    <input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control w-full">
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4 items-end">
+            <div>
+                <label class="form-label">Tanggal Dari</label>
+                <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control">
+            </div>
+            <div>
+                <label class="form-label">Tanggal Sampai</label>
+                <input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control">
             </div>
             <div>
                 <label class="form-label">Urutkan</label>
@@ -163,61 +161,120 @@
                     <option value="asc" {{ request('sort') == 'asc' ? 'selected' : '' }}>Terlama</option>
                 </select>
             </div>
+            <div class="flex items-center gap-3">
+                <button type="submit" class="btn btn-primary w-full md:w-auto">
+                    Terapkan Filter
+                </button>
+                @if (request()->anyFilled(['date_from', 'date_to', 'sort']))
+                    <a href="{{ url()->current() }}" class="text-sm text-gray-500 hover:underline whitespace-nowrap">
+                        Reset filter
+                    </a>
+                @endif
+            </div>
         </div>
-        <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-6 py-2.5 rounded-lg">
-            Terapkan Filter
-        </button>
     </form>
 </div>
 
-<div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
-    <label class="flex items-center gap-2 mb-4 text-sm text-gray-700 dark:text-gray-300">
-        <input type="checkbox" id="select-all-mutasi">
-        Pilih Semua
-    </label>
+<div class="card overflow-hidden">
+    <div class="overflow-x-auto">
 
-    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        <thead>
-            <tr>
-                <th class="px-4 py-3"></th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nama Barang</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Lokasi Asal &rarr; Tujuan</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-            @forelse ($riwayat as $trx)
+        <div class="mb-4 flex items-center justify-between px-4 pt-4">
+            <label class="flex items-center gap-2 text-sm text-gray-600">
+                <input type="checkbox" id="select-all-mutasi" class="h-4 w-4 rounded border-gray-300 accent-brand-600">
+                Pilih Semua (halaman ini)
+            </label>
+
+            <div class="flex items-center gap-3 text-sm text-gray-600">
+                <span><span id="selected-count-mutasi" class="font-semibold text-brand-700">0</span> item terpilih</span>
+                <button type="button" id="clear-selection-btn-mutasi" class="text-red-500 hover:underline text-xs">
+                    Reset Pilihan
+                </button>
+            </div>
+        </div>
+
+        <table class="table-app">
+            <thead>
                 <tr>
-                    <td class="px-4 py-3"><input type="checkbox" class="row-checkbox-mutasi" value="{{ $trx->id }}"></td>
-                    <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->item->nama_barang }}</td>
-                    <td class="px-4 py-3 text-gray-800 dark:text-gray-200">
-                        {{ $trx->lokasiAsal->nama_lokasi ?? '-' }} &rarr; {{ $trx->lokasiTujuan->nama_lokasi ?? '-' }}
-                    </td>
-                    <td class="px-4 py-3">
-                        <span @class([
-                            'px-2 py-1 rounded text-xs font-semibold',
-                            'bg-yellow-100 text-yellow-800' => $trx->status === 'menunggu_approval',
-                            'bg-green-100 text-green-800' => in_array($trx->status, ['disetujui', 'selesai']),
-                            'bg-red-100 text-red-800' => $trx->status === 'ditolak',
-                        ])>
-                            {{ str_replace('_', ' ', ucfirst($trx->status)) }}
-                        </span>
-                    </td>
-                    <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->created_at->format('d M Y H:i') }}</td>
+                    <th></th>
+                    <th>Nama Barang</th>
+                    <th>Lokasi Asal &rarr; Tujuan</th>
+                    <th>Status</th>
+                    <th>Tanggal</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Belum ada riwayat mutasi.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-    <div class="mt-4">{{ $riwayat->links() }}</div>
+            </thead>
+            <tbody>
+                @forelse ($riwayat as $trx)
+                    <tr>
+                        <td><input type="checkbox" class="row-checkbox-mutasi h-4 w-4 rounded border-gray-300 accent-brand-600" value="{{ $trx->id }}"></td>
+                        <td class="font-medium text-gray-800">{{ $trx->item->nama_barang }}</td>
+                        <td>
+                            {{ $trx->lokasiAsal->nama_lokasi ?? '-' }} &rarr; {{ $trx->lokasiTujuan->nama_lokasi ?? '-' }}
+                        </td>
+                        <td>
+                            <span @class([
+                                'badge',
+                                'badge-amber' => $trx->status === 'menunggu_approval',
+                                'badge-green' => in_array($trx->status, ['disetujui', 'selesai']),
+                                'badge-red' => $trx->status === 'ditolak',
+                            ])>
+                                {{ str_replace('_', ' ', ucfirst($trx->status)) }}
+                            </span>
+                        </td>
+                        <td>{{ $trx->created_at->format('d M Y H:i') }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="text-center text-gray-500">Belum ada riwayat mutasi.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card-pad !pt-4">
+        {{ $riwayat->links() }}
+    </div>
 </div>
 
 @push('scripts')
 <script>
+const MUTASI_SELECTION_KEY = 'mutasi_selected_ids';
+
+function getSelectedIdsMutasi() {
+    try {
+        return new Set(JSON.parse(sessionStorage.getItem(MUTASI_SELECTION_KEY)) || []);
+    } catch (e) {
+        return new Set();
+    }
+}
+
+function saveSelectedIdsMutasi(idsSet) {
+    sessionStorage.setItem(MUTASI_SELECTION_KEY, JSON.stringify(Array.from(idsSet)));
+}
+
+function updateCounterMutasi() {
+    document.getElementById('selected-count-mutasi').textContent = getSelectedIdsMutasi().size;
+}
+
+function updateSelectAllStateMutasi() {
+    const checkboxes = document.querySelectorAll('.row-checkbox-mutasi');
+    const selectAll = document.getElementById('select-all-mutasi');
+    if (!checkboxes.length) {
+        selectAll.checked = false;
+        return;
+    }
+    selectAll.checked = Array.from(checkboxes).every(cb => cb.checked);
+}
+
+function syncCheckboxesWithStorageMutasi() {
+    const selected = getSelectedIdsMutasi();
+    document.querySelectorAll('.row-checkbox-mutasi').forEach(cb => {
+        cb.checked = selected.has(cb.value);
+    });
+    updateSelectAllStateMutasi();
+    updateCounterMutasi();
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const searchUrl = "{{ route('barang.cari') }}";
     const searchInput = document.getElementById('search-barang');
@@ -261,9 +318,9 @@ document.addEventListener('DOMContentLoaded', function () {
         items.forEach(item => {
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.className = 'w-full text-left border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-600';
+            btn.className = 'w-full text-left border border-gray-300 bg-white text-gray-800 rounded-lg px-4 py-3 hover:bg-gray-50';
             btn.innerHTML = `<span class="font-medium">${item.nama_barang}</span>
-                              <span class="block text-gray-500 dark:text-gray-400 text-sm">${item.item_id} &bull; ${item.lokasi}</span>`;
+                              <span class="block text-gray-500 text-sm">${item.item_id} &bull; ${item.lokasi}</span>`;
             btn.addEventListener('click', () => pilihBarang(item));
             searchResults.appendChild(btn);
         });
@@ -295,12 +352,35 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // --- Checkbox & Download Riwayat Mutasi ---
+    syncCheckboxesWithStorageMutasi();
+
+    document.querySelectorAll('.row-checkbox-mutasi').forEach(cb => {
+        cb.addEventListener('change', () => {
+            const selected = getSelectedIdsMutasi();
+            cb.checked ? selected.add(cb.value) : selected.delete(cb.value);
+            saveSelectedIdsMutasi(selected);
+            updateSelectAllStateMutasi();
+            updateCounterMutasi();
+        });
+    });
+
     document.getElementById('select-all-mutasi').addEventListener('change', function () {
-        document.querySelectorAll('.row-checkbox-mutasi').forEach(cb => cb.checked = this.checked);
+        const selected = getSelectedIdsMutasi();
+        document.querySelectorAll('.row-checkbox-mutasi').forEach(cb => {
+            cb.checked = this.checked;
+            this.checked ? selected.add(cb.value) : selected.delete(cb.value);
+        });
+        saveSelectedIdsMutasi(selected);
+        updateCounterMutasi();
+    });
+
+    document.getElementById('clear-selection-btn-mutasi').addEventListener('click', () => {
+        sessionStorage.removeItem(MUTASI_SELECTION_KEY);
+        syncCheckboxesWithStorageMutasi();
     });
 
     document.getElementById('btn-download-mutasi').addEventListener('click', function () {
-        const selected = Array.from(document.querySelectorAll('.row-checkbox-mutasi:checked')).map(cb => cb.value);
+        const selected = Array.from(getSelectedIdsMutasi());
         const params = new URLSearchParams(window.location.search);
         if (selected.length > 0) {
             params.set('selected_ids', selected.join(','));

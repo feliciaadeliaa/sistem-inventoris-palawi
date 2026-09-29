@@ -8,6 +8,8 @@
 
     <title>{{ $title ?? config('app.name', 'Sistem Inventaris') }}</title>
 
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -70,13 +72,24 @@
         'ml-0': $store.sidebar.isMobileOpen
     }">
     @include('layouts.app-header')
-    <div class="min-h-screen bg-content p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">
-        @yield('content')
-    </div>
+<div class="min-h-screen bg-content p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6" id="main-content">
+    @yield('content')
+</div>
 </div>
     </div>
 
 </body>
+<script>
+document.addEventListener('keydown', function (e) {
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+    if (cmdOrCtrl && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const input = document.getElementById('global-search-input');
+        if (input) input.focus();
+    }
+});
+</script>
 
 @stack('scripts')
 

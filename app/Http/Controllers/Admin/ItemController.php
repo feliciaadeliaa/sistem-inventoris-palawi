@@ -9,50 +9,70 @@ use App\Models\Category;
 use App\Models\Item;
 use App\Models\Location;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Writer\SvgWriter;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Imports\ItemsImport;
+use App\Exports\ItemImportTemplateExport;
+use Maatwebsite\Excel\Facades\Excel;
 use ZipArchive;
 
 class ItemController extends Controller
 {
-public function index(Request $request)
-{
-    $items = Item::with(['category', 'location'])
-        ->when($request->filled('category_id'), fn ($q) => $q->where('category_id', $request->category_id))
-        ->when($request->filled('location_id'), fn ($q) => $q->where('location_id', $request->location_id))
-        ->when($request->filled('kondisi'), fn ($q) => $q->where('kondisi', $request->kondisi))
-        ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
-        ->when($request->filled('golongan_at'), fn ($q) => $q->where('golongan_at', $request->golongan_at))
-        ->when($request->filled('tahun_dari'), fn ($q) => $q->where('tahun_perolehan', '>=', $request->tahun_dari))
-        ->when($request->filled('tahun_sampai'), fn ($q) => $q->where('tahun_perolehan', '<=', $request->tahun_sampai))
-        ->latest()
-        ->paginate(15)
-        ->withQueryString();
+    public function index(Request $request)
+    {
+        $items = Item::with(['category', 'location'])
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $search = $request->q;
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('nama_barang', 'like', "%{$search}%")
+                        ->orWhere('item_id', 'like', "%{$search}%")
+                        ->orWhere('nomor_aktiva_tetap', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('category_id'), fn ($q) => $q->where('category_id', $request->category_id))
+            ->when($request->filled('location_id'), fn ($q) => $q->where('location_id', $request->location_id))
+            ->when($request->filled('kondisi'), fn ($q) => $q->where('kondisi', $request->kondisi))
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
+            ->when($request->filled('golongan_at'), fn ($q) => $q->where('golongan_at', $request->golongan_at))
+            ->when($request->filled('tahun_dari'), fn ($q) => $q->where('tahun_perolehan', '>=', $request->tahun_dari))
+            ->when($request->filled('tahun_sampai'), fn ($q) => $q->where('tahun_perolehan', '<=', $request->tahun_sampai))
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
-    $categories = Category::orderBy('nama_kategori')->get();
-    $locations = Location::orderBy('nama_lokasi')->get();
-    $golonganOptions = Item::whereNotNull('golongan_at')
-        ->where('golongan_at', '!=', '')
-        ->distinct()
-        ->orderBy('golongan_at')
-        ->pluck('golongan_at');
+        $categories = Category::siapDipakai()->urut()->get();
+        $locations = Location::urut()->get();
+        $golonganOptions = Item::whereNotNull('golongan_at')
+            ->where('golongan_at', '!=', '')
+            ->distinct()
+            ->orderBy('golongan_at')
+            ->pluck('golongan_at');
 
-    return view('admin.items.index', compact('items', 'categories', 'locations', 'golonganOptions'));
-}
+        return view('admin.items.index', compact('items', 'categories', 'locations', 'golonganOptions'));
+    }
 
     public function create()
     {
-        $categories = Category::orderBy('nama_kategori')->get();
-        $locations = Location::orderBy('nama_lokasi')->get();
+        $categories = Category::siapDipakai()->urut()->get();
+        $locations = Location::urut()->get();
 
         return view('admin.items.create', compact('categories', 'locations'));
     }
 
     public function store(StoreItemRequest $request)
     {
-        Item::create($request->validated());
+        $data = $request->validated();
+
+        // Nomor urut dan nomor aktiva selalu dibuat server, tidak pernah dari input user.
+        DB::transaction(function () use ($data) {
+            $data['nomor_urut'] = Item::nextNomorUrut();
+            $data['nomor_aktiva_tetap'] = Item::make($data)->buildNomorAktiva();
+
+            Item::create($data);
+        });
 
         return redirect()
             ->route('barang.index')
@@ -61,15 +81,25 @@ public function index(Request $request)
 
     public function edit(Item $item)
     {
-        $categories = Category::orderBy('nama_kategori')->get();
-        $locations = Location::orderBy('nama_lokasi')->get();
+        $categories = Category::siapDipakai()->urut()->get();
+        $locations = Location::urut()->get();
 
         return view('admin.items.edit', compact('item', 'categories', 'locations'));
     }
 
     public function update(UpdateItemRequest $request, Item $item)
     {
-        $item->update($request->validated());
+        DB::transaction(function () use ($request, $item) {
+            $item->fill($request->validated());
+
+            // Nomor urut dipertahankan. Aset lama yang belum punya nomor urut diberi nomor baru.
+            if (!$item->nomor_urut) {
+                $item->nomor_urut = Item::nextNomorUrut();
+            }
+
+            $item->nomor_aktiva_tetap = $item->buildNomorAktiva();
+            $item->save();
+        });
 
         return redirect()
             ->route('barang.index')
@@ -108,102 +138,102 @@ public function index(Request $request)
     }
 
     private function downloadQrAsPng(Item $item)
-{
-    $pngData = $this->generateLabelPngBinary($item);
+    {
+        $pngData = $this->generateLabelPngBinary($item);
 
-    return response($pngData)
-        ->header('Content-Type', 'image/png')
-        ->header('Content-Disposition', 'attachment; filename="qr-'.$item->item_id.'.png"');
-}
-
-/**
- * Gambar 1 label (border + logo + QR + nomor aktiva + footer) dan kembalikan binary PNG-nya.
- * Layout diselaraskan dengan template PDF: garis tepi rapat ke konten.
- * Dipakai baik untuk download satuan maupun untuk dikumpulkan jadi ZIP massal.
- */
-private function generateLabelPngBinary(Item $item): string
-{
-    $qrResult = Builder::create()
-        ->writer(new PngWriter())
-        ->data($item->item_id)
-        ->size(400)
-        ->margin(0)
-        ->build();
-
-    $qrImage  = imagecreatefromstring($qrResult->getString());
-    $qrWidth  = imagesx($qrImage);
-    $qrHeight = imagesy($qrImage);
-
-    // Jarak konten ke garis tepi dibuat rapat, senada dengan versi PDF
-    $borderPadding = 0; // jarak dari tepi kanvas ke garis tepi (border)
-    $innerPadding  = 36; // jarak dari garis tepi ke konten (logo/QR/teks)
-    $logoHeight    = 60;
-    $gapLogoQr     = 10;
-    $gapQrNomor    = 24;
-    $gapNomorFooter = 20;
-    $textBlock     = 60;
-
-    $contentWidth  = $qrWidth;
-    $contentHeight = $logoHeight + $gapLogoQr + $qrHeight + $textBlock;
-
-    $canvasWidth  = $contentWidth  + ($innerPadding * 2) + ($borderPadding * 2);
-    $canvasHeight = $contentHeight + ($innerPadding * 2) + ($borderPadding * 2);
-
-    $canvas = imagecreatetruecolor($canvasWidth, $canvasHeight);
-    $white  = imagecolorallocate($canvas, 255, 255, 255);
-    $black  = imagecolorallocate($canvas, 0, 0, 0);
-    $border = imagecolorallocate($canvas, 51, 51, 51); // #333, senada dengan border PDF
-    imagefill($canvas, 0, 0, $white);
-
-    // Gambar garis tepi (border), 1px, mengelilingi seluruh konten
-    imagerectangle(
-        $canvas,
-        $borderPadding,
-        $borderPadding,
-        $canvasWidth - $borderPadding - 1,
-        $canvasHeight - $borderPadding - 1,
-        $border
-    );
-
-    $contentX = $borderPadding + $innerPadding;
-    $currentY = $borderPadding + $innerPadding;
-
-    // Logo
-    $logoPath = public_path('images/logo/logo-palawi.png');
-    if (file_exists($logoPath)) {
-        $logo = imagecreatefrompng($logoPath);
-        $logoOrigW = imagesx($logo);
-        $logoOrigH = imagesy($logo);
-        $newLogoW  = intval($logoHeight * ($logoOrigW / $logoOrigH));
-        $logoX     = intval($contentX + ($contentWidth - $newLogoW) / 2);
-
-        imagecopyresampled($canvas, $logo, $logoX, $currentY, 0, 0, $newLogoW, $logoHeight, $logoOrigW, $logoOrigH);
-        imagedestroy($logo);
+        return response($pngData)
+            ->header('Content-Type', 'image/png')
+            ->header('Content-Disposition', 'attachment; filename="qr-'.$item->item_id.'.png"');
     }
-    $currentY += $logoHeight + $gapLogoQr;
 
-    // QR code
-    $qrX = $contentX;
-    $qrY = $currentY;
-    imagecopy($canvas, $qrImage, $qrX, $qrY, 0, 0, $qrWidth, $qrHeight);
-    imagedestroy($qrImage);
-    $currentY += $qrHeight;
+    /**
+     * Gambar 1 label (border + logo + QR + nomor aktiva + footer) dan kembalikan binary PNG-nya.
+     * Layout diselaraskan dengan template PDF: garis tepi rapat ke konten.
+     * Dipakai baik untuk download satuan maupun untuk dikumpulkan jadi ZIP massal.
+     */
+    private function generateLabelPngBinary(Item $item): string
+    {
+        $qrResult = Builder::create()
+            ->writer(new PngWriter())
+            ->data($item->item_id)
+            ->size(400)
+            ->margin(0)
+            ->build();
 
-    // Nomor aset & footer
-    $fontPath = base_path('vendor/endroid/qr-code/assets/open_sans.ttf');
-    $textY = $currentY + $gapQrNomor;
+        $qrImage  = imagecreatefromstring($qrResult->getString());
+        $qrWidth  = imagesx($qrImage);
+        $qrHeight = imagesy($qrImage);
 
-    $this->drawCenteredTextInBox($canvas, $item->nomor_aktiva_tetap ?? '-', $fontPath, 12, $black, $contentX, $contentWidth, $textY);
-    $textY += $gapNomorFooter;
-    $this->drawCenteredTextInBox($canvas, 'PT Perhutani Alam Wisata Risorsis', $fontPath, 9, $black, $contentX, $contentWidth, $textY);
+        // Jarak konten ke garis tepi dibuat rapat, senada dengan versi PDF
+        $borderPadding  = 0;  // jarak dari tepi kanvas ke garis tepi (border)
+        $innerPadding   = 36; // jarak dari garis tepi ke konten (logo/QR/teks)
+        $logoHeight     = 60;
+        $gapLogoQr      = 10;
+        $gapQrNomor     = 24;
+        $gapNomorFooter = 20;
+        $textBlock      = 60;
 
-    ob_start();
-    imagepng($canvas);
-    $pngData = ob_get_clean();
-    imagedestroy($canvas);
+        $contentWidth  = $qrWidth;
+        $contentHeight = $logoHeight + $gapLogoQr + $qrHeight + $textBlock;
 
-    return $pngData;
-}
+        $canvasWidth  = $contentWidth  + ($innerPadding * 2) + ($borderPadding * 2);
+        $canvasHeight = $contentHeight + ($innerPadding * 2) + ($borderPadding * 2);
+
+        $canvas = imagecreatetruecolor($canvasWidth, $canvasHeight);
+        $white  = imagecolorallocate($canvas, 255, 255, 255);
+        $black  = imagecolorallocate($canvas, 0, 0, 0);
+        $border = imagecolorallocate($canvas, 51, 51, 51); // #333, senada dengan border PDF
+        imagefill($canvas, 0, 0, $white);
+
+        // Gambar garis tepi (border), 1px, mengelilingi seluruh konten
+        imagerectangle(
+            $canvas,
+            $borderPadding,
+            $borderPadding,
+            $canvasWidth - $borderPadding - 1,
+            $canvasHeight - $borderPadding - 1,
+            $border
+        );
+
+        $contentX = $borderPadding + $innerPadding;
+        $currentY = $borderPadding + $innerPadding;
+
+        // Logo
+        $logoPath = public_path('images/logo/logo-palawi.png');
+        if (file_exists($logoPath)) {
+            $logo = imagecreatefrompng($logoPath);
+            $logoOrigW = imagesx($logo);
+            $logoOrigH = imagesy($logo);
+            $newLogoW  = intval($logoHeight * ($logoOrigW / $logoOrigH));
+            $logoX     = intval($contentX + ($contentWidth - $newLogoW) / 2);
+
+            imagecopyresampled($canvas, $logo, $logoX, $currentY, 0, 0, $newLogoW, $logoHeight, $logoOrigW, $logoOrigH);
+            imagedestroy($logo);
+        }
+        $currentY += $logoHeight + $gapLogoQr;
+
+        // QR code
+        $qrX = $contentX;
+        $qrY = $currentY;
+        imagecopy($canvas, $qrImage, $qrX, $qrY, 0, 0, $qrWidth, $qrHeight);
+        imagedestroy($qrImage);
+        $currentY += $qrHeight;
+
+        // Nomor aset & footer
+        $fontPath = base_path('vendor/endroid/qr-code/assets/open_sans.ttf');
+        $textY = $currentY + $gapQrNomor;
+
+        $this->drawCenteredTextInBox($canvas, $item->nomor_aktiva_tetap ?? '-', $fontPath, 12, $black, $contentX, $contentWidth, $textY);
+        $textY += $gapNomorFooter;
+        $this->drawCenteredTextInBox($canvas, 'PT Perhutani Alam Wisata Risorsis', $fontPath, 9, $black, $contentX, $contentWidth, $textY);
+
+        ob_start();
+        imagepng($canvas);
+        $pngData = ob_get_clean();
+        imagedestroy($canvas);
+
+        return $pngData;
+    }
 
     private function drawCenteredTextInBox($canvas, $text, $fontPath, $size, $color, $boxX, $boxWidth, $y)
     {
@@ -304,4 +334,26 @@ private function generateLabelPngBinary(Item $item): string
 
         return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
     }
+
+    public function importForm()
+{
+    return view('admin.items.import'); // SESUAIKAN dengan lokasi view kamu
+}
+
+public function import(Request $request)
+{
+    $request->validate([
+        'file' => 'required|file|mimes:xlsx,xls|max:5120',
+    ]);
+
+    Excel::import(new ItemsImport, $request->file('file'));
+
+    return redirect()->route('barang.index')
+        ->with('success', 'Data asset berhasil diimport.');
+}
+
+public function template()
+{
+    return Excel::download(new ItemImportTemplateExport, 'template_import_asset.xlsx');
+}
 }

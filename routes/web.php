@@ -47,6 +47,7 @@ Route::middleware(['auth', 'user'])->prefix('transaksi')->name('peminjaman.')->g
     Route::get('stock-out', [UserStockOutController::class, 'index'])->name('index');
     Route::get('stock-out/ajukan/{item_id?}', [UserStockOutController::class, 'create'])->name('create');
     Route::post('stock-out', [UserStockOutController::class, 'store'])->name('store');
+    Route::get('stock-out/export', [UserStockOutController::class, 'export'])->name('export');
 });
 
 // ==== SEMENTARA NONAKTIF - menunggu kejelasan alur dari kantor ====
@@ -76,6 +77,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
     // Cetak label sebagai PNG (ZIP)
     Route::get('barang/print-labels-png', [ItemController::class, 'printLabelsPng'])->name('barang.print-labels-png');
+
+    // ===== Import asset via Excel (pola sama dengan lokasi-import) =====
+    Route::get('barang-import', [ItemController::class, 'importForm'])->name('barang.import.form');
+    Route::post('barang-import', [ItemController::class, 'import'])->name('barang.import');
+    Route::get('barang-import/template', [ItemController::class, 'template'])->name('barang.import.template');
 
     Route::resource('kategori', CategoryController::class)
         ->parameters(['kategori' => 'category'])
@@ -125,8 +131,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin/laporan')->name('admin.lapor
     Route::get('peminjaman-aktif/export-pdf', [LaporanController::class, 'exportPeminjamanAktifPdf'])->name('peminjaman-aktif.export-pdf');
     Route::get('peminjaman-aktif/export-excel', [LaporanController::class, 'exportPeminjamanAktifExcel'])->name('peminjaman-aktif.export-excel');
     Route::get('peminjaman-aktif', [LaporanController::class, 'peminjamanAktifIndex'])->name('peminjaman-aktif.index');
-        Route::get('permintaan-perbaikan', fn () => view('coming-soon', ['feature' => 'Laporan Permintaan Perbaikan']))->name('permintaan-perbaikan.index');
-    Route::get('pengurangan-fasilitas', fn () => view('coming-soon', ['feature' => 'Laporan Pengurangan Fasilitas']))->name('pengurangan-fasilitas.index');
+
+    Route::get('permintaan-perbaikan', fn () => view('coming-soon', [
+        'feature' => 'Laporan Permintaan Perbaikan',
+        'activeTab' => 'perbaikan',
+    ]))->name('permintaan-perbaikan.index');
+
+    Route::get('pengurangan-fasilitas', fn () => view('coming-soon', [
+        'feature' => 'Laporan Pengurangan Fasilitas',
+        'activeTab' => 'fasilitas',
+    ]))->name('pengurangan-fasilitas.index');
+
     Route::get('riwayat-barang/{item}', [LaporanController::class, 'riwayatBarangShow'])->name('riwayat-barang.show');
 });
 

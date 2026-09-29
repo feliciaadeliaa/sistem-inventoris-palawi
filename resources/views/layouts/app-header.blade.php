@@ -8,11 +8,11 @@
     }">
     <div class="flex flex-col items-center justify-between grow xl:flex-row xl:px-6">
         <div
-            class="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 sm:gap-4 xl:justify-normal xl:border-b-0 xl:px-0 lg:py-4">
+            class="flex items-center justify-between w-full gap-2 px-3 py-1.5 border-b border-gray-200 sm:gap-4 xl:justify-normal xl:border-b-0 xl:px-0 lg:py-1.5">
 
             <!-- Desktop Sidebar Toggle Button (visible on xl and up) -->
-            <button
-                class="hidden xl:flex items-center justify-center w-10 h-10 text-gray-500 border border-gray-200 rounded-lg lg:h-11 lg:w-11"
+<button
+                class="hidden xl:flex shrink-0 aspect-square items-center justify-center w-10 h-10 text-gray-500 border border-gray-200 rounded-lg"
                 :class="{ 'bg-gray-100': !$store.sidebar.isExpanded }"
                 @click="$store.sidebar.toggleExpanded()" aria-label="Toggle Sidebar">
                 <svg x-show="!$store.sidebar.isMobileOpen" width="16" height="12" viewBox="0 0 16 12" fill="none"
@@ -31,7 +31,7 @@
 
             <!-- Mobile Menu Toggle Button (visible below xl) -->
             <button
-                class="flex xl:hidden items-center justify-center w-10 h-10 text-gray-500 rounded-lg lg:h-11 lg:w-11"
+                class="flex xl:hidden shrink-0 aspect-square items-center justify-center w-10 h-10 text-gray-500 rounded-lg"
                 :class="{ 'bg-gray-100': $store.sidebar.isMobileOpen }"
                 @click="$store.sidebar.toggleMobileOpen()" aria-label="Toggle Mobile Menu">
                 <svg x-show="!$store.sidebar.isMobileOpen" width="16" height="12" viewBox="0 0 16 12" fill="none"
@@ -55,7 +55,7 @@
 
             <!-- Application Menu Toggle (mobile only) -->
             <button @click="toggleApplicationMenu()"
-                class="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg z-99999 hover:bg-gray-100 xl:hidden">
+                class="flex xl:hidden shrink-0 aspect-square items-center justify-center w-10 h-10 text-gray-700 rounded-lg z-99999 hover:bg-gray-100">
                 <!-- Dots Icon -->
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path fill-rule="evenodd" clip-rule="evenodd"
@@ -64,34 +64,34 @@
                 </svg>
             </button>
 
-            <!-- Search Bar (desktop only) -->
-            <div class="hidden xl:block">
-                <form>
-                    <div class="relative">
-                        <span class="absolute -translate-y-1/2 pointer-events-none left-4 top-1/2">
-                            <!-- Search Icon -->
-                            <svg class="fill-gray-500" width="20" height="20"
-                                viewBox="0 0 20 20" fill="none">
-                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                    d="M3.04175 9.37363C3.04175 5.87693 5.87711 3.04199 9.37508 3.04199C12.8731 3.04199 15.7084 5.87693 15.7084 9.37363C15.7084 12.8703 12.8731 15.7053 9.37508 15.7053C5.87711 15.7053 3.04175 12.8703 3.04175 9.37363ZM9.37508 1.54199C5.04902 1.54199 1.54175 5.04817 1.54175 9.37363C1.54175 13.6991 5.04902 17.2053 9.37508 17.2053C11.2674 17.2053 13.003 16.5344 14.357 15.4176L17.177 18.238C17.4699 18.5309 17.9448 18.5309 18.2377 18.238C18.5306 17.9451 18.5306 17.4703 18.2377 17.1774L15.418 14.3573C16.5365 13.0033 17.2084 11.2669 17.2084 9.37363C17.2084 5.04817 13.7011 1.54199 9.37508 1.54199Z"
-                                    fill="" />
-                            </svg>
-                        </span>
-                        <input type="text" placeholder="Search or type command..."
-                            class="h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 xl:w-[430px]" />
-                        <button
-                            class="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-[7px] py-[4.5px] text-xs -tracking-[0.2px] text-gray-500">
-                            <span> ⌘ </span>
-                            <span> K </span>
-                        </button>
-                    </div>
-                </form>
-            </div>
+<!-- Search Bar (desktop only) -->
+<div class="hidden xl:block">
+    <form method="GET" action="" id="global-search-form">
+        <div class="relative">
+            <span class="absolute -translate-y-1/2 pointer-events-none left-4 top-1/2">
+                <svg class="fill-gray-500" width="20" height="20"
+                    viewBox="0 0 20 20" fill="none">
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M3.04175 9.37363C3.04175 5.87693 5.87711 3.04199 9.37508 3.04199C12.8731 3.04199 15.7084 5.87693 15.7084 9.37363C15.7084 12.8703 12.8731 15.7053 9.37508 15.7053C5.87711 15.7053 3.04175 12.8703 3.04175 9.37363ZM9.37508 1.54199C5.04902 1.54199 1.54175 5.04817 1.54175 9.37363C1.54175 13.6991 5.04902 17.2053 9.37508 17.2053C11.2674 17.2053 13.003 16.5344 14.357 15.4176L17.177 18.238C17.4699 18.5309 17.9448 18.5309 18.2377 18.238C18.5306 17.9451 18.5306 17.4703 18.2377 17.1774L15.418 14.3573C16.5365 13.0033 17.2084 11.2669 17.2084 9.37363C17.2084 5.04817 13.7011 1.54199 9.37508 1.54199Z"
+                        fill="" />
+                </svg>
+            </span>
+            <input type="text" name="q" id="global-search-input" value="{{ request('q') }}"
+                placeholder="Search or type command..."
+                autocomplete="off"
+                class="h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 xl:w-[430px]" />
+            <button type="button" onclick="document.getElementById('global-search-input').focus()"
+                class="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-brand-200 bg-brand-50 px-[7px] py-[4.5px] text-xs -tracking-[0.2px] text-brand-500">
+                <span> ⌘ </span>
+                <span> K </span>
+            </button>
         </div>
+    </form>
+</div>
 
         <!-- Application Menu (mobile) and Right Side Actions (desktop) -->
         <div :class="isApplicationMenuOpen ? 'flex' : 'hidden'"
-            class="items-center justify-between w-full gap-4 px-5 py-4 xl:flex shadow-theme-md xl:justify-end xl:px-0 xl:shadow-none">
+            class="items-center justify-between w-full gap-4 px-5 py-1.5 xl:flex shadow-theme-md xl:justify-end xl:px-0 xl:shadow-none">
             <div class="flex items-center gap-2 2xsm:gap-3">
                 <!-- Notification Dropdown -->
                 <x-header.notification-dropdown />
@@ -102,3 +102,49 @@
         </div>
     </div>
 </header>
+
+<script>
+(function () {
+    const searchInput = document.getElementById('global-search-input');
+    let debounceTimer;
+
+    if (!searchInput) return;
+
+    function runSearch() {
+        const url = new URL(window.location.href);
+        const q = searchInput.value;
+
+        if (q) {
+            url.searchParams.set('q', q);
+        } else {
+            url.searchParams.delete('q');
+        }
+
+        fetch(url.toString(), {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newContent = doc.getElementById('main-content');
+                const currentContent = document.getElementById('main-content');
+
+                if (newContent && currentContent) {
+                    currentContent.innerHTML = newContent.innerHTML;
+                }
+
+                window.history.pushState({}, '', url.toString());
+            })
+            .catch(() => {
+                window.location.href = url.toString();
+            });
+    }
+
+    searchInput.addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        const delay = searchInput.value === '' ? 200 : 500;
+        debounceTimer = setTimeout(runSearch, delay);
+    });
+})();
+</script>

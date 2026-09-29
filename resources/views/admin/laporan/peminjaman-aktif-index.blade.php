@@ -1,31 +1,32 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
-        <h2 class="page-title">
-            Laporan dan Ekspor
+  <div class="flex flex-wrap items-start justify-between gap-3 mb-4">        
+    <h2 class="page-title">            
+        Laporan dan Ekspor
         </h2>
-
-        <div class="flex flex-wrap items-center gap-2">
-            <a href="{{ route('admin.laporan.peminjaman-aktif.export-pdf', request()->query()) }}" target="_blank"
-                class="btn btn-outline">
-                Ekspor PDF
-            </a>
-            <a href="{{ route('admin.laporan.peminjaman-aktif.export-excel', request()->query()) }}"
-                class="btn btn-outline">
-                Ekspor Excel
-            </a>
-        </div>
     </div>
 
     @include('admin.laporan._tabs', ['active' => 'peminjaman-aktif'])
 
+    {{-- Tombol Ekspor (di luar panel filter) --}}
+    <div class="flex items-center justify-end gap-2 mb-4">
+        <a href="{{ route('admin.laporan.peminjaman-aktif.export-pdf', request()->query()) }}" target="_blank"
+            class="btn btn-outline">
+            Ekspor PDF
+        </a>
+        <a href="{{ route('admin.laporan.peminjaman-aktif.export-excel', request()->query()) }}"
+            class="btn btn-outline">
+            Ekspor Excel
+        </a>
+    </div>
+
     {{-- Filter --}}
     <form method="GET" action="{{ route('admin.laporan.peminjaman-aktif.index') }}" class="mb-4 card card-pad">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
                 <label class="form-label">Status</label>
-                <select name="status_pinjam" class="form-control">
+                <select name="status_pinjam" class="form-control w-full">
                     <option value="">-- Semua --</option>
                     <option value="aktif" {{ request('status_pinjam') === 'aktif' ? 'selected' : '' }}>Aktif</option>
                     <option value="terlambat" {{ request('status_pinjam') === 'terlambat' ? 'selected' : '' }}>Terlambat</option>
@@ -33,7 +34,7 @@
             </div>
             <div>
                 <label class="form-label">Lokasi</label>
-                <select name="location_id" class="form-control">
+                <select name="location_id" class="form-control w-full">
                     <option value="">-- Semua Lokasi --</option>
                     @foreach ($locations as $location)
                         <option value="{{ $location->id }}" {{ request('location_id') == $location->id ? 'selected' : '' }}>
@@ -44,7 +45,7 @@
             </div>
             <div>
                 <label class="form-label">Kategori</label>
-                <select name="category_id" class="form-control">
+                <select name="category_id" class="form-control w-full">
                     <option value="">-- Semua Kategori --</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->category_id }}" {{ request('category_id') == $category->category_id ? 'selected' : '' }}>

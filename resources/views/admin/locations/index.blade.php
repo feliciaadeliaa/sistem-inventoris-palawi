@@ -7,7 +7,7 @@
                 Manajemen Lokasi
             </h2>
             <p class="page-desc">
-                Kelola data lokasi barang inventaris.
+                Kelola data klaster dan wisata. Kode klaster + kode lokasi membentuk segmen ke-4 nomor aktiva tetap.
             </p>
         </div>
 
@@ -35,44 +35,21 @@
 
     {{-- Filter --}}
     <form method="GET" action="{{ route('lokasi.index') }}" class="mb-4 card card-pad">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
                 <label class="form-label">Cari (Kode / Nama)</label>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode atau nama lokasi..."
+                <input type="text" name="search" value="{{ request('search') }}"
+                    placeholder="Cari kode, nama wisata, atau klaster..."
                     class="form-control">
             </div>
 
             <div>
-                <label class="form-label">Wilayah</label>
-                <select name="wilayah" class="form-control">
-                    <option value="">-- Semua --</option>
-                    @foreach ($wilayahOptions as $wilayah)
-                        <option value="{{ $wilayah }}" {{ request('wilayah') == $wilayah ? 'selected' : '' }}>
-                            {{ $wilayah }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div>
-                <label class="form-label">Unit Bisnis</label>
+                <label class="form-label">Klaster</label>
                 <select name="unit_bisnis" class="form-control">
                     <option value="">-- Semua --</option>
                     @foreach ($unitBisnisOptions as $unit)
                         <option value="{{ $unit }}" {{ request('unit_bisnis') == $unit ? 'selected' : '' }}>
                             {{ $unit }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div>
-                <label class="form-label">Sub Unit Bisnis</label>
-                <select name="sub_unit_bisnis" class="form-control">
-                    <option value="">-- Semua --</option>
-                    @foreach ($subUnitBisnisOptions as $sub)
-                        <option value="{{ $sub }}" {{ request('sub_unit_bisnis') == $sub ? 'selected' : '' }}>
-                            {{ $sub }}
                         </option>
                     @endforeach
                 </select>
@@ -83,7 +60,7 @@
             <button type="submit" class="btn btn-primary">
                 Terapkan Filter
             </button>
-            @if (request()->anyFilled(['search', 'wilayah', 'unit_bisnis', 'sub_unit_bisnis']))
+            @if (request()->anyFilled(['search', 'unit_bisnis']))
                 <a href="{{ route('lokasi.index') }}" class="text-sm text-gray-500 hover:underline">
                     Reset filter
                 </a>
@@ -96,11 +73,10 @@
             <table class="table-app">
                 <thead>
                     <tr>
-                        <th>Kode</th>
-                        <th>Nama Lokasi</th>
-                        <th>Wilayah</th>
-                        <th>Unit Bisnis</th>
-                        <th>Sub Unit Bisnis</th>
+                        <th>Kode Gabungan</th>
+                        <th>Klaster</th>
+                        <th>Kode Lokasi</th>
+                        <th>Nama Wisata</th>
                         <th class="text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -109,23 +85,19 @@
                     @forelse ($locations as $location)
                         <tr>
                             <td class="cell-id">
-                                {{ $location->kode_lokasi ?? '-' }}
+                                {{ $location->kode_gabungan }}
+                            </td>
+
+                            <td>
+                                {{ $location->kode_unit_bisnis }} - {{ $location->unit_bisnis }}
+                            </td>
+
+                            <td>
+                                {{ $location->kode_lokasi }}
                             </td>
 
                             <td class="font-medium text-gray-800">
-                                {{ $location->nama_lokasi }}
-                            </td>
-
-                            <td>
-                                {{ $location->wilayah ?? '-' }}
-                            </td>
-
-                            <td>
-                                {{ $location->unit_bisnis ?? '-' }}
-                            </td>
-
-                            <td>
-                                {{ $location->sub_unit_bisnis ?? '-' }}
+                                {{ $location->nama_wisata }}
                             </td>
 
                             <td>
@@ -160,7 +132,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-6 text-center text-gray-500">
+                            <td colspan="5" class="px-4 py-6 text-center text-gray-500">
                                 Belum ada data lokasi.
                             </td>
                         </tr>

@@ -1,40 +1,73 @@
-{{-- resources/views/admin/categories/_form.blade.php --}}
 @php
     $category = $category ?? null;
 @endphp
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
     <div>
-        <label for="category_id" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            {{ __('Kode Kategori') }}
+        <label for="kode_aktiva_tetap" class="form-label">
+            {{ __('Kode Aktiva Tetap') }}
         </label>
-        <input type="text" id="category_id" name="category_id" maxlength="5"
-            value="{{ old('category_id', $category->category_id ?? '') }}"
-            {{ $category ? 'readonly' : '' }} placeholder="C06" required
-            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 {{ $category ? 'opacity-60 cursor-not-allowed' : '' }}" />
-        @error('category_id')
+        <input type="text" id="kode_aktiva_tetap" name="kode_aktiva_tetap" maxlength="2"
+            inputmode="numeric" pattern="[0-9]{2}" placeholder="09"
+            value="{{ old('kode_aktiva_tetap', $category->kode_aktiva_tetap ?? '') }}"
+            {{ $category ? 'readonly' : '' }} required
+            class="form-control {{ $category ? 'opacity-60 cursor-not-allowed' : '' }}" />
+        @error('kode_aktiva_tetap')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
-        @if ($category)
-            <p class="mt-1.5 text-sm text-gray-400">{{ __('Kode kategori tidak bisa diubah setelah dibuat.') }}</p>
-        @endif
     </div>
 
     <div>
-        <label for="nama_kategori" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            {{ __('Nama Kategori') }}
+        <label for="jenis_aktiva_tetap" class="form-label">
+            {{ __('Jenis Aktiva Tetap') }}
         </label>
-        <input type="text" id="nama_kategori" name="nama_kategori" value="{{ old('nama_kategori', $category->nama_kategori ?? '') }}" required
-            class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
-        @error('nama_kategori')
+        <input type="text" id="jenis_aktiva_tetap" name="jenis_aktiva_tetap"
+            value="{{ old('jenis_aktiva_tetap', $category->jenis_aktiva_tetap ?? '') }}"
+            {{ $category ? 'readonly' : '' }} required
+            class="form-control {{ $category ? 'opacity-60 cursor-not-allowed' : '' }}" />
+        @error('jenis_aktiva_tetap')
+            <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
+        @enderror
+    </div>
+
+    <div>
+        <label for="sub_jenis" class="form-label">
+            {{ __('Sub Jenis') }}
+        </label>
+        <input type="text" id="sub_jenis" name="sub_jenis" maxlength="2"
+            inputmode="numeric" pattern="[0-9]{2}" placeholder="47"
+            value="{{ old('sub_jenis', $category->sub_jenis ?? '') }}"
+            {{ $category ? 'readonly' : '' }}
+            class="form-control {{ $category ? 'opacity-60 cursor-not-allowed' : '' }}" />
+        @error('sub_jenis')
+            <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
+        @enderror
+        <p class="mt-1.5 text-sm text-gray-400">
+            {{ __('Kosongkan jika jenis ini belum punya sub jenis. Baris tanpa sub jenis tidak muncul di pilihan nomor aktiva.') }}
+        </p>
+    </div>
+
+    <div>
+        <label for="keterangan_fungsi" class="form-label">
+            {{ __('Keterangan Fungsi') }}
+        </label>
+        <input type="text" id="keterangan_fungsi" name="keterangan_fungsi"
+            value="{{ old('keterangan_fungsi', $category->keterangan_fungsi ?? '') }}"
+            class="form-control" />
+        @error('keterangan_fungsi')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
     </div>
 </div>
 
+@if ($category)
+    <p class="mt-4 text-sm text-gray-400">
+        {{ __('Kode Aktiva Tetap, Jenis, dan Sub Jenis tidak bisa diubah setelah dibuat karena membentuk nomor aktiva.') }}
+    </p>
+@endif
+
 <div class="mt-6">
-    <button type="submit"
-        class="bg-brand-500 shadow-theme-xs hover:bg-brand-600 rounded-lg px-5 py-2.5 text-sm font-medium text-white transition">
+    <button type="submit" class="btn btn-primary">
         {{ __('Simpan') }}
     </button>
 </div>

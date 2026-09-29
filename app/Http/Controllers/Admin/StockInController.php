@@ -16,6 +16,14 @@ class StockInController extends Controller
             ->where('jenis_transaksi', 'Stock Out')
             ->whereIn('status', ['disetujui', 'dikembalikan']);
 
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where(function ($sub) use ($search) {
+                $sub->whereHas('item', fn ($i) => $i->where('nama_barang', 'like', "%{$search}%"))
+                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"));
+            });
+        }
+
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }

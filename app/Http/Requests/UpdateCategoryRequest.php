@@ -13,9 +13,17 @@ class UpdateCategoryRequest extends FormRequest
 
     public function rules(): array
     {
+        // Saat edit hanya Keterangan Fungsi yang boleh berubah.
+        // Kode, jenis, dan sub jenis dikunci karena membentuk nomor aktiva.
         return [
-            // category_id tidak diubah saat edit (jadi tidak divalidasi unique di sini)
-            'nama_kategori' => ['required', 'string', 'max:255'],
+            'keterangan_fungsi' => ['nullable', 'string', 'max:255'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'keterangan_fungsi.max' => 'Keterangan Fungsi maksimal 255 karakter.',
         ];
     }
 }

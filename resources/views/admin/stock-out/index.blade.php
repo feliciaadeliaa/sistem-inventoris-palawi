@@ -4,30 +4,28 @@
 
     <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
-            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Stock Out</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Antrian dan riwayat pengajuan peminjaman barang.</p>
+            <h2 class="page-title">Stock Out</h2>
+            <p class="page-desc">Antrian dan riwayat pengajuan peminjaman barang.</p>
         </div>
 
-        <div class="flex gap-2">
-            <button type="button" id="btn-download" class="px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
-                Download Excel
-            </button>
-        </div>
+        <button type="button" id="btn-download" class="btn btn-outline">
+            Download Excel
+        </button>
     </div>
 
     @if (session('success'))
-        <div class="mb-4 p-4 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200 rounded">
+        <div class="mb-4 p-4 bg-success-50 text-success-700 rounded-lg">
             {{ session('success') }}
         </div>
     @endif
     @if (session('error'))
-        <div class="mb-4 p-4 bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200 rounded">
+        <div class="mb-4 p-4 bg-error-50 text-error-700 rounded-lg">
             {{ session('error') }}
         </div>
     @endif
 
     {{-- Panel Filter --}}
-    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-6">
+    <div class="card card-pad mb-6">
         <form method="GET">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
 
@@ -50,97 +48,170 @@
 
             </div>
 
-            <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-6 py-2.5 rounded-lg">
+            <button type="submit" class="btn btn-primary">
                 Terapkan Filter
             </button>
         </form>
     </div>
 
     {{-- Tabel --}}
-    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm overflow-x-auto">
+    <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
 
-        <label class="flex items-center gap-2 mb-4 text-sm text-gray-700 dark:text-gray-300">
-            <input type="checkbox" id="select-all">
-            Pilih Semua
-        </label>
+            <div class="mb-4 flex items-center justify-between px-4 pt-4">
+                <label class="flex items-center gap-2 text-sm text-gray-600">
+                    <input type="checkbox" id="select-all" class="h-4 w-4 rounded border-gray-300 accent-brand-600">
+                    Pilih Semua (halaman ini)
+                </label>
 
-        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead>
-                <tr>
-                    <th class="px-4 py-3"></th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-brand-600 dark:text-brand-400 uppercase">Barang</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-brand-600 dark:text-brand-400 uppercase">Pengaju</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-brand-600 dark:text-brand-400 uppercase">Keterangan</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-brand-600 dark:text-brand-400 uppercase">Estimasi Kembali</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-brand-600 dark:text-brand-400 uppercase">Status</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-brand-600 dark:text-brand-400 uppercase">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                @forelse ($transactions as $trx)
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <span><span id="selected-count" class="font-semibold text-brand-700">0</span> item terpilih</span>
+                    <button type="button" id="clear-selection-btn" class="text-red-500 hover:underline text-xs">
+                        Reset Pilihan
+                    </button>
+                </div>
+            </div>
+
+            <table class="table-app">
+                <thead>
                     <tr>
-                        <td class="px-4 py-3"><input type="checkbox" class="row-checkbox" value="{{ $trx->id }}"></td>
-                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->item->nama_barang }}</td>
-                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->user->name }}</td>
-                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->keterangan }}</td>
-                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->tanggal_kembali_estimasi?->format('d M Y') }}</td>
-                        <td class="px-4 py-3">
-                            <span @class([
-                                'px-2 py-1 rounded text-xs font-semibold',
-                                'bg-yellow-100 text-yellow-800' => $trx->status === 'menunggu_approval',
-                                'bg-blue-100 text-blue-800' => $trx->status === 'disetujui',
-                                'bg-red-100 text-red-800' => $trx->status === 'ditolak',
-                                'bg-green-100 text-green-800' => $trx->status === 'dikembalikan',
-                            ])>
-                                {{ str_replace('_', ' ', ucfirst($trx->status)) }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 space-x-1">
-                            @if ($trx->status === 'menunggu_approval')
-                                <form action="{{ route('admin.transaksi.stock-out.approve', $trx) }}" method="POST" class="inline">
-                                    @csrf @method('PATCH')
-                                    <button class="px-2 py-1 bg-green-600 text-white text-xs rounded">Setujui</button>
-                                </form>
-                                <form action="{{ route('admin.transaksi.stock-out.reject', $trx) }}" method="POST" class="inline">
-                                    @csrf @method('PATCH')
-                                    <button class="px-2 py-1 bg-red-600 text-white text-xs rounded">Tolak</button>
-                                </form>
-                            @elseif ($trx->status === 'disetujui')
-                                <span class="text-xs text-gray-500 dark:text-gray-400">Menunggu pengembalian</span>
-                            @else
-                                <span class="text-xs text-gray-400">-</span>
-                            @endif
-                        </td>
+                        <th></th>
+                        <th>Barang</th>
+                        <th>Pengaju</th>
+                        <th>Keterangan</th>
+                        <th>Estimasi Kembali</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
-                            Belum ada pengajuan peminjaman.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse ($transactions as $trx)
+                        <tr>
+                            <td><input type="checkbox" class="row-checkbox h-4 w-4 rounded border-gray-300 accent-brand-600" value="{{ $trx->id }}"></td>
+                            <td class="font-medium text-gray-800">{{ $trx->item->nama_barang }}</td>
+                            <td>{{ $trx->user->name }}</td>
+                            <td>{{ $trx->keterangan }}</td>
+                            <td>{{ $trx->tanggal_kembali_estimasi?->format('d M Y') }}</td>
+                            <td>
+                                <span @class([
+                                    'badge',
+                                    'badge-amber' => $trx->status === 'menunggu_approval',
+                                    'badge-blue' => $trx->status === 'disetujui',
+                                    'badge-red' => $trx->status === 'ditolak',
+                                    'badge-green' => $trx->status === 'dikembalikan',
+                                ])>
+                                    {{ str_replace('_', ' ', ucfirst($trx->status)) }}
+                                </span>
+                            </td>
+                            <td class="space-x-1">
+                                @if ($trx->status === 'menunggu_approval')
+                                    <form action="{{ route('admin.transaksi.stock-out.approve', $trx) }}" method="POST" class="inline">
+                                        @csrf @method('PATCH')
+                                        <button class="btn btn-sm text-white bg-secondary-600 hover:bg-secondary-700">Setujui</button>
+                                    </form>
+                                    <form action="{{ route('admin.transaksi.stock-out.reject', $trx) }}" method="POST" class="inline">
+                                        @csrf @method('PATCH')
+                                        <button class="btn btn-sm text-white bg-error-600 hover:bg-error-700">Tolak</button>
+                                    </form>
+                                @elseif ($trx->status === 'disetujui')
+                                    <span class="text-xs text-gray-500">Menunggu pengembalian</span>
+                                @else
+                                    <span class="text-xs text-gray-400">-</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center text-gray-500">
+                                Belum ada pengajuan peminjaman.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
 
-        <div class="mt-4">
+        <div class="card-pad !pt-4">
             {{ $transactions->links() }}
         </div>
     </div>
 
     @push('scripts')
     <script>
+const STOCKIN_SELECTION_KEY = 'stockout_selected_ids';
+
+function getSelectedIds() {
+    try {
+        return new Set(JSON.parse(sessionStorage.getItem(STOCKIN_SELECTION_KEY)) || []);
+    } catch (e) {
+        return new Set();
+    }
+}
+
+function saveSelectedIds(idsSet) {
+    sessionStorage.setItem(STOCKIN_SELECTION_KEY, JSON.stringify(Array.from(idsSet)));
+}
+
+function updateCounter() {
+    document.getElementById('selected-count').textContent = getSelectedIds().size;
+}
+
+function updateSelectAllState() {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    const selectAll = document.getElementById('select-all');
+    if (!checkboxes.length) {
+        selectAll.checked = false;
+        return;
+    }
+    selectAll.checked = Array.from(checkboxes).every(cb => cb.checked);
+}
+
+function syncCheckboxesWithStorage() {
+    const selected = getSelectedIds();
+    document.querySelectorAll('.row-checkbox').forEach(cb => {
+        cb.checked = selected.has(cb.value);
+    });
+    updateSelectAllState();
+    updateCounter();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    syncCheckboxesWithStorage();
+
+    document.querySelectorAll('.row-checkbox').forEach(cb => {
+        cb.addEventListener('change', () => {
+            const selected = getSelectedIds();
+            cb.checked ? selected.add(cb.value) : selected.delete(cb.value);
+            saveSelectedIds(selected);
+            updateSelectAllState();
+            updateCounter();
+        });
+    });
+
     document.getElementById('select-all').addEventListener('change', function () {
-        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = this.checked);
+        const selected = getSelectedIds();
+        document.querySelectorAll('.row-checkbox').forEach(cb => {
+            cb.checked = this.checked;
+            this.checked ? selected.add(cb.value) : selected.delete(cb.value);
+        });
+        saveSelectedIds(selected);
+        updateCounter();
+    });
+
+    document.getElementById('clear-selection-btn').addEventListener('click', () => {
+        sessionStorage.removeItem(STOCKIN_SELECTION_KEY);
+        syncCheckboxesWithStorage();
     });
 
     document.getElementById('btn-download').addEventListener('click', function () {
-        const selected = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+        const selected = Array.from(getSelectedIds());
         const params = new URLSearchParams(window.location.search);
         if (selected.length > 0) {
             params.set('selected_ids', selected.join(','));
         }
-        window.location.href = `{{ route('admin.transaksi.stock-out.export') }}?${params.toString()}`;
+        window.location.href = `{{ route('admin.stock-in.export') }}?${params.toString()}`;
     });
+});
     </script>
     @endpush
 @endsection

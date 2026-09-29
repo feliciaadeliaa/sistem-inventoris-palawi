@@ -35,8 +35,8 @@ class LaporanController extends Controller
 
         return view('admin.laporan.riwayat-barang-index', [
             'transactions' => $transactions,
-            'locations' => Location::orderBy('nama_lokasi')->get(),
-            'categories' => Category::orderBy('nama_kategori')->get(),
+            'locations' => Location::urut()->get(),
+            'categories' => Category::siapDipakai()->urut()->get(),
             'jenisOptions' => Transaction::distinct()->orderBy('jenis_transaksi')->pluck('jenis_transaksi'),
             'statusLabels' => self::STATUS_LABELS,
         ]);
@@ -74,8 +74,8 @@ class LaporanController extends Controller
 
         return view('admin.laporan.peminjaman-aktif-index', [
             'transactions' => $data,
-            'locations' => Location::orderBy('nama_lokasi')->get(),
-            'categories' => Category::orderBy('nama_kategori')->get(),
+            'locations' => Location::urut()->get(),
+            'categories' => Category::siapDipakai()->urut()->get(),
         ]);
     }
 
@@ -104,6 +104,13 @@ class LaporanController extends Controller
         return Transaction::with(['item.category', 'item.location', 'user'])
             ->where('jenis_transaksi', 'Stock Out')
             ->where('status', 'disetujui')
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $search = $request->q;
+                $q->where(function ($sub) use ($search) {
+                    $sub->whereHas('item', fn ($i) => $i->where('nama_barang', 'like', "%{$search}%"))
+                        ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"));
+                });
+            })
             ->when($request->filled('location_id'), function ($q) use ($request) {
                 $q->whereHas('item', fn ($sub) => $sub->where('location_id', $request->location_id));
             })
@@ -204,6 +211,13 @@ class LaporanController extends Controller
     private function filteredTransactionsQuery(Request $request): Builder
     {
         return Transaction::with(['item.category', 'item.location', 'user'])
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $search = $request->q;
+                $q->where(function ($sub) use ($search) {
+                    $sub->whereHas('item', fn ($i) => $i->where('nama_barang', 'like', "%{$search}%"))
+                        ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"));
+                });
+            })
             ->when($request->filled('tanggal_dari'), fn ($q) => $q->whereDate('created_at', '>=', $request->tanggal_dari))
             ->when($request->filled('tanggal_sampai'), fn ($q) => $q->whereDate('created_at', '<=', $request->tanggal_sampai))
             ->when($request->filled('location_id'), function ($q) use ($request) {
@@ -217,23 +231,32 @@ class LaporanController extends Controller
 
     private function filterSummary(Request $request): string
     {
-    $parts = [];
-    if ($request->filled('tanggal_dari') || $request->filled('tanggal_sampai')) {
-        $parts[] = 'Periode: '.($request->tanggal_dari ?? '...').' s/d '.($request->tanggal_sampai ?? '...');
-    }
-    if ($request->filled('jenis_transaksi')) {
-        $parts[] = 'Jenis: '.$request->jenis_transaksi;
-    }
-    if ($request->filled('location_id')) {
-        $parts[] = 'Lokasi: '.(Location::find($request->location_id)->nama_lokasi ?? '-');
-    }
-    if ($request->filled('category_id')) {
-        $parts[] = 'Kategori: '.(Category::where('category_id', $request->category_id)->value('nama_kategori') ?? '-');
-    }
-    if ($request->filled('status_pinjam')) {
-        $parts[] = 'Status: '.ucfirst($request->status_pinjam);
-    }
+        $parts = [];
 
-    return $parts ? implode(' | ', $parts) : 'Semua data';
-}
+        if ($request->filled('q')) {
+            $parts[] = 'Cari: '.$request->q;
+        }
+
+        if ($request->filled('tanggal_dari') || $request->filled('tanggal_sampai')) {
+            $parts[] = 'Periode: '.($request->tanggal_dari ?? '...').' s/d '.($request->tanggal_sampai ?? '...');
+        }
+
+        if ($request->filled('jenis_transaksi')) {
+            $parts[] = 'Jenis: '.$request->jenis_transaksi;
+        }
+
+        if ($request->filled('location_id')) {
+            $parts[] = 'Lokasi: '.(Location::find($request->location_id)->nama_lokasi ?? '-');
+        }
+
+        if ($request->filled('category_id')) {
+            $parts[] = 'Kategori: '.(Category::find($request->category_id)?->nama_kategori ?? '-');
+        }
+
+        if ($request->filled('status_pinjam')) {
+            $parts[] = 'Status: '.ucfirst($request->status_pinjam);
+        }
+
+        return $parts ? implode(' | ', $parts) : 'Semua data';
+    }
 }

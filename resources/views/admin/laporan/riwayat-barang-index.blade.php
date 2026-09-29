@@ -1,31 +1,39 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="mb-6">
-        <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">
-            Laporan dan Ekspor
+  <div class="flex flex-wrap items-start justify-between gap-3 mb-4">        
+    <h2 class="page-title">            
+        Laporan dan Ekspor
         </h2>
     </div>
 
     {{-- Tab Navigation --}}
      @include('admin.laporan._tabs', ['active' => 'riwayat-barang'])
 
+    {{-- Tombol Ekspor (di luar panel filter) --}}
+    <div class="flex items-center justify-end gap-2 mb-4">
+        <a href="{{ route('admin.laporan.riwayat-barang.export-pdf', request()->query()) }}" target="_blank" class="btn btn-outline">
+            Ekspor PDF
+        </a>
+        <a href="{{ route('admin.laporan.riwayat-barang.export-excel', request()->query()) }}" class="btn btn-outline">
+            Ekspor Excel
+        </a>
+    </div>
+
     {{-- Filter --}}
-    <form method="GET" action="{{ route('admin.laporan.riwayat-barang.index') }}" class="mb-4 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm">
+    <form method="GET" action="{{ route('admin.laporan.riwayat-barang.index') }}" class="mb-4 card card-pad">
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
             <div>
-                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Dari Tanggal</label>
-                <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}"
-                    class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+                <label class="form-label">Dari Tanggal</label>
+                <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}" class="form-control">
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Sampai Tanggal</label>
-                <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}"
-                    class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+                <label class="form-label">Sampai Tanggal</label>
+                <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}" class="form-control">
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Lokasi</label>
-                <select name="location_id" class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+                <label class="form-label">Lokasi</label>
+                <select name="location_id" class="form-control">
                     <option value="">-- Semua Lokasi --</option>
                     @foreach ($locations as $location)
                         <option value="{{ $location->id }}" {{ request('location_id') == $location->id ? 'selected' : '' }}>
@@ -35,8 +43,8 @@
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Kategori</label>
-                <select name="category_id" class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+                <label class="form-label">Kategori</label>
+                <select name="category_id" class="form-control">
                     <option value="">-- Semua Kategori --</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->category_id }}" {{ request('category_id') == $category->category_id ? 'selected' : '' }}>
@@ -46,8 +54,8 @@
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Jenis Transaksi</label>
-                <select name="jenis_transaksi" class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-white/90">
+                <label class="form-label">Jenis Transaksi</label>
+                <select name="jenis_transaksi" class="form-control">
                     <option value="">-- Semua Jenis --</option>
                     @foreach ($jenisOptions as $jenis)
                         <option value="{{ $jenis }}" {{ request('jenis_transaksi') == $jenis ? 'selected' : '' }}>
@@ -60,79 +68,64 @@
 
         <div class="flex items-center justify-between mt-4">
             <div class="flex items-center gap-3">
-                <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded">
+                <button type="submit" class="btn btn-primary">
                     Terapkan
                 </button>
                 @if (request()->anyFilled(['tanggal_dari', 'tanggal_sampai', 'location_id', 'category_id', 'jenis_transaksi']))
-                    <a href="{{ route('admin.laporan.riwayat-barang.index') }}" class="text-sm text-gray-500 hover:underline dark:text-gray-400">
+                    <a href="{{ route('admin.laporan.riwayat-barang.index') }}" class="text-sm text-gray-500 hover:underline">
                         Reset filter
                     </a>
                 @endif
-            </div>
-
-            <div class="flex items-center gap-2">
-                <a href="{{ route('admin.laporan.riwayat-barang.export-pdf', request()->query()) }}" target="_blank"
-                    class="flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded">
-                    Ekspor PDF
-                </a>
-                <a href="{{ route('admin.laporan.riwayat-barang.export-excel', request()->query()) }}"
-                    class="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2 rounded">
-                    Ekspor Excel
-                </a>
             </div>
         </div>
     </form>
 
     {{-- Tabel --}}
-    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead>
-                <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tanggal</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Barang</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jenis</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Pemohon</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                @forelse ($transactions as $trx)
+    <div class="card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="table-app">
+                <thead>
                     <tr>
-                        <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">
-                            {{ $trx->created_at->format('d/m/Y') }}
-                        </td>
-                        <td class="px-4 py-3 whitespace-nowrap">
-                            @if ($trx->item)
-                                <a href="{{ route('admin.laporan.riwayat-barang.show', $trx->item) }}" class="text-brand-500 hover:underline">
-                                    {{ $trx->item->nama_barang }}
-                                </a>
-                            @else
-                                <span class="text-gray-400">-</span>
-                            @endif
-                        </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">
-                            {{ $trx->jenis_transaksi }}
-                        </td>
-                        <td class="px-4 py-3 whitespace-nowrap">
-                            <span class="px-2 py-1 rounded text-xs font-semibold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                                {{ $statusLabels[$trx->status] ?? ucfirst($trx->status) }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-gray-800 dark:text-gray-200">
-                            {{ $trx->user->name ?? '-' }}
-                        </td>
+                        <th>Tanggal</th>
+                        <th>Barang</th>
+                        <th>Jenis</th>
+                        <th>Status</th>
+                        <th>Pemohon</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
-                            Tidak ada data transaksi yang cocok dengan filter.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse ($transactions as $trx)
+                        <tr>
+                            <td>{{ $trx->created_at->format('d/m/Y') }}</td>
+                            <td class="font-medium text-gray-800">
+                                @if ($trx->item)
+                                    <a href="{{ route('admin.laporan.riwayat-barang.show', $trx->item) }}" class="text-brand-600 hover:underline">
+                                        {{ $trx->item->nama_barang }}
+                                    </a>
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
+                            </td>
+                            <td>{{ $trx->jenis_transaksi }}</td>
+                            <td>
+                                <span class="badge badge-slate">
+                                    {{ $statusLabels[$trx->status] ?? ucfirst($trx->status) }}
+                                </span>
+                            </td>
+                            <td>{{ $trx->user->name ?? '-' }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="px-4 py-6 text-center text-gray-500">
+                                Tidak ada data transaksi yang cocok dengan filter.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
 
-        <div class="mt-4">
+        <div class="card-pad !pt-4">
             {{ $transactions->links() }}
         </div>
     </div>

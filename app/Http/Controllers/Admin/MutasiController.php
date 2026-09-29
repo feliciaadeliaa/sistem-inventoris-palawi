@@ -15,8 +15,8 @@ class MutasiController extends Controller
 {
     public function index(Request $request)
     {
-        $locations = Location::orderBy('nama_lokasi')->get();
-        $categories = \App\Models\Category::orderBy('nama_kategori')->get();
+        $locations = Location::urut()->get();
+        $categories = \App\Models\Category::siapDipakai()->urut()->get();
         $golonganOptions = Item::distinct()->pluck('golongan_at')->filter()->sort()->values();
 
         $selectedItem = null;
@@ -29,6 +29,15 @@ class MutasiController extends Controller
 
         $riwayatQuery = Transaction::with(['item', 'lokasiAsal', 'lokasiTujuan'])
             ->where('jenis_transaksi', 'Mutasi');
+
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $riwayatQuery->where(function ($sub) use ($search) {
+                $sub->whereHas('item', fn ($i) => $i->where('nama_barang', 'like', "%{$search}%"))
+                    ->orWhereHas('lokasiAsal', fn ($l) => $l->where('nama_lokasi', 'like', "%{$search}%"))
+                    ->orWhereHas('lokasiTujuan', fn ($l) => $l->where('nama_lokasi', 'like', "%{$search}%"));
+            });
+        }
 
         if ($request->filled('date_from')) {
             $riwayatQuery->whereDate('created_at', '>=', $request->date_from);

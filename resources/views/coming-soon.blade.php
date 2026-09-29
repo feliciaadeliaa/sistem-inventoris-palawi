@@ -1,6 +1,17 @@
 @extends('layouts.app')
 
 @section('content')
+
+@isset($activeTab)
+    <div class="mb-6">
+        <h2 class="page-title">
+            Laporan dan Ekspor
+        </h2>
+    </div>
+
+    @include('admin.laporan._tabs', ['active' => $activeTab])
+@endisset
+
 <div class="flex flex-col items-center justify-center py-24 text-center">
     <div class="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-brand-50 dark:bg-brand-500/10">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

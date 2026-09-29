@@ -7,7 +7,7 @@
                 Manajemen Kategori
             </h2>
             <p class="page-desc">
-                Kelola data kategori barang inventaris.
+                Kelola Jenis Aktiva Tetap dan Sub Jenis yang dipakai untuk penomoran aset.
             </p>
         </div>
 
@@ -33,8 +33,10 @@
             <table class="table-app">
                 <thead>
                     <tr>
-                        <th>Kode</th>
-                        <th>Nama Kategori</th>
+                        <th>Kode Aktiva Tetap</th>
+                        <th>Jenis Aktiva Tetap</th>
+                        <th>Sub Jenis</th>
+                        <th>Keterangan Fungsi</th>
                         <th class="text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -43,11 +45,19 @@
                     @forelse ($categories as $category)
                         <tr>
                             <td class="cell-id">
-                                {{ $category->category_id }}
+                                {{ $category->kode_aktiva_tetap }}
                             </td>
 
                             <td class="font-medium text-gray-800">
-                                {{ $category->nama_kategori }}
+                                {{ $category->jenis_aktiva_tetap }}
+                            </td>
+
+                            <td class="cell-id">
+                                {{ $category->sub_jenis ?? '-' }}
+                            </td>
+
+                            <td class="text-gray-700">
+                                {{ $category->keterangan_fungsi ?? '-' }}
                             </td>
 
                             <td>
@@ -82,7 +92,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="px-4 py-6 text-center text-gray-500">
+                            <td colspan="5" class="px-4 py-6 text-center text-gray-500">
                                 Belum ada data kategori.
                             </td>
                         </tr>

@@ -37,6 +37,7 @@ class MenuHelper
                 ['name' => 'Asset', 'path' => '/admin/barang'],
                 ['name' => 'Kategori', 'path' => '/admin/kategori'],
                 ['name' => 'Lokasi', 'path' => '/admin/lokasi'],
+                ['name' => 'Golongan AT', 'path' => '/admin/golongan']
             ],
         ],
         [

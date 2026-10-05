@@ -87,11 +87,11 @@
             </div>
 
             <div>
-                <label class="form-label">Golongan AT</label>
-                <select name="golongan_at" class="form-control">
+                <label class="form-label">AT/IBAT</label>
+                <select name="at_ibat" class="form-control">
                     <option value="">-- Semua --</option>
                     @foreach ($golonganOptions as $golongan)
-                        <option value="{{ $golongan }}" {{ request('golongan_at') == $golongan ? 'selected' : '' }}>
+                        <option value="{{ $golongan }}" {{ request('at_ibat') == $golongan ? 'selected' : '' }}>
                             {{ $golongan }}
                         </option>
                     @endforeach
@@ -114,7 +114,7 @@
             <button type="submit" class="btn btn-primary">
                 Terapkan Filter
             </button>
-            @if (request()->anyFilled(['category_id', 'location_id', 'kondisi', 'status', 'golongan_at', 'tahun_dari', 'tahun_sampai']))
+            @if (request()->anyFilled(['category_id', 'location_id', 'kondisi', 'status', 'at_ibat', 'tahun_dari', 'tahun_sampai']))
                 <a href="{{ route('barang.index') }}" class="text-sm text-gray-500 hover:underline">
                     Reset filter
                 </a>
@@ -153,7 +153,7 @@
                             <th>{{ __('Nama Barang') }}</th>
                             <th>{{ __('Kategori') }}</th>
                             <th>{{ __('Lokasi') }}</th>
-                            <th>{{ __('Golongan AT') }}</th>
+                            <th>{{ __('AT/IBAT') }}</th>
                             <th>{{ __('Nomor Aktiva Tetap') }}</th>
                             <th>{{ __('Tahun Perolehan') }}</th>
                             <th>{{ __('Masa Manfaat') }}</th>
@@ -177,10 +177,8 @@
                                 <td>{{ $item->location->nama_lokasi }}</td>
                                 <td>
                                     <span class="badge badge-round
-                                        {{ $item->golongan_at === 'I' ? 'badge-teal'
-                                            : ($item->golongan_at === 'II' ? 'badge-orange'
-                                                : ($item->golongan_at === 'III' ? 'badge-amber' : 'badge-slate')) }}">
-                                        {{ $item->golongan_at }}
+                                    {{ $item->at_ibat === 'AT' ? 'badge-teal' : 'badge-orange' }}">
+                                      {{ $item->at_ibat }}
                                     </span>
                                 </td>
                                 <td>{{ $item->nomor_aktiva_tetap ?? '-' }}</td>

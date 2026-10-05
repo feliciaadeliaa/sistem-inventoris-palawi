@@ -15,10 +15,11 @@ use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 
 class ItemsImport implements ToCollection, WithHeadingRow
 {
-public function collection(Collection $collection): void
-{
-    $rows = $collection;
-    $errors = [];
+    public function collection(Collection $collection): void
+    {
+        $rows     = $collection;
+        $errors   = [];
+        $prepared = [];
 
         foreach ($rows as $i => $row) {
             $baris = $i + 2;
@@ -28,15 +29,16 @@ public function collection(Collection $collection): void
             $sub     = str_pad(trim($row['sub_jenis']), 2, '0', STR_PAD_LEFT);
             $klaster = trim($row['kode_klaster']);
             $wisata  = str_pad(trim($row['kode_lokasi']), 2, '0', STR_PAD_LEFT);
-            $tipe    = strtoupper(trim($row['tipe_aset']));
+            $tipe    = strtoupper(trim($row['at_ibat'] ?? ''));
 
             // SESUAIKAN nama kolom kategori & lokasi
-            $category = Category::where('kode_aktiva_tetap', $kode)->where('sub_jenis', $sub)->first();
+            $category = Category::with('golongan')
+                ->where('kode_aktiva_tetap', $kode)->where('sub_jenis', $sub)->first();
             $location = Location::where('kode_unit_bisnis', $klaster)->where('kode_lokasi', $wisata)->first();
 
             if (!$category) $errors[] = "Baris $baris: kategori $kode/$sub tidak ditemukan";
             if (!$location) $errors[] = "Baris $baris: lokasi $klaster/$wisata tidak ditemukan";
-            if (!in_array($tipe, ['AT', 'IBAT'])) $errors[] = "Baris $baris: tipe_aset harus AT atau IBAT";
+            if (!in_array($tipe, ['AT', 'IBAT'])) $errors[] = "Baris $baris: at_ibat harus AT atau IBAT";
             if (!preg_match('/^\d{4}$/', (string) $row['tahun_perolehan'])) {
                 $errors[] = "Baris $baris: tahun_perolehan harus 4 digit";
             }
@@ -54,14 +56,13 @@ public function collection(Collection $collection): void
                 $errors[] = "Baris $baris: tanggal_terima tidak valid";
             }
 
-            // Golongan & masa manfaat: Excel dulu, fallback ke kategori
-            $golongan = filled($row['golongan_at'] ?? null) ? $row['golongan_at'] : ($category->golongan_at ?? null);
-            $masa     = filled($row['masa_manfaat'] ?? null) ? $row['masa_manfaat'] : ($category->masa_manfaat ?? null);
-            if (blank($golongan) || blank($masa)) {
-                $errors[] = "Baris $baris: golongan_at/masa_manfaat kosong dan belum diisi di kategori";
+            // Masa manfaat otomatis dari golongan AT milik sub jenis (menu Kategori)
+            $masa = $category?->golongan?->masa_manfaat;
+            if ($category && blank($masa)) {
+                $errors[] = "Baris $baris: sub jenis $kode/$sub belum punya golongan AT, atur dulu di menu Kategori";
             }
 
-            $prepared[] = compact('row', 'category', 'location', 'tipe', 'tanggal', 'golongan', 'masa');
+            $prepared[] = compact('row', 'category', 'location', 'tipe', 'tanggal', 'masa');
         }
 
         if ($errors) {
@@ -78,7 +79,7 @@ public function collection(Collection $collection): void
                 $nomor = sprintf(
                     '%04d.%d.%s%s.%s%s.%s',
                     $urut,
-                    $p['tipe'] === 'AT' ? 1 : 2,
+                    Item::AT_IBAT_KODE[$p['tipe']],
                     str_pad($p['category']->kode_aktiva_tetap, 2, '0', STR_PAD_LEFT),
                     str_pad($p['category']->sub_jenis, 2, '0', STR_PAD_LEFT),
                     $p['location']->kode_unit_bisnis,          // SESUAIKAN (klaster)
@@ -91,9 +92,8 @@ public function collection(Collection $collection): void
                     'nama_barang'        => $row['nama_barang'],
                     'category_id'        => $p['category']->category_id,
                     'location_id'        => $p['location']->id,
-                    'tipe_aset'          => $p['tipe'] === 'AT' ? 1 : 2,
                     'nomor_urut'         => $urut,
-                    'golongan_at'        => $p['golongan'],
+                    'at_ibat'            => $p['tipe'],
                     'nomor_aktiva_tetap' => $nomor,
                     'tahun_perolehan'    => $row['tahun_perolehan'],
                     'masa_manfaat'       => $p['masa'],

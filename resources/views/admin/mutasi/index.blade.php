@@ -64,7 +64,7 @@
     </div>
 
     <div>
-        <label class="form-label">Golongan AT</label>
+        <label class="form-label">AT/IBAT</label>
         <select id="filter-golongan" class="form-control">
             <option value="">-- Semua --</option>
             @foreach ($golonganOptions as $golongan)
@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
         params.set('location_id', document.getElementById('filter-location').value);
         params.set('kondisi', document.getElementById('filter-kondisi').value);
         params.set('status', document.getElementById('filter-status').value);
-        params.set('golongan_at', document.getElementById('filter-golongan').value);
+        params.set('at_ibat', document.getElementById('filter-golongan').value);
         params.set('tahun_dari', document.getElementById('filter-tahun-dari').value);
         params.set('tahun_sampai', document.getElementById('filter-tahun-sampai').value);
 
@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function runSearch() {
         const params = buildParams();
         const q = params.get('q') || '';
-        const hasFilter = ['category_id', 'location_id', 'kondisi', 'status', 'golongan_at', 'tahun_dari', 'tahun_sampai']
+        const hasFilter = ['category_id', 'location_id', 'kondisi', 'status', 'at_ibat', 'tahun_dari', 'tahun_sampai']
             .some(key => params.get(key));
 
         if (q.length < 2 && !hasFilter) {

@@ -28,6 +28,25 @@
         </div>
     @endif
 
+    {{-- Filter: semua user / menunggu persetujuan --}}
+    @php $isPending = request('status') === 'pending'; @endphp
+    <div class="flex items-center gap-2 mb-4 text-sm">
+        <a href="{{ route('admin.users.index') }}"
+            class="px-3 py-1.5 rounded-lg border {{ ! $isPending ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50' }}">
+            Semua
+        </a>
+
+        <a href="{{ route('admin.users.index', ['status' => 'pending']) }}"
+            class="px-3 py-1.5 rounded-lg border {{ $isPending ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50' }}">
+            Menunggu Persetujuan
+            @if (($pendingCount ?? 0) > 0)
+                <span class="ml-1 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-red-500 text-white text-xs">
+                    {{ $pendingCount }}
+                </span>
+            @endif
+        </a>
+    </div>
+
     <div class="card overflow-hidden">
         <div class="overflow-x-auto">
             <table class="table-app">
@@ -55,6 +74,9 @@
 
                             <td>
                                 {{ $user->email }}
+                                @if (! $user->hasVerifiedEmail())
+                                    <div class="text-xs text-amber-600">Email belum diverifikasi</div>
+                                @endif
                             </td>
 
                             <td>
@@ -87,7 +109,7 @@
                                         @method('PATCH')
 
                                         <button type="submit"
-                                            title="{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}"
+                                            title="{{ $user->is_active ? 'Nonaktifkan' : 'Setujui & Aktifkan' }}"
                                             class="icon-btn {{ $user->is_active ? 'icon-btn-danger' : 'icon-btn-success' }}">
                                             @if ($user->is_active)
                                                 {{-- icon: user-x (nonaktifkan) --}}
@@ -113,7 +135,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="px-4 py-6 text-center text-gray-500">
-                                Belum ada data user.
+                                {{ $isPending ? 'Tidak ada user yang menunggu persetujuan.' : 'Belum ada data user.' }}
                             </td>
                         </tr>
                     @endforelse

@@ -36,7 +36,7 @@ class ItemController extends Controller
             ->when($request->filled('location_id'), fn ($q) => $q->where('location_id', $request->location_id))
             ->when($request->filled('kondisi'), fn ($q) => $q->where('kondisi', $request->kondisi))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
-            ->when($request->filled('golongan_at'), fn ($q) => $q->where('golongan_at', $request->golongan_at))
+            ->when($request->filled('at_ibat'), fn ($q) => $q->where('at_ibat', $request->at_ibat))
             ->when($request->filled('tahun_dari'), fn ($q) => $q->where('tahun_perolehan', '>=', $request->tahun_dari))
             ->when($request->filled('tahun_sampai'), fn ($q) => $q->where('tahun_perolehan', '<=', $request->tahun_sampai))
             ->latest()
@@ -45,21 +45,21 @@ class ItemController extends Controller
 
         $categories = Category::siapDipakai()->urut()->get();
         $locations = Location::urut()->get();
-        $golonganOptions = Item::whereNotNull('golongan_at')
-            ->where('golongan_at', '!=', '')
+        $golonganOptions = Item::whereNotNull('at_ibat')
+            ->where('at_ibat', '!=', '')
             ->distinct()
-            ->orderBy('golongan_at')
-            ->pluck('golongan_at');
+            ->orderBy('at_ibat')
+            ->pluck('at_ibat');
 
         return view('admin.items.index', compact('items', 'categories', 'locations', 'golonganOptions'));
     }
 
     public function create()
     {
-        $categories = Category::siapDipakai()->urut()->get();
-        $locations = Location::urut()->get();
+    $categories = Category::with('golongan')->siapDipakai()->urut()->get();
+    $locations = Location::urut()->get();
 
-        return view('admin.items.create', compact('categories', 'locations'));
+    return view('admin.items.create', compact('categories', 'locations'));
     }
 
     public function store(StoreItemRequest $request)
@@ -79,13 +79,13 @@ class ItemController extends Controller
             ->with('success', 'Barang berhasil ditambahkan.');
     }
 
-    public function edit(Item $item)
-    {
-        $categories = Category::siapDipakai()->urut()->get();
-        $locations = Location::urut()->get();
+public function edit(Item $item)
+{
+    $categories = Category::with('golongan')->siapDipakai()->urut()->get();
+    $locations = Location::urut()->get();
 
-        return view('admin.items.edit', compact('item', 'categories', 'locations'));
-    }
+    return view('admin.items.edit', compact('item', 'categories', 'locations'));
+}
 
     public function update(UpdateItemRequest $request, Item $item)
     {

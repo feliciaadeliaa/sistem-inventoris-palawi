@@ -50,7 +50,7 @@ class LoginRequest extends FormRequest
         ]);
     }
 
-    if (! Auth::user()->is_active) {
+    if (Auth::user()->hasVerifiedEmail() && ! Auth::user()->is_active) {
         Auth::logout();
 
         throw ValidationException::withMessages([

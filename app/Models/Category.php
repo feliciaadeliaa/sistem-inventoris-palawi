@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Category extends Model
 {
@@ -16,11 +17,18 @@ class Category extends Model
         'jenis_aktiva_tetap',
         'sub_jenis',
         'keterangan_fungsi',
+        'golongan_id',
     ];
 
     public function items()
     {
         return $this->hasMany(Item::class, 'category_id', 'category_id');
+    }
+
+    // Golongan AT dari sub jenis ini; menentukan masa manfaat aset
+    public function golongan(): BelongsTo
+    {
+        return $this->belongsTo(Golongan::class);
     }
 
     // Segmen ke-3 nomor aktiva (4 digit), contoh: "0947". Null kalau belum punya sub jenis.

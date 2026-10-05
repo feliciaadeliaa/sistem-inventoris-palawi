@@ -17,7 +17,7 @@ class MutasiController extends Controller
     {
         $locations = Location::urut()->get();
         $categories = \App\Models\Category::siapDipakai()->urut()->get();
-        $golonganOptions = Item::distinct()->pluck('golongan_at')->filter()->sort()->values();
+        $golonganOptions = Item::distinct()->pluck('at_ibat')->filter()->sort()->values();
 
         $selectedItem = null;
         if ($request->filled('item_id')) {

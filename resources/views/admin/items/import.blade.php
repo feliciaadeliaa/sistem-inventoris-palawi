@@ -66,21 +66,19 @@
                         <tr><td>nama_barang</td><td>Ya</td><td>Nama aset</td></tr>
                         <tr><td>kode_aktiva_tetap</td><td>Ya</td><td>2 digit, sesuai menu Kategori (contoh: 09)</td></tr>
                         <tr><td>sub_jenis</td><td>Ya</td><td>2 digit, sesuai menu Kategori (contoh: 01)</td></tr>
-                        <tr><td>tipe_aset</td><td>Ya</td><td>AT atau IBAT</td></tr>
+                        <tr><td>at_ibat</td><td>Ya</td><td>AT atau IBAT</td></tr>
                         <tr><td>kode_klaster</td><td>Ya</td><td>1 digit, sesuai menu Lokasi</td></tr>
                         <tr><td>kode_lokasi</td><td>Ya</td><td>2 digit kode wisata, sesuai menu Lokasi</td></tr>
                         <tr><td>tahun_perolehan</td><td>Ya</td><td>4 digit (contoh: 2026)</td></tr>
                         <tr><td>tanggal_terima</td><td>Ya</td><td>Format YYYY-MM-DD</td></tr>
                         <tr><td>nilai_perolehan</td><td>Ya</td><td>Angka tanpa titik/koma (contoh: 12500000)</td></tr>
                         <tr><td>kondisi</td><td>Tidak</td><td>B, BPR, atau RB. Kosong dianggap B</td></tr>
-                        <tr><td>golongan_at</td><td>Tidak*</td><td>Kosong = diambil dari kategori</td></tr>
-                        <tr><td>masa_manfaat</td><td>Tidak*</td><td>Kosong = diambil dari kategori</td></tr>
                     </tbody>
                 </table>
             </div>
 
             <p class="text-xs text-gray-500 mt-3">
-                * Kalau kategori belum punya golongan AT / masa manfaat, kolom ini wajib diisi di Excel.
+                Golongan AT dan masa manfaat tidak perlu diisi, otomatis mengikuti sub jenis (diatur di menu Kategori).
             </p>
             <p class="text-xs text-gray-500 mt-1">
                 Jika ada satu baris yang salah, seluruh import dibatalkan supaya data tidak masuk setengah-setengah.

@@ -9,7 +9,7 @@ class Item extends Model
     protected $fillable = [
         'item_id', 'nama_barang', 'category_id', 'location_id',
         'nomor_urut', 'nomor_aktiva_tetap',
-        'golongan_at', 'tahun_perolehan', 'masa_manfaat', 'nilai_perolehan',
+        'at_ibat', 'tahun_perolehan', 'masa_manfaat', 'nilai_perolehan',
         'kondisi', 'tanggal_terima', 'status', 'is_active',
     ];
 
@@ -27,11 +27,11 @@ class Item extends Model
         'nonaktif'        => 'Nonaktif',
     ];
 
-    // Golongan AT -> digit ke-2 nomor aktiva (I = AT = 1, II = IBAT = 2)
-    public const GOLONGAN_KODE = [
-        'I'  => 1,
-        'II' => 2,
-    ];
+  // AT/IBAT -> digit ke-2 nomor aktiva (AT = 1, IBAT = 2)
+  public const AT_IBAT_KODE = [
+      'AT'   => 1,
+      'IBAT' => 2,
+  ];
 
     public const GOLONGAN_LABELS = [
         'I'  => 'I - AT',
@@ -87,8 +87,8 @@ class Item extends Model
     {
         $this->unsetRelations()->loadMissing(['category', 'location']);
 
-        $tipe = self::GOLONGAN_KODE[$this->golongan_at]
-            ?? throw new \DomainException("Golongan AT '{$this->golongan_at}' tidak valid, harus I atau II.");
+        $tipe = self::AT_IBAT_KODE[$this->at_ibat]
+      ?? throw new \DomainException("AT/IBAT '{$this->at_ibat}' tidak valid, harus AT atau IBAT.");
 
         return implode('.', [
             str_pad((string) $this->nomor_urut, 4, '0', STR_PAD_LEFT),

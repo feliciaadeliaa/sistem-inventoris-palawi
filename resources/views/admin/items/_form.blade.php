@@ -5,13 +5,16 @@
     $selectedLocationId = old('location_id', $item->location_id ?? null);
 
     // Kelompokkan per Kode Aktiva Tetap untuk dropdown kiri dan kanan
+    // (pastikan $categories di-load dengan ->with('golongan'))
     $groups = $categories->groupBy('kode_aktiva_tetap')->map(fn ($rows, $kode) => [
         'kode'  => (string) $kode,
         'jenis' => $rows->first()->jenis_aktiva_tetap,
         'subs'  => $rows->map(fn ($c) => [
-            'id'         => $c->category_id,
-            'sub_jenis'  => $c->sub_jenis,
-            'keterangan' => $c->keterangan_fungsi,
+            'id'           => $c->category_id,
+            'sub_jenis'    => $c->sub_jenis,
+            'keterangan'   => $c->keterangan_fungsi,
+            'golongan'     => optional($c->golongan)->nama,
+            'masa_manfaat' => optional($c->golongan)->masa_manfaat,
         ])->values(),
     ])->values();
 
@@ -34,7 +37,7 @@
         ? optional($locations->firstWhere('id', $selectedLocationId))->kode_unit_bisnis
         : null;
 
-    $selectedGolongan = old('golongan_at', $item->golongan_at ?? '');
+    $selectedAtIbat = old('at_ibat', $item->at_ibat ?? '');
 @endphp
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -49,20 +52,20 @@
         @enderror
     </div>
 
-    {{-- Golongan AT = jenis aset: I = AT (digit 1), II = IBAT (digit 2) --}}
+    {{-- AT/IBAT: AT = digit 1, IBAT = digit 2 pada nomor aktiva --}}
     <div>
-        <label for="golongan_at" class="form-label">
-            {{ __('Golongan AT') }}
+        <label for="at_ibat" class="form-label">
+            {{ __('AT/IBAT') }}
         </label>
-        <select id="golongan_at" name="golongan_at" class="form-control" required>
-            <option value="">{{ __('-- Pilih Golongan --') }}</option>
-            @foreach (\App\Models\Item::GOLONGAN_LABELS as $kode => $label)
-                <option value="{{ $kode }}" @selected($selectedGolongan === $kode)>
-                    {{ $label }}
+        <select id="at_ibat" name="at_ibat" class="form-control" required>
+            <option value="">{{ __('-- Pilih AT/IBAT --') }}</option>
+            @foreach (array_keys(\App\Models\Item::AT_IBAT_KODE) as $kode)
+                <option value="{{ $kode }}" @selected($selectedAtIbat === $kode)>
+                    {{ $kode }}
                 </option>
             @endforeach
         </select>
-        @error('golongan_at')
+        @error('at_ibat')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
     </div>
@@ -122,6 +125,30 @@
         <p id="kode-gabungan-preview" class="mt-1.5 text-sm text-gray-400"></p>
     </div>
 
+    {{-- Golongan AT & Masa Manfaat: otomatis dari Sub Jenis --}}
+    <div>
+        <label for="golongan_display" class="form-label">
+            {{ __('Golongan AT') }}
+        </label>
+        <input type="text" id="golongan_display" readonly placeholder="Terisi otomatis dari Sub Jenis"
+            class="form-control bg-gray-50" />
+        <p id="golongan-warning" class="mt-1.5 text-sm text-error-500 hidden">
+            {{ __('Sub jenis ini belum punya golongan AT. Atur dulu di menu Kategori.') }}
+        </p>
+    </div>
+
+    <div>
+        <label for="masa_manfaat" class="form-label">
+            {{ __('Masa Manfaat (tahun)') }}
+        </label>
+        <input type="number" id="masa_manfaat" name="masa_manfaat" readonly placeholder="Terisi otomatis"
+            value="{{ old('masa_manfaat', $item->masa_manfaat ?? '') }}"
+            class="form-control bg-gray-50" />
+        @error('masa_manfaat')
+            <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
+        @enderror
+    </div>
+
     <div>
         <label for="tahun_perolehan" class="form-label">
             {{ __('Tahun Perolehan') }}
@@ -130,18 +157,6 @@
             value="{{ old('tahun_perolehan', $item->tahun_perolehan ?? '') }}" required
             class="form-control" />
         @error('tahun_perolehan')
-            <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
-        @enderror
-    </div>
-
-    <div>
-        <label for="masa_manfaat" class="form-label">
-            {{ __('Masa Manfaat (tahun)') }}
-        </label>
-        <input type="number" id="masa_manfaat" name="masa_manfaat" min="1" max="50"
-            value="{{ old('masa_manfaat', $item->masa_manfaat ?? '') }}" required
-            class="form-control" />
-        @error('masa_manfaat')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
     </div>
@@ -217,16 +232,19 @@
         const selectedCategoryId = @json($selectedCategoryId);
         const selectedLocationId = @json($selectedLocationId);
         const nomorUrut = @json($item->nomor_urut ?? null);
-        const golonganKode = @json(\App\Models\Item::GOLONGAN_KODE);
+        const atIbatKode = @json(\App\Models\Item::AT_IBAT_KODE);
 
-        const kodeEl     = document.getElementById('kode_aktiva_tetap');
-        const subEl      = document.getElementById('category_id');
-        const previewEl  = document.getElementById('kode-gabungan-preview');
-        const klasterEl  = document.getElementById('kode_klaster');
-        const wisataEl   = document.getElementById('location_id');
-        const golonganEl = document.getElementById('golongan_at');
-        const tahunEl    = document.getElementById('tahun_perolehan');
-        const nomorEl    = document.getElementById('nomor_aktiva_preview');
+        const kodeEl      = document.getElementById('kode_aktiva_tetap');
+        const subEl       = document.getElementById('category_id');
+        const previewEl   = document.getElementById('kode-gabungan-preview');
+        const klasterEl   = document.getElementById('kode_klaster');
+        const wisataEl    = document.getElementById('location_id');
+        const atIbatEl    = document.getElementById('at_ibat');
+        const tahunEl     = document.getElementById('tahun_perolehan');
+        const nomorEl     = document.getElementById('nomor_aktiva_preview');
+        const golonganEl  = document.getElementById('golongan_display');
+        const masaEl      = document.getElementById('masa_manfaat');
+        const warningEl   = document.getElementById('golongan-warning');
 
         function updatePreview() {
             const opt = subEl.selectedOptions[0];
@@ -235,9 +253,19 @@
                 : '';
         }
 
+        // Golongan AT dan masa manfaat ikut sub jenis yang dipilih
+        function updateGolongan() {
+            const opt = subEl.selectedOptions[0];
+            const adaSubJenis = opt && opt.value;
+
+            golonganEl.value = adaSubJenis ? (opt.dataset.golongan || '') : '';
+            masaEl.value     = adaSubJenis ? (opt.dataset.masa || '') : '';
+            warningEl.classList.toggle('hidden', !(adaSubJenis && !opt.dataset.golongan));
+        }
+
         function updateNomor() {
             const urut = nomorUrut ? String(nomorUrut).padStart(4, '0') : 'XXXX';
-            const tipe = golonganKode[golonganEl.value] || 'X';
+            const tipe = atIbatKode[atIbatEl.value] || 'X';
             const kat  = (subEl.selectedOptions[0] && subEl.selectedOptions[0].dataset.gabungan) || 'XXXX';
             const lok  = (wisataEl.selectedOptions[0] && wisataEl.selectedOptions[0].dataset.gabungan) || 'XXX';
             const thn  = tahunEl.value || 'XXXX';
@@ -251,6 +279,7 @@
             if (!group) {
                 subEl.disabled = true;
                 updatePreview();
+                updateGolongan();
                 return;
             }
 
@@ -259,12 +288,15 @@
                 opt.value = s.id;
                 opt.textContent = s.sub_jenis + ' - ' + (s.keterangan || '');
                 opt.dataset.gabungan = kode + s.sub_jenis;
+                opt.dataset.golongan = s.golongan || '';
+                opt.dataset.masa = (s.masa_manfaat !== null && s.masa_manfaat !== undefined) ? s.masa_manfaat : '';
                 if (pickedId !== null && String(s.id) === String(pickedId)) opt.selected = true;
                 subEl.appendChild(opt);
             });
 
             subEl.disabled = false;
             updatePreview();
+            updateGolongan();
         }
 
         function renderWisata(kodeKlaster, pickedId) {
@@ -291,7 +323,10 @@
         kodeEl.addEventListener('change', function () {
             renderSubs(kodeEl.value, null);
         });
-        subEl.addEventListener('change', updatePreview);
+        subEl.addEventListener('change', function () {
+            updatePreview();
+            updateGolongan();
+        });
 
         klasterEl.addEventListener('change', function () {
             renderWisata(klasterEl.value, null);

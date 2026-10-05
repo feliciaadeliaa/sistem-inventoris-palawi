@@ -40,11 +40,20 @@ class ProfileController extends Controller
 
         $user->fill($validated);
 
-        if ($user->isDirty('email')) {
+        $emailChanged = $user->isDirty('email');
+
+        if ($emailChanged) {
             $user->email_verified_at = null;
         }
 
         $user->save();
+
+        // Email baru wajib diverifikasi: kirim link otomatis ke alamat baru
+        if ($emailChanged) {
+            $user->sendEmailVerificationNotification();
+
+            return Redirect::route('verification.notice')->with('status', 'verification-link-sent');
+        }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }

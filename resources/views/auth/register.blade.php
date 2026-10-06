@@ -1,18 +1,20 @@
 @extends('layouts.fullscreen-layout')
 
 @section('content')
-    <div class="relative z-1 bg-white p-6 sm:p-0 dark:bg-gray-900">
-        <div class="flex h-screen w-full flex-col justify-center sm:p-0 lg:flex-row dark:bg-gray-900">
-        
-        <div class="lg:hidden flex items-center justify-center pt-32 pb-8">
-            <img src="/images/logo/econique-mobile.png" alt="Perhutani Alam Wisata Palawi Risorsis" class="h-32 w-auto" />
-        </div>
-        
-        <!-- Form -->
+    <div class="relative z-1 bg-white dark:bg-gray-900">
+        <div class="flex min-h-screen w-full flex-col lg:h-screen lg:flex-row dark:bg-gray-900">
+
+            <!-- Form -->
             <div class="flex w-full flex-1 flex-col lg:w-1/2">
-                <div class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
+                <div class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-8 sm:px-0 sm:py-10">
+
+                    <!-- Logo (mobile & tablet only), ikut terpusat bersama form -->
+                    <div class="mb-6 flex items-center justify-center lg:hidden">
+                        <img src="/images/logo/econique-mobile.png" alt="Perhutani Alam Wisata Palawi Risorsis" class="h-24 w-auto" />
+                    </div>
+
                     <div class="mb-5 sm:mb-8">
-                        <h1 class="text-title-sm sm:text-title-md mb-2 font-semibold text-gray-800 dark:text-white/90">
+                            <h1 class="text-title-sm sm:text-title-md mb-2 font-semibold text-gray-800 dark:text-white/90">
                             Sign Up
                         </h1>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -98,7 +100,7 @@
                             </div>
                         </form>
                         <div class="mt-5">
-                            <p class="text-center text-sm font-normal text-gray-700 sm:text-start dark:text-gray-400">
+                            <p class="text-center text-sm font-normal text-gray-700 lg:text-start dark:text-gray-400">
                                 Sudah punya akun?
                                 <a href="{{ route('login') }}" class="text-brand-500 hover:text-brand-600 dark:text-brand-400">Sign In</a>
                             </p>

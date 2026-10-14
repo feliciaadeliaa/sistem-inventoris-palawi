@@ -5,14 +5,27 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GolonganRequest;
 use App\Models\Golongan;
+use Illuminate\Http\Request;
 
 class GolonganController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $golongans = Golongan::withCount('categories')->orderBy('kode')->get();
+        // q dikirim oleh search bar di header
+        $search = trim((string) $request->input('q', ''));
 
-        return view('admin.golongan.index', compact('golongans'));
+        $golongans = Golongan::withCount('categories')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('kode', 'like', "%{$search}%")
+                      ->orWhere('nama', 'like', "%{$search}%")
+                      ->orWhere('masa_manfaat', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('kode')
+            ->get();
+
+        return view('admin.golongan.index', compact('golongans', 'search'));
     }
 
     public function create()

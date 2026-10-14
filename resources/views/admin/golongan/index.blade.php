@@ -81,7 +81,7 @@
                     @empty
                         <tr>
                             <td colspan="7" class="px-4 py-6 text-center text-gray-500">
-                                {{ __('Belum ada data golongan.') }}
+                                {{ $search !== '' ? "Tidak ada golongan yang cocok dengan \"{$search}\"." : __('Belum ada data golongan.') }}
                             </td>
                         </tr>
                     @endforelse

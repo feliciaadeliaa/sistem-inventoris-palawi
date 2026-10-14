@@ -8,7 +8,7 @@
     </div>
 
     <div class="card card-pad">
-        <form method="POST" action="{{ route('barang.update', $item) }}" class="space-y-5">
+        <form method="POST" action="{{ route('barang.update', $item) }}" enctype="multipart/form-data" class="space-y-5">
             @csrf
             @method('put')
             @include('admin.items._form')

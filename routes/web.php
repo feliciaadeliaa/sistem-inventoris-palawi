@@ -171,6 +171,7 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
 
     Route::middleware('role:admin,finance')->prefix('admin')->name('admin.')->group(function () {
         Route::get('laporan/penyusutan', [LaporanPenyusutanController::class, 'index'])->name('laporan.penyusutan');
+        Route::get('laporan/penyusutan/export', [LaporanPenyusutanController::class, 'export'])->name('laporan.penyusutan.export');
     });
 });
 

@@ -73,6 +73,7 @@
                         <tr><td>tanggal_terima</td><td>Ya</td><td>Format YYYY-MM-DD</td></tr>
                         <tr><td>nilai_perolehan</td><td>Ya</td><td>Angka tanpa titik/koma (contoh: 12500000)</td></tr>
                         <tr><td>kondisi</td><td>Tidak</td><td>B, BPR, atau RB. Kosong dianggap B</td></tr>
+                        <tr><td>foto</td><td>Tidak</td><td>Tidak diimpor lewat Excel. Tambahkan nanti lewat menu Edit.</td></tr>
                     </tbody>
                 </table>
             </div>

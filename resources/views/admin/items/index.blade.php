@@ -11,7 +11,7 @@
             </p>
         </div>
 
-               <div class="flex flex-wrap items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
             <button type="submit" form="print-labels-form" formaction="{{ route('barang.print-labels') }}" formtarget="_blank"
                 class="btn btn-outline">
                 Cetak as PDF
@@ -37,6 +37,8 @@
 
     {{-- Filter --}}
     <form method="GET" action="{{ route('barang.index') }}" class="mb-4 card card-pad">
+        {{-- Bawa kata kunci dari search bar header saat filter diterapkan --}}
+        <input type="hidden" name="q" value="{{ request('q') }}">
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             <div>
                 <label class="form-label">Kategori</label>
@@ -149,6 +151,7 @@
                             <th class="px-4 py-3">
                                 <span class="sr-only">{{ __('Pilih') }}</span>
                             </th>
+                            <th>{{ __('Foto') }}</th>
                             <th>{{ __('Item ID') }}</th>
                             <th>{{ __('Nama Barang') }}</th>
                             <th>{{ __('Kategori') }}</th>
@@ -170,6 +173,16 @@
                                 <td class="px-4 py-3">
                                     <input type="checkbox" name="ids[]" value="{{ $item->id }}"
                                         class="h-4 w-4 rounded border-gray-300 accent-brand-600 qr-checkbox">
+                                </td>
+                                <td>
+                                    @if ($item->gambar_url)
+                                        <a href="{{ $item->gambar_url }}" target="_blank" rel="noopener" title="{{ __('Lihat foto') }}">
+                                            <img src="{{ $item->gambar_url }}" alt="{{ $item->nama_barang }}" loading="lazy"
+                                                class="h-12 w-12 rounded-lg border border-gray-200 object-cover">
+                                        </a>
+                                    @else
+                                        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 text-xs text-gray-400">-</div>
+                                    @endif
                                 </td>
                                 <td class="cell-id">{{ $item->item_id }}</td>
                                 <td class="font-medium text-gray-800">{{ $item->nama_barang }}</td>
@@ -202,7 +215,7 @@
                                         {{ str_replace('_', ' ', $item->status) }}
                                     </span>
                                 </td>
-<td class="sticky-col">
+                                <td class="sticky-col">
                                     <div class="flex items-center justify-end gap-1.5">
                                         <a href="{{ route('barang.edit', $item) }}" title="{{ __('Edit') }}" class="icon-btn icon-btn-edit">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -239,7 +252,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="14" class="px-4 py-6 text-center text-gray-500">
+                                <td colspan="15" class="px-4 py-6 text-center text-gray-500">
                                     {{ __('Belum ada data barang.') }}
                                 </td>
                             </tr>
@@ -307,12 +320,14 @@
     }
 
     function updateCounter() {
-        document.getElementById('selected-count').textContent = getSelectedIds().size;
+        const el = document.getElementById('selected-count');
+        if (el) el.textContent = getSelectedIds().size;
     }
 
     function updateSelectAllState() {
         const checkboxes = document.querySelectorAll('.qr-checkbox');
         const selectAll = document.getElementById('select-all-checkbox');
+        if (!selectAll) return;
         if (!checkboxes.length) {
             selectAll.checked = false;
             return;
@@ -329,51 +344,61 @@
         updateCounter();
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        syncCheckboxesWithStorage();
+    // Sinkron saat halaman dimuat, dan setelah search bar header mengganti isi halaman
+    document.addEventListener('DOMContentLoaded', syncCheckboxesWithStorage);
+    document.addEventListener('main-content:updated', syncCheckboxesWithStorage);
 
+    // Event delegation: tetap jalan walau isi tabel diganti oleh search bar header
+    document.addEventListener('change', function (e) {
         // Checkbox per baris
-        document.querySelectorAll('.qr-checkbox').forEach(cb => {
-            cb.addEventListener('change', () => {
-                const selected = getSelectedIds();
-                cb.checked ? selected.add(cb.value) : selected.delete(cb.value);
-                saveSelectedIds(selected);
-                updateSelectAllState();
-                updateCounter();
-            });
-        });
+        if (e.target.matches('.qr-checkbox')) {
+            const selected = getSelectedIds();
+            e.target.checked ? selected.add(e.target.value) : selected.delete(e.target.value);
+            saveSelectedIds(selected);
+            updateSelectAllState();
+            updateCounter();
+            return;
+        }
 
         // Pilih semua (khusus baris di halaman ini)
-        document.getElementById('select-all-checkbox').addEventListener('change', function () {
+        if (e.target.id === 'select-all-checkbox') {
             const selected = getSelectedIds();
             document.querySelectorAll('.qr-checkbox').forEach(cb => {
-                cb.checked = this.checked;
-                this.checked ? selected.add(cb.value) : selected.delete(cb.value);
+                cb.checked = e.target.checked;
+                e.target.checked ? selected.add(cb.value) : selected.delete(cb.value);
             });
             saveSelectedIds(selected);
             updateCounter();
-        });
+        }
+    });
 
-        // Reset semua pilihan (lintas halaman)
-        document.getElementById('clear-selection-btn').addEventListener('click', () => {
+    // Reset semua pilihan (lintas halaman)
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('#clear-selection-btn')) {
             sessionStorage.removeItem(QR_SELECTION_KEY);
             syncCheckboxesWithStorage();
-        });
+        }
+    });
 
-        // Sebelum submit cetak, sisipkan ID dari halaman lain yang tidak sedang tertampil
-        document.getElementById('print-labels-form').addEventListener('submit', function () {
-            const currentPageIds = new Set(
-                Array.from(document.querySelectorAll('.qr-checkbox')).map(cb => cb.value)
-            );
-            getSelectedIds().forEach(id => {
-                if (!currentPageIds.has(id)) {
-                    const hidden = document.createElement('input');
-                    hidden.type = 'hidden';
-                    hidden.name = 'ids[]';
-                    hidden.value = id;
-                    this.appendChild(hidden);
-                }
-            });
+    // Sebelum submit cetak, sisipkan ID dari halaman lain yang tidak sedang tertampil
+    document.addEventListener('submit', function (e) {
+        if (e.target.id !== 'print-labels-form') return;
+
+        const form = e.target;
+        const currentPageIds = new Set(
+            Array.from(document.querySelectorAll('.qr-checkbox')).map(cb => cb.value)
+        );
+        form.querySelectorAll('input[data-extra-id]').forEach(el => el.remove());
+
+        getSelectedIds().forEach(id => {
+            if (!currentPageIds.has(id)) {
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'ids[]';
+                hidden.value = id;
+                hidden.dataset.extraId = '1';
+                form.appendChild(hidden);
+            }
         });
     });
 </script>

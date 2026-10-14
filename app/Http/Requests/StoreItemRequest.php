@@ -34,6 +34,7 @@ class StoreItemRequest extends FormRequest
             'nilai_perolehan' => ['required', 'numeric', 'min:0'],
             'kondisi'         => ['required', 'in:B,BPR,RB,RSS'],
             'tanggal_terima'  => ['required', 'date'],
+            'gambar_asset' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
 

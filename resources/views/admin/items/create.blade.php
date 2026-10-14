@@ -8,7 +8,7 @@
     </div>
 
     <div class="card card-pad">
-        <form method="POST" action="{{ route('barang.store') }}" class="space-y-5">
+        <form method="POST" action="{{ route('barang.store') }}" enctype="multipart/form-data" class="space-y-5">
             @csrf
             @include('admin.items._form')
         </form>

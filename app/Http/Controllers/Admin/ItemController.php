@@ -10,6 +10,7 @@ use App\Models\Item;
 use App\Models\Location;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Writer\SvgWriter;
@@ -57,50 +58,86 @@ class ItemController extends Controller
 
     public function create()
     {
-    $categories = Category::with('golongan')->siapDipakai()->urut()->get();
-    $locations = Location::urut()->get();
+        $categories = Category::with('golongan')->siapDipakai()->urut()->get();
+        $locations = Location::urut()->get();
 
-    return view('admin.items.create', compact('categories', 'locations'));
+        return view('admin.items.create', compact('categories', 'locations'));
     }
 
     public function store(StoreItemRequest $request)
     {
-        $data = Arr::except($request->validated(), ['masa_manfaat']);
+        $data = Arr::except($request->validated(), ['masa_manfaat', 'gambar_asset']);
 
-        // Nomor urut dan nomor aktiva selalu dibuat server, tidak pernah dari input user.
-        DB::transaction(function () use ($data) {
-            $data['nomor_urut'] = Item::nextNomorUrut();
-            $data['nomor_aktiva_tetap'] = Item::make($data)->buildNomorAktiva();
+        // Simpan foto (kalau ada) sebelum transaksi DB; path-nya yang disimpan ke kolom.
+        if ($request->hasFile('gambar_asset')) {
+            $data['gambar_asset'] = $request->file('gambar_asset')->store('assets', 'public');
+        }
 
-            Item::create($data);
-        });
+        try {
+            // Nomor urut dan nomor aktiva selalu dibuat server, tidak pernah dari input user.
+            DB::transaction(function () use ($data) {
+                $data['nomor_urut'] = Item::nextNomorUrut();
+                $data['nomor_aktiva_tetap'] = Item::make($data)->buildNomorAktiva();
+
+                Item::create($data);
+            });
+        } catch (\Throwable $e) {
+            // Gagal simpan: jangan tinggalkan file foto yatim
+            if (!empty($data['gambar_asset'])) {
+                Storage::disk('public')->delete($data['gambar_asset']);
+            }
+            throw $e;
+        }
 
         return redirect()
             ->route('barang.index')
             ->with('success', 'Barang berhasil ditambahkan.');
     }
 
-public function edit(Item $item)
-{
-    $categories = Category::with('golongan')->siapDipakai()->urut()->get();
-    $locations = Location::urut()->get();
+    public function edit(Item $item)
+    {
+        $categories = Category::with('golongan')->siapDipakai()->urut()->get();
+        $locations = Location::urut()->get();
 
-    return view('admin.items.edit', compact('item', 'categories', 'locations'));
-}
+        return view('admin.items.edit', compact('item', 'categories', 'locations'));
+    }
 
     public function update(UpdateItemRequest $request, Item $item)
     {
-        DB::transaction(function () use ($request, $item) {
-            $item->fill(Arr::except($request->validated(), ['masa_manfaat']));
+        $validated = Arr::except($request->validated(), ['masa_manfaat', 'gambar_asset']);
 
-            // Nomor urut dipertahankan. Aset lama yang belum punya nomor urut diberi nomor baru.
-            if (!$item->nomor_urut) {
-                $item->nomor_urut = Item::nextNomorUrut();
+        $oldFoto = $item->gambar_asset;
+        $newFoto = $request->hasFile('gambar_asset')
+            ? $request->file('gambar_asset')->store('assets', 'public')
+            : null;
+
+        try {
+            DB::transaction(function () use ($validated, $item, $newFoto) {
+                $item->fill($validated);
+
+                if ($newFoto) {
+                    $item->gambar_asset = $newFoto;
+                }
+
+                // Nomor urut dipertahankan. Aset lama yang belum punya nomor urut diberi nomor baru.
+                if (!$item->nomor_urut) {
+                    $item->nomor_urut = Item::nextNomorUrut();
+                }
+
+                $item->nomor_aktiva_tetap = $item->buildNomorAktiva();
+                $item->save();
+            });
+        } catch (\Throwable $e) {
+            if ($newFoto) {
+                Storage::disk('public')->delete($newFoto);
             }
+            throw $e;
+        }
 
-            $item->nomor_aktiva_tetap = $item->buildNomorAktiva();
-            $item->save();
-        });
+        // Berhasil: hapus foto lama kalau diganti
+        if ($newFoto && $oldFoto) {
+            Storage::disk('public')->delete($oldFoto);
+        }
 
         return redirect()
             ->route('barang.index')
@@ -109,6 +146,7 @@ public function edit(Item $item)
 
     public function destroy(Item $item)
     {
+        // Soft deactivate: data & foto dipertahankan untuk riwayat
         $item->update(['is_active' => false, 'status' => 'nonaktif']);
 
         return redirect()
@@ -337,24 +375,24 @@ public function edit(Item $item)
     }
 
     public function importForm()
-{
-    return view('admin.items.import'); // SESUAIKAN dengan lokasi view kamu
-}
+    {
+        return view('admin.items.import'); // SESUAIKAN dengan lokasi view kamu
+    }
 
-public function import(Request $request)
-{
-    $request->validate([
-        'file' => 'required|file|mimes:xlsx,xls|max:5120',
-    ]);
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls|max:5120',
+        ]);
 
-    Excel::import(new ItemsImport, $request->file('file'));
+        Excel::import(new ItemsImport, $request->file('file'));
 
-    return redirect()->route('barang.index')
-        ->with('success', 'Data asset berhasil diimport.');
-}
+        return redirect()->route('barang.index')
+            ->with('success', 'Data asset berhasil diimport.');
+    }
 
-public function template()
-{
-    return Excel::download(new ItemImportTemplateExport, 'template_import_asset.xlsx');
-}
+    public function template()
+    {
+        return Excel::download(new ItemImportTemplateExport, 'template_import_asset.xlsx');
+    }
 }

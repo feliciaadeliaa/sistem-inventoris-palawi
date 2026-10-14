@@ -217,6 +217,32 @@
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
     </div>
+
+    {{-- Foto Aset (opsional) --}}
+    <div class="md:col-span-2">
+        <label for="gambar_asset" class="form-label">
+            {{ __('Foto Aset') }}
+            <span class="font-normal text-gray-400">({{ __('opsional') }})</span>
+        </label>
+        <div class="flex items-start gap-4">
+            <img id="gambar-preview" src="{{ $item?->gambar_url }}" alt="{{ __('Preview foto aset') }}"
+                class="h-28 w-28 rounded-lg border border-gray-200 object-cover {{ $item?->gambar_url ? '' : 'hidden' }}" />
+            <div class="flex-1">
+                <input type="file" id="gambar_asset" name="gambar_asset"
+                    accept="image/jpeg,image/png,image/webp" class="form-control" />
+                <p class="mt-1.5 text-sm text-gray-400">
+                    {{ __('JPG, PNG, atau WebP, maksimal 2 MB.') }}
+                    @if ($item?->gambar_url)
+                        {{ __('Kosongkan jika tidak ingin mengganti foto.') }}
+                    @endif
+                </p>
+                <p id="gambar-error" class="mt-1.5 text-sm text-error-500 hidden"></p>
+                @error('gambar_asset')
+                    <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="mt-6">
@@ -245,6 +271,11 @@
         const golonganEl  = document.getElementById('golongan_display');
         const masaEl      = document.getElementById('masa_manfaat');
         const warningEl   = document.getElementById('golongan-warning');
+
+        const gambarEl        = document.getElementById('gambar_asset');
+        const gambarPreviewEl = document.getElementById('gambar-preview');
+        const gambarErrorEl   = document.getElementById('gambar-error');
+        const originalGambarSrc = gambarPreviewEl.getAttribute('src') || '';
 
         function updatePreview() {
             const opt = subEl.selectedOptions[0];
@@ -319,6 +350,32 @@
 
             wisataEl.disabled = false;
         }
+
+        // Preview foto + cek ukuran di sisi klien (validasi final tetap di server)
+        gambarEl.addEventListener('change', function () {
+            const file = gambarEl.files[0];
+            gambarErrorEl.classList.add('hidden');
+
+            if (!file) {
+                if (originalGambarSrc) {
+                    gambarPreviewEl.src = originalGambarSrc;
+                } else {
+                    gambarPreviewEl.classList.add('hidden');
+                    gambarPreviewEl.removeAttribute('src');
+                }
+                return;
+            }
+
+            if (file.size > 2 * 1024 * 1024) {
+                gambarEl.value = '';
+                gambarErrorEl.textContent = 'Ukuran foto maksimal 2 MB.';
+                gambarErrorEl.classList.remove('hidden');
+                return;
+            }
+
+            gambarPreviewEl.src = URL.createObjectURL(file);
+            gambarPreviewEl.classList.remove('hidden');
+        });
 
         kodeEl.addEventListener('change', function () {
             renderSubs(kodeEl.value, null);

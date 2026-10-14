@@ -96,7 +96,6 @@ class ItemsImport implements ToCollection, WithHeadingRow
                     'at_ibat'            => $p['tipe'],
                     'nomor_aktiva_tetap' => $nomor,
                     'tahun_perolehan'    => $row['tahun_perolehan'],
-                    'masa_manfaat'       => $p['masa'],
                     'nilai_perolehan'    => $row['nilai_perolehan'],
                     'kondisi'            => $row['kondisi'] ?? 'B',
                     'tanggal_terima'     => $p['tanggal']->toDateString(),

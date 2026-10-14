@@ -141,7 +141,7 @@
         <label for="masa_manfaat" class="form-label">
             {{ __('Masa Manfaat (tahun)') }}
         </label>
-        <input type="number" id="masa_manfaat" name="masa_manfaat" readonly placeholder="Terisi otomatis"
+        <input type="number" id="masa_manfaat" readonly placeholder="Terisi otomatis"
             value="{{ old('masa_manfaat', $item->masa_manfaat ?? '') }}"
             class="form-control bg-gray-50" />
         @error('masa_manfaat')

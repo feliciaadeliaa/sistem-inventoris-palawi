@@ -18,6 +18,7 @@ use App\Imports\ItemsImport;
 use App\Exports\ItemImportTemplateExport;
 use Maatwebsite\Excel\Facades\Excel;
 use ZipArchive;
+use Illuminate\Support\Arr;
 
 class ItemController extends Controller
 {
@@ -64,7 +65,7 @@ class ItemController extends Controller
 
     public function store(StoreItemRequest $request)
     {
-        $data = $request->validated();
+        $data = Arr::except($request->validated(), ['masa_manfaat']);
 
         // Nomor urut dan nomor aktiva selalu dibuat server, tidak pernah dari input user.
         DB::transaction(function () use ($data) {
@@ -90,7 +91,7 @@ public function edit(Item $item)
     public function update(UpdateItemRequest $request, Item $item)
     {
         DB::transaction(function () use ($request, $item) {
-            $item->fill($request->validated());
+            $item->fill(Arr::except($request->validated(), ['masa_manfaat']));
 
             // Nomor urut dipertahankan. Aset lama yang belum punya nomor urut diberi nomor baru.
             if (!$item->nomor_urut) {

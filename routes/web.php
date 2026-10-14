@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\RepairRequestController as AdminRepairRequestCont
 use App\Http\Controllers\User\RepairRequestController as UserRepairRequestController;
 use App\Http\Controllers\Gm\ApprovalController as GmApprovalController;
 use App\Http\Controllers\BarangLookupController;
+use App\Http\Controllers\Admin\LaporanPenyusutanController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -166,6 +167,10 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
         Route::patch('approval/stock-out/{transaction}/reject', [GmApprovalController::class, 'rejectStockOut'])->name('approval.stock-out.reject');
         Route::patch('approval/mutasi/{transaction}/approve', [GmApprovalController::class, 'approveMutasi'])->name('approval.mutasi.approve');
         Route::patch('approval/mutasi/{transaction}/reject', [GmApprovalController::class, 'rejectMutasi'])->name('approval.mutasi.reject');
+    });
+
+    Route::middleware('role:admin,finance')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('laporan/penyusutan', [LaporanPenyusutanController::class, 'index'])->name('laporan.penyusutan');
     });
 });
 

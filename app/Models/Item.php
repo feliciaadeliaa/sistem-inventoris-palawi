@@ -9,7 +9,7 @@ class Item extends Model
     protected $fillable = [
         'item_id', 'nama_barang', 'category_id', 'location_id',
         'nomor_urut', 'nomor_aktiva_tetap',
-        'at_ibat', 'tahun_perolehan', 'masa_manfaat', 'nilai_perolehan',
+        'at_ibat', 'tahun_perolehan', 'nilai_perolehan',
         'kondisi', 'tanggal_terima', 'status', 'is_active',
     ];
 
@@ -97,5 +97,10 @@ class Item extends Model
             $this->location->kode_gabungan,
             $this->tahun_perolehan,
         ]);
+    }
+
+    public function getMasaManfaatAttribute(): int
+    {
+        return (int) ($this->category?->golongan?->masa_manfaat ?? 0);
     }
 }

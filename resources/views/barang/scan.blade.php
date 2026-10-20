@@ -40,6 +40,9 @@
         <h2 id="hasil-nama" class="text-gray-800 text-lg font-semibold"></h2>
         <p id="hasil-info" class="text-gray-500 text-sm mb-4"></p>
 
+        {{-- Catatan jika barang sedang dipinjam --}}
+        <div id="catatan-dipinjam" class="hidden mb-4 p-3 rounded-lg bg-warning-50 text-warning-700 text-sm"></div>
+
         @if(auth()->user()->role === 'admin')
             {{-- Admin: riwayat transaksi barang ini --}}
             <div id="riwayat-transaksi" class="mb-4 space-y-2"></div>
@@ -98,6 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const statusLabel = {
         selesai: 'Selesai',
         menunggu_approval: 'Menunggu approval',
+        diproses: 'Menunggu persetujuan GM',
         disetujui: 'Disetujui',
         ditolak: 'Ditolak',
         dikembalikan: 'Dikembalikan',
@@ -106,6 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const statusBadgeClass = {
         selesai: 'badge-green',
         menunggu_approval: 'badge-amber',
+        diproses: 'badge-amber',
         disetujui: 'badge-green',
         ditolak: 'badge-red',
         dikembalikan: 'badge-blue',
@@ -122,6 +127,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const hasilScan = document.getElementById('hasil-scan');
     const hasilNama = document.getElementById('hasil-nama');
     const hasilInfo = document.getElementById('hasil-info');
+    const catatanEl = document.getElementById('catatan-dipinjam');
     let currentItemId = null;
 
     function tampilkanHasil(item) {
@@ -130,6 +136,32 @@ document.addEventListener('DOMContentLoaded', function () {
         hasilInfo.textContent = `${item.item_id} · ${item.lokasi}`;
         hasilScan.classList.remove('hidden');
         document.getElementById('search-results').innerHTML = '';
+
+        // Catatan jika barang sedang dipinjam
+        const dipinjam = item.status === 'dipinjam';
+        if (catatanEl) {
+            let teks = '';
+            if (dipinjam) {
+                teks = 'Barang ini sedang dipinjam';
+                if (item.tanggal_kembali) {
+                    const tgl = new Date(item.tanggal_kembali).toLocaleDateString('id-ID', {
+                        day: 'numeric', month: 'long', year: 'numeric'
+                    });
+                    teks += ` dan diperkirakan kembali pada ${tgl}`;
+                }
+                teks += '.';
+                if (!isAdmin) teks += ' Belum bisa diajukan peminjaman.';
+            }
+            catatanEl.textContent = teks;
+            catatanEl.classList.toggle('hidden', !dipinjam);
+        }
+
+        const btnPinjam = document.querySelector('[data-action="peminjaman"]');
+        if (btnPinjam) {
+            btnPinjam.disabled = dipinjam;
+            btnPinjam.classList.toggle('opacity-50', dipinjam);
+            btnPinjam.classList.toggle('cursor-not-allowed', dipinjam);
+        }
 
         if (isAdmin) {
             renderRiwayat(item.transactions || []);
@@ -181,7 +213,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         const btn = document.createElement('button');
                         btn.type = 'button';
                         btn.className = 'w-full text-left bg-white border border-gray-200 text-gray-800 rounded-lg px-4 py-3 hover:bg-brand-50 transition';
-                        btn.innerHTML = `<span class="font-medium">${item.nama_barang}</span>
+
+                        const badge = item.status === 'dipinjam'
+                            ? '<span class="ml-2 text-xs bg-error-100 text-error-700 px-2 py-0.5 rounded">Sedang dipinjam</span>'
+                            : '';
+
+                        btn.innerHTML = `<span class="font-medium">${item.nama_barang}</span>${badge}
                                           <span class="block text-gray-500 text-sm">${item.item_id} · ${item.lokasi}</span>`;
                         btn.addEventListener('click', () => tampilkanHasil(item));
                         searchResults.appendChild(btn);
@@ -195,11 +232,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.hasil-action-btn').forEach(btn => {
         btn.addEventListener('click', function () {
-            if (!currentItemId) return;
+            if (!currentItemId || this.disabled) return;
             const action = this.dataset.action;
 
-            if (!isAdmin && action === 'peminjaman') {
-                window.location.href = `/transaksi/stock-out/ajukan/${encodeURIComponent(currentItemId)}`;
+            if (!isAdmin) {
+                window.location.href = actionRoutes[action](currentItemId);
                 return;
             }
 

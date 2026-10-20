@@ -49,20 +49,28 @@ class ApprovalController extends Controller
         return back()->with('success', 'Peminjaman disetujui, barang resmi dipinjam.');
     }
 
-    public function rejectStockOut(Transaction $transaction)
-    {
-        if ($transaction->status !== 'diproses') {
-            return back()->with('error', 'Transaksi ini belum diproses admin atau sudah final.');
-        }
+public function rejectStockOut(Request $request, Transaction $transaction)
+{
+    $validated = $request->validate([
+        'alasan_penolakan' => 'required|string|max:500',
+    ], [
+        'alasan_penolakan.required' => 'Alasan penolakan wajib diisi.',
+    ]);
 
-        $transaction->update([
-            'status' => 'ditolak',
-            'gm_approved_by' => Auth::id(),
-            'gm_approved_at' => now(),
-        ]);
-
-        return back()->with('success', 'Pengajuan ditolak oleh GM.');
+    if ($transaction->status !== 'diproses') {
+        return back()->with('error', 'Transaksi ini belum diproses admin atau sudah final.');
     }
+
+    $transaction->update([
+        'status' => 'ditolak',
+        'gm_approved_by' => Auth::id(),
+        'gm_approved_at' => now(),
+        'alasan_penolakan' => $validated['alasan_penolakan'],
+        'ditolak_oleh' => Auth::id(),
+    ]);
+
+    return back()->with('success', 'Pengajuan ditolak oleh GM.');
+}
 
     // Mutasi: approval GM = final, langsung ubah lokasi barang
     public function approveMutasi(Transaction $transaction)
@@ -82,20 +90,29 @@ class ApprovalController extends Controller
         return back()->with('success', 'Mutasi disetujui, lokasi barang diperbarui.');
     }
 
-    public function rejectMutasi(Transaction $transaction)
-    {
-        if ($transaction->status !== 'menunggu_approval') {
-            return back()->with('error', 'Mutasi ini sudah diproses sebelumnya.');
-        }
+public function rejectMutasi(Request $request, Transaction $transaction)
+{
+    $validated = $request->validate([
+        'alasan_penolakan' => 'required|string|max:500',
+    ], [
+        'alasan_penolakan.required' => 'Alasan penolakan wajib diisi.',
+    ]);
 
-        $transaction->update([
-            'status' => 'ditolak',
-            'gm_approved_by' => Auth::id(),
-            'gm_approved_at' => now(),
-        ]);
-
-        return back()->with('success', 'Mutasi ditolak oleh GM.');
+    if ($transaction->status !== 'menunggu_approval') {
+        return back()->with('error', 'Mutasi ini sudah diproses sebelumnya.');
     }
+
+    $transaction->update([
+        'status' => 'ditolak',
+        'gm_approved_by' => Auth::id(),
+        'gm_approved_at' => now(),
+        'alasan_penolakan' => $validated['alasan_penolakan'],
+        'ditolak_oleh' => Auth::id(),
+    ]);
+
+    return back()->with('success', 'Mutasi ditolak oleh GM.');
+}
+
 
  public function approveRepair(Transaction $transaction)
     {
@@ -115,17 +132,25 @@ class ApprovalController extends Controller
     }
 
     public function rejectRepair(Transaction $transaction)
-    {
-        if ($transaction->jenis_transaksi !== 'permintaan_perbaikan' || $transaction->status !== 'diproses') {
-            return back()->with('error', 'Transaksi ini belum diproses admin atau sudah final.');
-        }
+{
+    $validated = $request->validate([
+        'alasan_penolakan' => 'required|string|max:500',
+    ], [
+        'alasan_penolakan.required' => 'Alasan penolakan wajib diisi.',
+    ]);
 
-        $transaction->update([
-            'status' => 'ditolak',
-            'gm_approved_by' => Auth::id(),
-            'gm_approved_at' => now(),
-        ]);
-
-        return back()->with('success', 'Permintaan perbaikan ditolak oleh GM.');
+    if ($transaction->jenis_transaksi !== 'permintaan_perbaikan' || $transaction->status !== 'diproses') {
+        return back()->with('error', 'Transaksi ini belum diproses admin atau sudah final.');
     }
+
+    $transaction->update([
+        'status' => 'ditolak',
+        'gm_approved_by' => Auth::id(),
+        'gm_approved_at' => now(),
+        'alasan_penolakan' => $validated['alasan_penolakan'],
+        'ditolak_oleh' => Auth::id(),
+    ]);
+
+    return back()->with('success', 'Permintaan perbaikan ditolak oleh GM.');
+}
 }

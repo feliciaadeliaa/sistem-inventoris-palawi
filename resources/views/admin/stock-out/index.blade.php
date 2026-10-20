@@ -23,6 +23,15 @@
             {{ session('error') }}
         </div>
     @endif
+    @if ($errors->any())
+        <div class="mb-4 p-4 bg-error-50 text-error-700 rounded-lg">
+            <ul class="list-disc list-inside">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     {{-- Panel Filter --}}
     <div class="card card-pad mb-6">
@@ -95,24 +104,32 @@
                             <td>
                                 <span @class([
                                     'badge',
-                                    'badge-amber' => $trx->status === 'menunggu_approval',
+                                    'badge-amber' => in_array($trx->status, ['menunggu_approval', 'diproses']),
                                     'badge-blue' => $trx->status === 'disetujui',
                                     'badge-red' => $trx->status === 'ditolak',
                                     'badge-green' => $trx->status === 'dikembalikan',
                                 ])>
-                                    {{ str_replace('_', ' ', ucfirst($trx->status)) }}
+                                    {{ $trx->status === 'diproses' ? 'Menunggu GM' : str_replace('_', ' ', ucfirst($trx->status)) }}
                                 </span>
+
+                                @if ($trx->status === 'ditolak' && $trx->alasan_penolakan)
+                                    <p class="mt-1 text-xs text-error-600">Alasan: {{ $trx->alasan_penolakan }}</p>
+                                @endif
                             </td>
                             <td class="space-x-1">
                                 @if ($trx->status === 'menunggu_approval')
                                     <form action="{{ route('admin.transaksi.stock-out.approve', $trx) }}" method="POST" class="inline">
                                         @csrf @method('PATCH')
-                                        <button class="btn btn-sm text-white bg-secondary-600 hover:bg-secondary-700">Setujui</button>
+                                        <button class="btn btn-sm text-white bg-secondary-600 hover:bg-secondary-700">Proses</button>
                                     </form>
-                                    <form action="{{ route('admin.transaksi.stock-out.reject', $trx) }}" method="POST" class="inline">
-                                        @csrf @method('PATCH')
-                                        <button class="btn btn-sm text-white bg-error-600 hover:bg-error-700">Tolak</button>
-                                    </form>
+                                    <button type="button"
+                                        class="btn-tolak btn btn-sm text-white bg-error-600 hover:bg-error-700"
+                                        data-action="{{ route('admin.transaksi.stock-out.reject', $trx) }}"
+                                        data-label="{{ $trx->item->nama_barang }} — diajukan {{ $trx->user->name }}">
+                                        Tolak
+                                    </button>
+                                @elseif ($trx->status === 'diproses')
+                                    <span class="text-xs text-gray-500">Menunggu persetujuan GM</span>
                                 @elseif ($trx->status === 'disetujui')
                                     <span class="text-xs text-gray-500">Menunggu pengembalian</span>
                                 @else
@@ -136,20 +153,22 @@
         </div>
     </div>
 
+    @include('partials.reject-modal')
+
     @push('scripts')
     <script>
-const STOCKIN_SELECTION_KEY = 'stockout_selected_ids';
+const STOCKOUT_SELECTION_KEY = 'stockout_selected_ids';
 
 function getSelectedIds() {
     try {
-        return new Set(JSON.parse(sessionStorage.getItem(STOCKIN_SELECTION_KEY)) || []);
+        return new Set(JSON.parse(sessionStorage.getItem(STOCKOUT_SELECTION_KEY)) || []);
     } catch (e) {
         return new Set();
     }
 }
 
 function saveSelectedIds(idsSet) {
-    sessionStorage.setItem(STOCKIN_SELECTION_KEY, JSON.stringify(Array.from(idsSet)));
+    sessionStorage.setItem(STOCKOUT_SELECTION_KEY, JSON.stringify(Array.from(idsSet)));
 }
 
 function updateCounter() {
@@ -199,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('clear-selection-btn').addEventListener('click', () => {
-        sessionStorage.removeItem(STOCKIN_SELECTION_KEY);
+        sessionStorage.removeItem(STOCKOUT_SELECTION_KEY);
         syncCheckboxesWithStorage();
     });
 
@@ -209,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selected.length > 0) {
             params.set('selected_ids', selected.join(','));
         }
-        window.location.href = `{{ route('admin.stock-in.export') }}?${params.toString()}`;
+        window.location.href = `{{ route('admin.transaksi.stock-out.export') }}?${params.toString()}`;
     });
 });
     </script>

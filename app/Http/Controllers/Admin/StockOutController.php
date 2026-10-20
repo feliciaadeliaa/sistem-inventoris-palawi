@@ -52,21 +52,28 @@ class StockOutController extends Controller
         return back()->with('success', 'Pengajuan diproses, diteruskan ke GM untuk persetujuan akhir.');
     }
 
-    public function reject(Transaction $transaction)
-    {
-        if ($transaction->status !== 'menunggu_approval') {
-            return back()->with('error', 'Transaksi ini sudah diproses sebelumnya.');
-        }
+public function reject(Request $request, Transaction $transaction)
+{
+    $validated = $request->validate([
+        'alasan_penolakan' => 'required|string|max:500',
+    ], [
+        'alasan_penolakan.required' => 'Alasan penolakan wajib diisi.',
+    ]);
 
-        $transaction->update([
-            'status' => 'ditolak',
-            'approved_by' => Auth::id(),
-            'approved_at' => now(),
-        ]);
-
-        return back()->with('success', 'Pengajuan ditolak.');
+    if ($transaction->status !== 'menunggu_approval') {
+        return back()->with('error', 'Transaksi ini sudah diproses sebelumnya.');
     }
 
+    $transaction->update([
+        'status' => 'ditolak',
+        'approved_by' => Auth::id(),
+        'approved_at' => now(),
+        'alasan_penolakan' => $validated['alasan_penolakan'],
+        'ditolak_oleh' => Auth::id(),
+    ]);
+
+    return back()->with('success', 'Pengajuan ditolak.');
+}
     public function export(Request $request)
     {
         $ids = array_filter(explode(',', $request->get('selected_ids', '')));

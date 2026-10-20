@@ -28,6 +28,8 @@
         </div>
     @endif
 
+    @php $blocked = !empty($catatan ?? null); @endphp
+
     <div class="card card-pad">
         <form method="POST" action="{{ route('peminjaman.store') }}">
             @csrf
@@ -42,6 +44,11 @@
                         {{ $item->item_id ?? '' }} &middot; {{ $item->location->nama_lokasi ?? '' }}
                     </p>
                 </div>
+            </div>
+
+            {{-- Catatan status barang --}}
+            <div id="item-note" class="{{ $blocked ? '' : 'hidden' }} mb-3 p-3 rounded-lg bg-warning-50 text-warning-700 text-sm">
+                {{ $catatan ?? '' }}
             </div>
 
             <div id="item-search-wrapper" class="{{ $item ? 'hidden' : '' }}">
@@ -86,7 +93,8 @@
             <button
                 type="submit"
                 id="submit-btn"
-                class="btn btn-primary w-full"
+                @disabled($blocked)
+                class="btn btn-primary w-full {{ $blocked ? 'opacity-50 cursor-not-allowed' : '' }}"
             >
                 Kirim Pengajuan
             </button>
@@ -104,28 +112,46 @@ document.addEventListener('DOMContentLoaded', function () {
     const itemSelectedNama = document.getElementById('item-selected-nama');
     const itemSelectedInfo = document.getElementById('item-selected-info');
     const itemSearchWrapper = document.getElementById('item-search-wrapper');
+    const itemNote = document.getElementById('item-note');
     const searchInput = document.getElementById('search-barang');
     const searchResults = document.getElementById('search-results');
     const submitButton = document.getElementById('submit-btn');
 
+    function catatanBarang(item) {
+        if (item.status === 'dipinjam') {
+            let teks = 'Barang ini sedang dipinjam';
+            if (item.tanggal_kembali) {
+                const tgl = new Date(item.tanggal_kembali).toLocaleDateString('id-ID', {
+                    day: 'numeric', month: 'long', year: 'numeric'
+                });
+                teks += ` dan diperkirakan kembali pada ${tgl}`;
+            }
+            return teks + '. Silakan ajukan lagi setelah barang dikembalikan.';
+        }
+        if (item.sedang_diajukan) {
+            return 'Barang ini sedang diajukan pengguna lain.';
+        }
+        return '';
+    }
+
     function pilihBarang(item) {
         itemIdInput.value = item.item_id;
         itemSelectedNama.textContent = item.nama_barang;
+        itemSelectedInfo.textContent = `${item.item_id} · ${item.lokasi}`;
 
-        if (item.sedang_diajukan) {
-            itemSelectedInfo.innerHTML = `${item.item_id} &middot; ${item.lokasi} <span class="text-warning-600 font-semibold">(Sedang diajukan pengguna lain)</span>`;
-        } else {
-            itemSelectedInfo.textContent = `${item.item_id} · ${item.lokasi}`;
-        }
+        const catatan = catatanBarang(item);
+        itemNote.textContent = catatan;
+        itemNote.classList.toggle('hidden', !catatan);
 
         itemSelected.classList.remove('hidden');
         itemSearchWrapper.classList.add('hidden');
         searchResults.innerHTML = '';
         searchInput.value = '';
 
-        submitButton.disabled = item.sedang_diajukan;
-        submitButton.classList.toggle('opacity-50', item.sedang_diajukan);
-        submitButton.classList.toggle('cursor-not-allowed', item.sedang_diajukan);
+        const isBlocked = item.status === 'dipinjam' || item.sedang_diajukan;
+        submitButton.disabled = isBlocked;
+        submitButton.classList.toggle('opacity-50', isBlocked);
+        submitButton.classList.toggle('cursor-not-allowed', isBlocked);
     }
 
     let debounceTimer;
@@ -144,15 +170,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(items => {
                     searchResults.innerHTML = '';
                     items
-                        .filter(item => item.status === 'tersedia')
+                        .filter(item => ['tersedia', 'dipinjam'].includes(item.status))
                         .forEach(item => {
                             const btn = document.createElement('button');
                             btn.type = 'button';
                             btn.className = 'w-full text-left border border-gray-300 bg-white text-gray-800 rounded-lg px-4 py-3 hover:bg-gray-50';
 
-                            const badge = item.sedang_diajukan
-                                ? '<span class="ml-2 text-xs bg-warning-100 text-warning-700 px-2 py-0.5 rounded">Sedang diajukan</span>'
-                                : '';
+                            let badge = '';
+                            if (item.status === 'dipinjam') {
+                                badge = '<span class="ml-2 text-xs bg-error-100 text-error-700 px-2 py-0.5 rounded">Sedang dipinjam</span>';
+                            } else if (item.sedang_diajukan) {
+                                badge = '<span class="ml-2 text-xs bg-warning-100 text-warning-700 px-2 py-0.5 rounded">Sedang diajukan</span>';
+                            }
 
                             btn.innerHTML = `<span class="font-medium">${item.nama_barang}</span>${badge}
                                               <span class="block text-gray-500 text-sm">${item.item_id} &middot; ${item.lokasi}</span>`;

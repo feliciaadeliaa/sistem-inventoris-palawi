@@ -42,15 +42,19 @@ class ItemsImport implements ToCollection, WithHeadingRow
             if (!preg_match('/^\d{4}$/', (string) $row['tahun_perolehan'])) {
                 $errors[] = "Baris $baris: tahun_perolehan harus 4 digit";
             }
-            if (!is_numeric($row['nilai_perolehan'])) {
-                $errors[] = "Baris $baris: nilai_perolehan harus angka";
+            if (!is_numeric($row['nilai_perolehan']) || (float) $row['nilai_perolehan'] <= 0) {
+                $errors[] = "Baris $baris: nilai_perolehan harus angka lebih dari 0";
             }
 
-            // Tanggal: bisa berupa serial Excel atau teks
+            // Tanggal: bisa berupa serial Excel atau teks, tidak boleh melebihi hari ini
             try {
                 $tanggal = is_numeric($row['tanggal_terima'])
                     ? Carbon::instance(ExcelDate::excelToDateTimeObject($row['tanggal_terima']))
                     : Carbon::parse($row['tanggal_terima']);
+
+                if ($tanggal->toDateString() > now()->toDateString()) {
+                    $errors[] = "Baris $baris: tanggal_terima tidak boleh melebihi hari ini";
+                }
             } catch (\Throwable $e) {
                 $tanggal = null;
                 $errors[] = "Baris $baris: tanggal_terima tidak valid";

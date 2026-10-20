@@ -165,9 +165,9 @@
         <label for="nilai_perolehan" class="form-label">
             {{ __('Nilai Perolehan (Rp)') }}
         </label>
-        <input type="number" step="0.01" id="nilai_perolehan" name="nilai_perolehan"
-            value="{{ old('nilai_perolehan', $item->nilai_perolehan ?? '') }}" required
-            class="form-control" />
+<input type="number" step="0.01" min="0.01" id="nilai_perolehan" name="nilai_perolehan"
+    value="{{ old('nilai_perolehan', $item->nilai_perolehan ?? '') }}" required
+    class="form-control" />
         @error('nilai_perolehan')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
@@ -210,9 +210,9 @@
         <label for="tanggal_terima" class="form-label">
             {{ __('Tanggal Terima') }}
         </label>
-        <input type="date" id="tanggal_terima" name="tanggal_terima"
-            value="{{ old('tanggal_terima', isset($item->tanggal_terima) ? $item->tanggal_terima->format('Y-m-d') : '') }}" required
-            class="form-control" />
+<input type="date" id="tanggal_terima" name="tanggal_terima" max="{{ date('Y-m-d') }}"
+    value="{{ old('tanggal_terima', isset($item->tanggal_terima) ? $item->tanggal_terima->format('Y-m-d') : '') }}" required
+    class="form-control" />
         @error('tanggal_terima')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror

@@ -63,46 +63,51 @@ class DashboardController extends Controller
         ]);
     }
 
-    private function gmDashboard()
-    {
-        $userId = Auth::id();
+private function gmDashboard()
+{
+    $userId = Auth::id();
 
-        $stats = [
-            'stock_out_menunggu' => Transaction::where('jenis_transaksi', 'Stock Out')
-                ->where('status', 'diproses')->count(),
-            'mutasi_menunggu' => Transaction::where('jenis_transaksi', 'Mutasi')
-                ->where('status', 'menunggu_approval')->count(),
-            'total_disetujui' => Transaction::where('gm_approved_by', $userId)
-                ->where('status', 'disetujui')->count(),
-            'total_ditolak' => Transaction::where('gm_approved_by', $userId)
-                ->where('status', 'ditolak')->count(),
-        ];
+    $stats = [
+        'stock_out_menunggu' => Transaction::where('jenis_transaksi', 'Stock Out')
+            ->where('status', 'diproses')->count(),
+        'mutasi_menunggu' => Transaction::where('jenis_transaksi', 'Mutasi')
+            ->where('status', 'menunggu_approval')->count(),
+        'total_disetujui' => Transaction::where('gm_approved_by', $userId)
+            ->where('status', 'disetujui')->count(),
+        'total_ditolak' => Transaction::where('gm_approved_by', $userId)
+            ->where('status', 'ditolak')->count(),
+    ];
 
-        $bulanChart = $this->approvalPerBulan($userId);
+    $bulanChart = $this->approvalPerBulan($userId);
 
-        $recentActivities = Transaction::with(['item', 'user'])
-            ->where('gm_approved_by', $userId)
-            ->latest('gm_approved_at')
-            ->limit(10)
-            ->get();
+    $recentActivities = Transaction::with(['item', 'user'])
+        ->where('gm_approved_by', $userId)
+        ->latest('gm_approved_at')
+        ->limit(10)
+        ->get();
 
-        $pendingList = Transaction::with(['item', 'user'])
-            ->where(function ($q) {
-                $q->where(['jenis_transaksi' => 'Stock Out', 'status' => 'diproses'])
-                    ->orWhere(['jenis_transaksi' => 'Mutasi', 'status' => 'menunggu_approval']);
-            })
-            ->oldest()
-            ->limit(5)
-            ->get();
+    $pendingList = Transaction::with(['item', 'user'])
+        ->where(function ($q) {
+            $q->where(function ($q) {
+                $q->where('jenis_transaksi', 'Stock Out')
+                  ->where('status', 'diproses');
+            })->orWhere(function ($q) {
+                $q->where('jenis_transaksi', 'Mutasi')
+                  ->where('status', 'menunggu_approval');
+            });
+        })
+        ->oldest()
+        ->limit(5)
+        ->get();
 
-        return view('dashboard', [
-            'role' => 'gm',
-            'stats' => $stats,
-            'bulanChart' => $bulanChart,
-            'recentActivities' => $recentActivities,
-            'pendingList' => $pendingList,
-        ]);
-    }
+    return view('dashboard', [
+        'role' => 'gm',
+        'stats' => $stats,
+        'bulanChart' => $bulanChart,
+        'recentActivities' => $recentActivities,
+        'pendingList' => $pendingList,
+    ]);
+}
 
     private function userDashboard()
     {

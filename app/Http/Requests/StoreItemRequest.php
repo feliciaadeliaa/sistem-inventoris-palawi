@@ -31,9 +31,9 @@ class StoreItemRequest extends FormRequest
             'at_ibat'         => ['required', 'in:AT,IBAT'],
             'tahun_perolehan' => ['required', 'digits:4', 'integer', 'min:1990', 'max:' . date('Y')],
             'masa_manfaat'    => ['required', 'integer', 'min:1', 'max:50'],
-            'nilai_perolehan' => ['required', 'numeric', 'min:0'],
+            'nilai_perolehan' => ['required', 'numeric', 'gt:0'],
             'kondisi'         => ['required', 'in:B,BPR,RB,RSS'],
-            'tanggal_terima'  => ['required', 'date'],
+            'tanggal_terima'  => ['required', 'date', 'before_or_equal:today'],
             'gambar_asset' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
@@ -46,6 +46,8 @@ class StoreItemRequest extends FormRequest
             'at_ibat.required'      => 'AT/IBAT wajib dipilih.',
             'at_ibat.in'            => 'AT/IBAT harus AT atau IBAT.',
             'tahun_perolehan.max'   => 'Tahun perolehan tidak boleh melebihi tahun ini.',
+            'nilai_perolehan.gt' => 'Nilai perolehan harus lebih dari 0.',
+            'tanggal_terima.before_or_equal' => 'Tanggal terima tidak boleh melebihi hari ini.',
             'masa_manfaat.required' => 'Sub jenis ini belum punya golongan AT. Atur dulu di menu Kategori.',
         ];
     }

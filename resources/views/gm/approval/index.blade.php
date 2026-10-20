@@ -13,6 +13,15 @@
             {{ session('error') }}
         </div>
     @endif
+    @if ($errors->any())
+        <div class="mb-4 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded">
+            <ul class="list-disc list-inside">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     {{-- Stock Out --}}
     <h3 class="text-lg font-medium mb-3 text-gray-800 dark:text-white">Persetujuan Stock Out (Peminjaman)</h3>
@@ -38,11 +47,12 @@
                                 @method('PATCH')
                                 <button type="submit" class="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700">Setujui</button>
                             </form>
-                            <form action="{{ route('gm.approval.stock-out.reject', $trx) }}" method="POST" class="inline">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700">Tolak</button>
-                            </form>
+                            <button type="button"
+                                class="btn-tolak bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700"
+                                data-action="{{ route('gm.approval.stock-out.reject', $trx) }}"
+                                data-label="{{ $trx->item->nama_barang }} — diajukan {{ $trx->user->name }}">
+                                Tolak
+                            </button>
                         </td>
                     </tr>
                 @empty
@@ -54,45 +64,48 @@
         </table>
     </div>
 
- {{-- Mutasi --}}
-<h3 class="text-lg font-medium mb-3 text-gray-800 dark:text-white">Approval Mutasi Lokasi</h3>
-<div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm overflow-x-auto">
-    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        <thead>
-            <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Barang</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dari</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Ke</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Diinput Oleh</th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-            @forelse ($mutasiPending as $trx)
+    {{-- Mutasi --}}
+    <h3 class="text-lg font-medium mb-3 text-gray-800 dark:text-white">Approval Mutasi Lokasi</h3>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead>
                 <tr>
-                    <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->item->nama_barang }}</td>
-                    <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->lokasiAsal->nama_lokasi }}</td>
-                    <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->lokasiTujuan->nama_lokasi }}</td>
-                    <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->user->name }}</td>
-                    <td class="px-4 py-3 space-x-2">
-                        <form action="{{ route('gm.approval.mutasi.approve', $trx) }}" method="POST" class="inline">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700">Setujui</button>
-                        </form>
-                        <form action="{{ route('gm.approval.mutasi.reject', $trx) }}" method="POST" class="inline">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700">Tolak</button>
-                        </form>
-                    </td>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Barang</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Dari</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Ke</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Diinput Oleh</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada mutasi menunggu approval.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                @forelse ($mutasiPending as $trx)
+                    <tr>
+                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->item->nama_barang }}</td>
+                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->lokasiAsal->nama_lokasi }}</td>
+                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->lokasiTujuan->nama_lokasi }}</td>
+                        <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ $trx->user->name }}</td>
+                        <td class="px-4 py-3 space-x-2">
+                            <form action="{{ route('gm.approval.mutasi.approve', $trx) }}" method="POST" class="inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700">Setujui</button>
+                            </form>
+                            <button type="button"
+                                class="btn-tolak bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700"
+                                data-action="{{ route('gm.approval.mutasi.reject', $trx) }}"
+                                data-label="Mutasi {{ $trx->item->nama_barang }}: {{ $trx->lokasiAsal->nama_lokasi }} → {{ $trx->lokasiTujuan->nama_lokasi }}">
+                                Tolak
+                            </button>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada mutasi menunggu approval.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    @include('partials.reject-modal')
 @endsection

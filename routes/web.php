@@ -12,6 +12,7 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\StockOutController as AdminStockOutController;
 use App\Http\Controllers\User\StockOutController as UserStockOutController;
+use App\Http\Controllers\User\RiwayatController;
 use App\Http\Controllers\Admin\RepairRequestController as AdminRepairRequestController;
 use App\Http\Controllers\User\RepairRequestController as UserRepairRequestController;
 use App\Http\Controllers\Gm\ApprovalController as GmApprovalController;
@@ -51,6 +52,9 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     Route::get('/barang/scan', [BarangLookupController::class, 'index'])->name('barang.scan');
     Route::get('/barang/cari', [BarangLookupController::class, 'search'])->name('barang.cari');
     Route::get('/barang/{item_id}/detail', [BarangLookupController::class, 'show'])->name('barang.detail');
+
+    // Riwayat pengajuan saya - semua role yang login (user, GM, dll.) bisa melihat pengajuannya sendiri
+    Route::get('/riwayat-pengajuan', [RiwayatController::class, 'index'])->name('riwayat.index');
 
     // Sisi User - khusus role 'user'
     Route::middleware('user')->prefix('transaksi')->name('peminjaman.')->group(function () {

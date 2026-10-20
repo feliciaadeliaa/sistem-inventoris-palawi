@@ -23,6 +23,8 @@ class Transaction extends Model
         'tanggal_kembali_aktual',
         'lokasi_asal_id',
         'lokasi_tujuan_id',
+        'alasan_penolakan',
+        'ditolak_oleh',
     ];
 
     protected $casts = [
@@ -82,5 +84,10 @@ class Transaction extends Model
     public function scopeMilikUser($query, $userId)
     {
         return $query->where('user_id', $userId);
+    }
+    
+    public function penolak()
+    {
+    return $this->belongsTo(User::class, 'ditolak_oleh');
     }
 }

@@ -104,10 +104,14 @@ class Item extends Model
         return (int) ($this->category?->golongan?->masa_manfaat ?? 0);
     }
 
-    /**
-     * URL foto aset (null kalau belum ada foto).
-     * Pakai: $item->gambar_url
-     */
+public function activeLoan()
+{
+    return $this->hasOne(Transaction::class)
+        ->where('jenis_transaksi', 'Stock Out')
+        ->where('status', 'disetujui')   // disetujui = sedang dipinjam, belum dikembalikan
+        ->with('user')
+        ->latest('id');
+}
     public function getGambarUrlAttribute(): ?string
     {
         return $this->gambar_asset ? asset('storage/' . $this->gambar_asset) : null;

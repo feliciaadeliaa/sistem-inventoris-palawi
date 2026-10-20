@@ -44,8 +44,8 @@ class MenuHelper
             'icon' => 'forms',
             'name' => 'Transaksi',
             'subItems' => [
-                ['name' => 'Stock In', 'path' => '/admin/stock-in'],
-                ['name' => 'Stock Out', 'path' => '/admin/transaksi/stock-out'],
+                ['name' => 'Pengembalian', 'path' => '/admin/stock-in'],
+                ['name' => 'Peminjaman', 'path' => '/admin/transaksi/stock-out'],
                 ['name' => 'Mutasi', 'path' => '/admin/transaksi/mutasi'],
                 ['name' => 'Perbaikan', 'path' => '/admin/transaksi/perbaikan'],
                 ['name' => 'Kerusakan', 'path' => '/admin/transaksi/kerusakan'],

@@ -9,7 +9,6 @@
         </h2>
     </div>
 
-    @include('admin.laporan._tabs', ['active' => $activeTab])
 @endisset
 
 <div class="flex flex-col items-center justify-center py-24 text-center">

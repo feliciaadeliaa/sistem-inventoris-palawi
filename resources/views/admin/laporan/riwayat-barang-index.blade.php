@@ -1,31 +1,32 @@
 @extends('layouts.app')
 
 @section('content')
-  <div class="flex flex-wrap items-start justify-between gap-3 mb-4">        
-    <h2 class="page-title">            
-        Laporan dan Ekspor
-        </h2>
+    <div class="flex flex-wrap items-start justify-between gap-3 mb-6">
+        <div>
+            <h2 class="page-title">
+                Laporan dan Ekspor Umum
+            </h2>
+            <p class="page-desc">
+                Kelola Laporan Umum Inventaris dan Ekspor Data.
+            </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <a href="{{ route('admin.laporan.riwayat-barang.export-pdf', request()->query()) }}" target="_blank" class="btn btn-outline">
+                Ekspor PDF
+            </a>
+            <a href="{{ route('admin.laporan.riwayat-barang.export-excel', request()->query()) }}" class="btn btn-outline">
+                Ekspor Excel
+            </a>
+        </div>
     </div>
 
-    {{-- Tab Navigation --}}
-     @include('admin.laporan._tabs', ['active' => 'riwayat-barang'])
-
-    {{-- Tombol Ekspor (di luar panel filter) --}}
-    <div class="flex items-center justify-end gap-2 mb-4">
-        <a href="{{ route('admin.laporan.riwayat-barang.export-pdf', request()->query()) }}" target="_blank" class="btn btn-outline">
-            Ekspor PDF
-        </a>
-        <a href="{{ route('admin.laporan.riwayat-barang.export-excel', request()->query()) }}" class="btn btn-outline">
-            Ekspor Excel
-        </a>
-    </div>
-
-    {{-- Filter --}}
-    <form method="GET" action="{{ route('admin.laporan.riwayat-barang.index') }}" class="mb-4 card card-pad">
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            <div>
-                <label class="form-label">Dari Tanggal</label>
-                <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}" class="form-control">
+{{-- Filter --}}
+<form method="GET" action="{{ route('admin.laporan.riwayat-barang.index') }}" class="mb-4 card card-pad">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div>
+            <label class="form-label">Dari Tanggal</label>
+            <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}" class="form-control">
             </div>
             <div>
                 <label class="form-label">Sampai Tanggal</label>

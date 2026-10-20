@@ -97,6 +97,13 @@ return [
             'retry_after' => 60,
         ],
 
+        'markdown' => [
+            'theme' => env('MAIL_MARKDOWN_THEME', 'palawi'),
+            'paths' => [
+                resource_path('views/vendor/mail'),
+            ],
+        ],
+
     ],
 
     /*

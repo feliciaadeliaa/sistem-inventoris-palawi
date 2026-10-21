@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Transaction;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -18,7 +19,7 @@ class RiwayatBarangExport implements FromCollection, WithHeadings, WithMapping
         $this->statusLabels = $statusLabels;
     }
 
-    public function collection()
+    public function collection(): Collection
     {
         return Transaction::with(['item.category', 'item.location', 'user'])
             ->when(!empty($this->filters['tanggal_dari']), fn ($q) => $q->whereDate('created_at', '>=', $this->filters['tanggal_dari']))
@@ -36,7 +37,7 @@ class RiwayatBarangExport implements FromCollection, WithHeadings, WithMapping
 
     public function headings(): array
     {
-        return ['Tanggal', 'Barang', 'Kode Item', 'Kategori', 'Lokasi', 'Jenis', 'Status', 'Pemohon', 'Keterangan'];
+        return ['Tanggal', 'Barang', 'Kode Item', 'Kategori', 'Lokasi', 'Jenis', 'Status', 'Pemohon', 'Keterangan', 'Alasan Penolakan'];
     }
 
     public function map($trx): array
@@ -51,6 +52,7 @@ class RiwayatBarangExport implements FromCollection, WithHeadings, WithMapping
             $this->statusLabels[$trx->status] ?? ucfirst($trx->status),
             $trx->user->name ?? '-',
             $trx->keterangan ?? '-',
+            $trx->status === 'ditolak' ? ($trx->alasan_penolakan ?: '-') : '-',
         ];
     }
 }

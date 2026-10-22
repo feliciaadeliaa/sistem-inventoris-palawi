@@ -20,6 +20,11 @@
                 class="btn btn-outline">
                 Cetak as PNG (ZIP)
             </button>
+            <button type="submit" form="print-labels-form" formaction="{{ route('barang.export') }}"
+                class="btn btn-outline"
+                title="{{ __('Download data aset (tanpa foto). Jika ada yang dicentang, hanya yang dipilih; jika tidak, sesuai filter aktif.') }}">
+                Download Excel
+            </button>
             <a href="{{ route('barang.import.form') }}" class="btn btn-outline">
                 Import Excel
             </a>
@@ -124,8 +129,15 @@
         </div>
     </form>
 
-    {{-- Form cetak label: membungkus tabel, karena checkbox ada di dalamnya --}}
+    {{-- Form cetak label & download Excel: membungkus tabel, karena checkbox ada di dalamnya --}}
     <form id="print-labels-form" method="GET">
+
+        {{-- Bawa filter aktif supaya "Download Excel" tanpa checkbox mengikuti filter di halaman --}}
+        @foreach (['q', 'category_id', 'location_id', 'kondisi', 'status', 'at_ibat', 'tahun_dari', 'tahun_sampai'] as $filterKey)
+            @if (request()->filled($filterKey))
+                <input type="hidden" name="{{ $filterKey }}" value="{{ request($filterKey) }}">
+            @endif
+        @endforeach
 
         <div class="card overflow-hidden">
             <div class="overflow-x-auto">
@@ -380,7 +392,7 @@
         }
     });
 
-    // Sebelum submit cetak, sisipkan ID dari halaman lain yang tidak sedang tertampil
+    // Sebelum submit (cetak PDF/PNG atau download Excel), sisipkan ID dari halaman lain yang tidak sedang tertampil
     document.addEventListener('submit', function (e) {
         if (e.target.id !== 'print-labels-form') return;
 

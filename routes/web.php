@@ -81,6 +81,9 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     });
 
     Route::middleware('admin')->prefix('admin')->group(function () {
+        // Download Excel data aset (tanpa kolom foto) - taruh di atas resource
+        Route::get('barang/export', [ItemController::class, 'export'])->name('barang.export');
+
         Route::resource('barang', ItemController::class)
             ->parameters(['barang' => 'item'])
             ->except(['show']);

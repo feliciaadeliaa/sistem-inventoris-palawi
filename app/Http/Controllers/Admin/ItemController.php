@@ -17,6 +17,7 @@ use Endroid\QrCode\Writer\SvgWriter;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Imports\ItemsImport;
 use App\Exports\ItemImportTemplateExport;
+use App\Exports\ItemsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use ZipArchive;
 use Illuminate\Support\Arr;
@@ -394,5 +395,29 @@ class ItemController extends Controller
     public function template()
     {
         return Excel::download(new ItemImportTemplateExport, 'template_import_asset.xlsx');
+    }
+
+    /**
+     * Download data aset ke Excel (tanpa kolom foto).
+     * - Kalau ada checkbox yang dipilih (ids[]), hanya itu yang diexport.
+     * - Kalau tidak ada, export mengikuti filter yang sedang aktif di halaman index.
+     */
+    public function export(Request $request)
+    {
+        $request->validate([
+            'ids'   => 'nullable|array',
+            'ids.*' => 'exists:items,id',
+        ]);
+
+        return Excel::download(
+            new ItemsExport(
+                $request->input('ids', []),
+                $request->only([
+                    'q', 'category_id', 'location_id', 'kondisi',
+                    'status', 'at_ibat', 'tahun_dari', 'tahun_sampai',
+                ])
+            ),
+            'data-aset-' . now()->format('Ymd-His') . '.xlsx'
+        );
     }
 }

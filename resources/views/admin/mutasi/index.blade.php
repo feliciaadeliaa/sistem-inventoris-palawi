@@ -2,6 +2,10 @@
 
 @section('content')
 
+@php
+    $itemDipinjam = $selectedItem && $selectedItem->status === 'dipinjam';
+@endphp
+
 <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
     <div>
         <h2 class="page-title">Mutasi Lokasi</h2>
@@ -94,6 +98,12 @@
     <div id="search-results" class="space-y-2 mb-4"></div>
 
     <div id="form-mutasi" class="{{ $selectedItem ? '' : 'hidden' }}">
+        <div id="alert-dipinjam"
+             class="{{ $itemDipinjam ? '' : 'hidden' }} mb-4 p-4 bg-error-50 text-error-700 rounded-lg border border-error-200">
+            <strong>Barang ini sedang dipinjam</strong> sehingga tidak bisa dimutasi.
+            Selesaikan pengembalian lewat menu Stock In terlebih dahulu.
+        </div>
+
         <div class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
             <p class="text-sm text-gray-500">Barang dipilih</p>
             <p id="info-nama" class="font-semibold text-gray-800">{{ $selectedItem->nama_barang ?? '' }}</p>
@@ -129,7 +139,9 @@
                 <textarea name="keterangan" id="keterangan" rows="2" class="form-control h-auto py-2"></textarea>
             </div>
 
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" id="btn-ajukan-mutasi"
+                    class="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                    @disabled($itemDipinjam)>
                 Ajukan Mutasi
             </button>
         </form>
@@ -199,6 +211,7 @@
                     <th>Nama Barang</th>
                     <th>Lokasi Asal &rarr; Tujuan</th>
                     <th>Status</th>
+                    <th>Catatan</th>
                     <th>Tanggal</th>
                 </tr>
             </thead>
@@ -220,11 +233,19 @@
                                 {{ str_replace('_', ' ', ucfirst($trx->status)) }}
                             </span>
                         </td>
+                        <td class="text-sm text-gray-600 max-w-xs">
+                            @if ($trx->status === 'ditolak')
+                                <span class="font-medium text-error-700">Ditolak:</span>
+                                {{ $trx->alasan_penolakan ?: '-' }}
+                            @else
+                                {{ $trx->keterangan ?: '-' }}
+                            @endif
+                        </td>
                         <td>{{ $trx->created_at->format('d M Y H:i') }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center text-gray-500">Belum ada riwayat mutasi.</td>
+                        <td colspan="6" class="text-center text-gray-500">Belum ada riwayat mutasi.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -288,10 +309,17 @@ document.addEventListener('DOMContentLoaded', function () {
     ];
 
     function pilihBarang(item) {
+        const dipinjam = item.status === 'dipinjam';
+
         document.getElementById('input-item-id').value = item.item_id;
         document.getElementById('info-nama').textContent = item.nama_barang;
         document.getElementById('info-kode').innerHTML = `${item.item_id} &bull; Lokasi saat ini: <span id="info-lokasi">${item.lokasi}</span>`;
         document.getElementById('lokasi-asal-display').value = item.lokasi;
+
+        // Pesan jelas + tombol submit dimatikan kalau barang sedang dipinjam
+        document.getElementById('alert-dipinjam').classList.toggle('hidden', !dipinjam);
+        document.getElementById('btn-ajukan-mutasi').disabled = dipinjam;
+
         formMutasi.classList.remove('hidden');
         searchResults.innerHTML = '';
         searchInput.value = item.nama_barang;
@@ -316,10 +344,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderResults(items) {
         searchResults.innerHTML = '';
         items.forEach(item => {
+            const dipinjam = item.status === 'dipinjam';
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'w-full text-left border border-gray-300 bg-white text-gray-800 rounded-lg px-4 py-3 hover:bg-gray-50';
             btn.innerHTML = `<span class="font-medium">${item.nama_barang}</span>
+                              ${dipinjam ? '<span class="badge badge-amber ml-2">Sedang dipinjam</span>' : ''}
                               <span class="block text-gray-500 text-sm">${item.item_id} &bull; ${item.lokasi}</span>`;
             btn.addEventListener('click', () => pilihBarang(item));
             searchResults.appendChild(btn);

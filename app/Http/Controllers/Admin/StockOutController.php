@@ -43,6 +43,10 @@ class StockOutController extends Controller
             return back()->with('error', 'Transaksi ini sudah diproses sebelumnya.');
         }
 
+        if ($transaction->item->status === 'dipinjam') {
+            return back()->with('error', "Barang \"{$transaction->item->nama_barang}\" sudah berstatus DIPINJAM. Tolak pengajuan ini dengan alasan, atau tunggu barang dikembalikan.");
+        }
+
         $transaction->update([
             'status' => 'diproses',
             'approved_by' => Auth::id(),
@@ -52,28 +56,30 @@ class StockOutController extends Controller
         return back()->with('success', 'Pengajuan diproses, diteruskan ke GM untuk persetujuan akhir.');
     }
 
-public function reject(Request $request, Transaction $transaction)
-{
-    $validated = $request->validate([
-        'alasan_penolakan' => 'required|string|max:500',
-    ], [
-        'alasan_penolakan.required' => 'Alasan penolakan wajib diisi.',
-    ]);
+    public function reject(Request $request, Transaction $transaction)
+    {
+        $validated = $request->validate([
+            'alasan_penolakan' => ['required', 'string', 'min:5', 'max:500'],
+        ], [
+            'alasan_penolakan.required' => 'Alasan penolakan wajib diisi.',
+            'alasan_penolakan.min' => 'Alasan penolakan minimal 5 karakter.',
+        ]);
 
-    if ($transaction->status !== 'menunggu_approval') {
-        return back()->with('error', 'Transaksi ini sudah diproses sebelumnya.');
+        if ($transaction->status !== 'menunggu_approval') {
+            return back()->with('error', 'Transaksi ini sudah diproses sebelumnya.');
+        }
+
+        $transaction->update([
+            'status' => 'ditolak',
+            'approved_by' => Auth::id(),
+            'approved_at' => now(),
+            'alasan_penolakan' => $validated['alasan_penolakan'],
+            'ditolak_oleh' => Auth::id(),
+        ]);
+
+        return back()->with('success', 'Pengajuan ditolak.');
     }
 
-    $transaction->update([
-        'status' => 'ditolak',
-        'approved_by' => Auth::id(),
-        'approved_at' => now(),
-        'alasan_penolakan' => $validated['alasan_penolakan'],
-        'ditolak_oleh' => Auth::id(),
-    ]);
-
-    return back()->with('success', 'Pengajuan ditolak.');
-}
     public function export(Request $request)
     {
         $ids = array_filter(explode(',', $request->get('selected_ids', '')));

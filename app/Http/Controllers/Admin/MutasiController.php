@@ -27,6 +27,9 @@ class MutasiController extends Controller
                 ->first();
         }
 
+        // Barang yang sedang dipinjam tidak boleh dimutasi (dipakai untuk alert di view)
+        $itemDipinjam = $selectedItem && $selectedItem->status === 'dipinjam';
+
         $riwayatQuery = Transaction::with(['item', 'lokasiAsal', 'lokasiTujuan'])
             ->where('jenis_transaksi', 'Mutasi');
 
@@ -50,7 +53,7 @@ class MutasiController extends Controller
         $riwayat = $riwayatQuery->orderBy('created_at', $sort)->paginate(10)->withQueryString();
 
         return view('admin.mutasi.index', compact(
-            'locations', 'categories', 'golonganOptions', 'selectedItem', 'riwayat'
+            'locations', 'categories', 'golonganOptions', 'selectedItem', 'itemDipinjam', 'riwayat'
         ));
     }
 
@@ -63,6 +66,14 @@ class MutasiController extends Controller
         ]);
 
         $item = Item::where('item_id', $validated['item_id'])->firstOrFail();
+
+        // Barang yang sedang dipinjam tidak boleh dimutasi
+        if ($item->status === 'dipinjam') {
+            return back()
+                ->with('error', "Barang \"{$item->nama_barang}\" sedang berstatus DIPINJAM sehingga tidak bisa dimutasi. "
+                    . 'Selesaikan pengembalian lewat menu Stock In terlebih dahulu.')
+                ->withInput();
+        }
 
         if ($item->location_id == $validated['lokasi_tujuan_id']) {
             return back()->with('error', 'Lokasi tujuan sama dengan lokasi saat ini.')->withInput();

@@ -2,15 +2,14 @@
 
 @section('content')
 @php
-    $namaBulan = [
-        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
-    ];
+    $namaBulan = $namaBulan ?? [];
     $rp = fn ($n) => 'Rp ' . number_format($n, 0, ',', '.');
     $periodeLabel = $mode === 'tahunan'
-        ? 'Tahun ' . $tahun
-        : $namaBulan[$bulan] . ' ' . $tahun;
+        ? 'Tahun ' . $tahun . ' (Januari – Desember)'
+        : ($bulanDari === $bulanSampai
+            ? $namaBulan[$bulanDari] . ' ' . $tahun
+            : $namaBulan[$bulanDari] . ' – ' . $namaBulan[$bulanSampai] . ' ' . $tahun);
+    $colspan = 13 + count($bulanList);
 @endphp
 
 {{-- Header --}}
@@ -58,23 +57,32 @@
       x-data="{ mode: '{{ $mode }}' }"
       class="card card-pad mb-4">
 
-    {{-- Bawa kata kunci dari search bar header saat ganti periode --}}
+    {{-- Bawa kata kunci dari search bar header saat ganti filter --}}
     <input type="hidden" name="q" value="{{ $search }}">
 
-    <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+    <div class="grid grid-cols-1 gap-3 md:grid-cols-4">
         <div>
-            <label for="mode" class="form-label">Mode</label>
+            <label for="mode" class="form-label">Periode</label>
             <select id="mode" name="mode" x-model="mode" class="form-control">
-                <option value="bulanan">Bulanan</option>
-                <option value="tahunan">Tahunan</option>
+                <option value="bulanan">Bulanan (pilih rentang bulan)</option>
+                <option value="tahunan">Tahunan (Januari – Desember)</option>
             </select>
         </div>
 
         <div x-show="mode === 'bulanan'">
-            <label for="bulan" class="form-label">Bulan</label>
-            <select id="bulan" name="bulan" class="form-control">
+            <label for="bulan_dari" class="form-label">Dari Bulan</label>
+            <select id="bulan_dari" name="bulan_dari" class="form-control">
                 @foreach ($namaBulan as $no => $nama)
-                    <option value="{{ $no }}" @selected($no === $bulan)>{{ $nama }}</option>
+                    <option value="{{ $no }}" @selected($no === $bulanDari)>{{ $nama }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div x-show="mode === 'bulanan'">
+            <label for="bulan_sampai" class="form-label">Sampai Bulan</label>
+            <select id="bulan_sampai" name="bulan_sampai" class="form-control">
+                @foreach ($namaBulan as $no => $nama)
+                    <option value="{{ $no }}" @selected($no === $bulanSampai)>{{ $nama }}</option>
                 @endforeach
             </select>
         </div>
@@ -86,16 +94,46 @@
         </div>
     </div>
 
+    <div class="grid grid-cols-1 gap-3 mt-3 md:grid-cols-2">
+        <div>
+            <label for="category_id" class="form-label">Kategori Aset</label>
+            <select id="category_id" name="category_id" class="form-control">
+                <option value="">Semua Kategori</option>
+                @foreach ($categories as $cat)
+                    <option value="{{ $cat->category_id }}" @selected((string) $categoryId === (string) $cat->category_id)>
+                        {{ $cat->jenis_aktiva_tetap }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div>
+            <label for="lokasi_id" class="form-label">Lokasi Aset</label>
+            <select id="lokasi_id" name="lokasi_id" class="form-control">
+                <option value="">Semua Lokasi</option>
+                @foreach ($lokasis as $lok)
+                    <option value="{{ $lok->id }}" @selected((int) $lokasiId === $lok->id)>
+                        {{ $lok->nama_wisata }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+    </div>
+
     <div class="flex items-center gap-3 mt-4">
         <button type="submit" class="btn btn-primary">Terapkan Filter</button>
+        <a href="{{ route('admin.laporan.penyusutan') }}" class="text-sm text-gray-500 hover:underline">Reset</a>
     </div>
 </form>
 
 {{-- Form export: membungkus tabel karena checkbox ada di dalamnya --}}
 <form id="export-form" method="GET" action="{{ route('admin.laporan.penyusutan.export') }}">
     <input type="hidden" name="mode" value="{{ $mode }}">
-    <input type="hidden" name="bulan" value="{{ $bulan }}">
+    <input type="hidden" name="bulan_dari" value="{{ $bulanDari }}">
+    <input type="hidden" name="bulan_sampai" value="{{ $bulanSampai }}">
     <input type="hidden" name="tahun" value="{{ $tahun }}">
+    <input type="hidden" name="category_id" value="{{ $categoryId }}">
+    <input type="hidden" name="lokasi_id" value="{{ $lokasiId }}">
     <input type="hidden" name="q" value="{{ $search }}">
 
     <div class="card overflow-hidden">
@@ -129,11 +167,15 @@
                         <th>ID Item</th>
                         <th>Nama Barang</th>
                         <th>Jenis Aktiva</th>
+                        <th>Lokasi</th>
                         <th>No. Aktiva Tetap</th>
                         <th>Tgl Terima</th>
                         <th class="text-right">Masa Manfaat</th>
                         <th class="text-right">Nilai Perolehan</th>
-                        <th class="text-right">Penyusutan Periode</th>
+                        @foreach ($bulanList as $b)
+                            <th class="text-right">{{ $namaBulan[$b] }}</th>
+                        @endforeach
+                        <th class="text-right">Total Penyusutan Periode</th>
                         <th class="text-right">Akumulasi</th>
                         <th class="text-right">Nilai Buku</th>
                     </tr>
@@ -150,18 +192,22 @@
                             <td class="cell-id">{{ $item->item_id }}</td>
                             <td class="font-medium text-gray-800">{{ $item->nama_barang }}</td>
                             <td>{{ $item->category->jenis_aktiva_tetap ?? '-' }}</td>
+                            <td>{{ $item->location->nama_wisata ?? '-' }}</td>
                             <td>{{ $item->nomor_aktiva_tetap ?? '-' }}</td>
                             <td>{{ \Carbon\Carbon::parse($item->tanggal_terima)->format('d/m/Y') }}</td>
                             <td class="text-right">{{ $item->masa_manfaat }} th</td>
                             <td class="text-right">{{ $rp($item->nilai_perolehan) }}</td>
+                            @foreach ($bulanList as $b)
+                                <td class="text-right">{{ $rp($row['per_bulan'][$b] ?? 0) }}</td>
+                            @endforeach
                             <td class="text-right">{{ $rp($row['penyusutan_periode']) }}</td>
                             <td class="text-right">{{ $rp($row['akumulasi']) }}</td>
                             <td class="text-right font-medium text-gray-800">{{ $rp($row['nilai_buku']) }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="12" class="!py-8 text-center text-gray-500">
-                                {{ $search !== '' ? "Tidak ada aset yang cocok dengan \"{$search}\"." : 'Tidak ada aset pada periode ini.' }}
+                            <td colspan="{{ $colspan }}" class="!py-8 text-center text-gray-500">
+                                {{ $search !== '' ? "Tidak ada aset yang cocok dengan \"{$search}\"." : 'Tidak ada aset pada filter ini.' }}
                             </td>
                         </tr>
                     @endforelse

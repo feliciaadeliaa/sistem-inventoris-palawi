@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Exports\PenyusutanExport;
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Item;
+use App\Models\Location;
 use App\Services\PenyusutanService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -12,16 +14,26 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class LaporanPenyusutanController extends Controller
 {
+    private const NAMA_BULAN = [
+        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+    ];
+
     public function index(Request $request, PenyusutanService $service)
     {
         $data = $request->validate($this->rules());
 
-        return view('admin.laporan.penyusutan', $this->susunLaporan($data, $service));
+        return view('admin.laporan.penyusutan', $this->susunLaporan($data, $service) + [
+            'namaBulan'  => self::NAMA_BULAN,
+            'categories' => Category::orderBy('jenis_aktiva_tetap')->get(),
+            'lokasis'    => Location::orderBy('nama_wisata')->get(),
+        ]);
     }
 
     /**
      * Download Excel. Kalau ada ids[] (baris yang dicentang), hanya itu yang diunduh.
-     * Kalau tidak ada yang dicentang, semua baris pada periode + pencarian saat ini diunduh.
+     * Kalau tidak ada yang dicentang, semua baris pada filter saat ini diunduh.
      */
     public function export(Request $request, PenyusutanService $service)
     {
@@ -34,10 +46,10 @@ class LaporanPenyusutanController extends Controller
 
         $suffix = $laporan['mode'] === 'tahunan'
             ? $laporan['tahun']
-            : sprintf('%04d-%02d', $laporan['tahun'], $laporan['bulan']);
+            : sprintf('%04d-%02d-sd-%02d', $laporan['tahun'], $laporan['bulanDari'], $laporan['bulanSampai']);
 
         return Excel::download(
-            new PenyusutanExport($laporan['rows']),
+            new PenyusutanExport($laporan['rows'], $laporan['bulanList'], self::NAMA_BULAN),
             "laporan-penyusutan-{$suffix}.xlsx"
         );
     }
@@ -45,10 +57,13 @@ class LaporanPenyusutanController extends Controller
     private function rules(): array
     {
         return [
-            'mode'  => ['nullable', 'in:bulanan,tahunan'],
-            'bulan' => ['nullable', 'integer', 'between:1,12'],
-            'tahun' => ['nullable', 'integer', 'between:1990,2100'],
-            'q'     => ['nullable', 'string', 'max:100'], // dikirim oleh search bar di header
+            'mode'         => ['nullable', 'in:bulanan,tahunan'],
+            'bulan_dari'   => ['nullable', 'integer', 'between:1,12'],
+            'bulan_sampai' => ['nullable', 'integer', 'between:1,12', 'gte:bulan_dari'],
+            'tahun'        => ['nullable', 'integer', 'between:1990,2100'],
+            'category_id'  => ['nullable', 'string', 'max:5'],   // kode kategori, mis. C01
+            'lokasi_id'    => ['nullable', 'integer'],            // locations.id
+            'q'            => ['nullable', 'string', 'max:100'], // dikirim oleh search bar di header
         ];
     }
 
@@ -57,18 +72,25 @@ class LaporanPenyusutanController extends Controller
      */
     private function susunLaporan(array $data, PenyusutanService $service, array $ids = []): array
     {
-        $mode   = $data['mode']  ?? 'bulanan';
-        $bulan  = (int) ($data['bulan'] ?? now()->month);
-        $tahun  = (int) ($data['tahun'] ?? now()->year);
-        $search = trim($data['q'] ?? '');
+        $mode       = $data['mode'] ?? 'bulanan';
+        $tahun      = (int) ($data['tahun'] ?? now()->year);
+        $search     = trim($data['q'] ?? '');
+        $categoryId = $data['category_id'] ?? null;
+        $lokasiId   = $data['lokasi_id'] ?? null;
 
         if ($mode === 'tahunan') {
-            $awal  = Carbon::create($tahun, 1, 1)->startOfDay();
-            $akhir = Carbon::create($tahun, 12, 31)->endOfDay();
+            // Tahunan: selalu Januari - Desember pada tahun yang dipilih
+            $bulanDari   = 1;
+            $bulanSampai = 12;
         } else {
-            $awal  = Carbon::create($tahun, $bulan, 1)->startOfDay();
-            $akhir = $awal->copy()->endOfMonth();
+            $bulanDari   = (int) ($data['bulan_dari'] ?? now()->month);
+            $bulanSampai = (int) ($data['bulan_sampai'] ?? $bulanDari);
         }
+
+        $bulanList = range($bulanDari, $bulanSampai);
+
+        $awal  = Carbon::create($tahun, $bulanDari, 1)->startOfDay();
+        $akhir = Carbon::create($tahun, $bulanSampai, 1)->endOfMonth();
 
         $hariIni = now()->startOfDay();
 
@@ -80,9 +102,11 @@ class LaporanPenyusutanController extends Controller
             $status = 'final';      // periode sudah lewat
         }
 
-        $items = Item::with('category.golongan')
+        $items = Item::with(['category.golongan', 'location'])
             ->whereNotNull('tanggal_terima')
             ->whereDate('tanggal_terima', '<=', $akhir)
+            ->when($categoryId, fn ($query) => $query->where('category_id', $categoryId))
+            ->when($lokasiId, fn ($query) => $query->where('location_id', $lokasiId))
             // Baris yang dicentang diunduh apa adanya; pencarian hanya berlaku kalau tidak ada yang dicentang
             ->when(
                 ! empty($ids),
@@ -93,15 +117,20 @@ class LaporanPenyusutanController extends Controller
                           ->orWhere('nama_barang', 'like', "%{$search}%")
                           ->orWhere('nomor_aktiva_tetap', 'like', "%{$search}%")
                           ->orWhereHas('category', fn ($c) =>
-                              $c->where('jenis_aktiva_tetap', 'like', "%{$search}%"));
+                              $c->where('jenis_aktiva_tetap', 'like', "%{$search}%"))
+                          ->orWhereHas('location', fn ($l) =>
+                              $l->where('nama_wisata', 'like', "%{$search}%"));
                     });
                 })
             )
             ->orderBy('tanggal_terima')
             ->get();
 
-        $rows = $items->map(fn ($item) => $service->baris($item, $awal, $akhir));
+        $rows = $items->map(fn ($item) => $service->baris($item, $awal, $akhir, $bulanList));
 
-        return compact('rows', 'mode', 'bulan', 'tahun', 'awal', 'akhir', 'status', 'hariIni', 'search');
+        return compact(
+            'rows', 'mode', 'tahun', 'bulanDari', 'bulanSampai', 'bulanList',
+            'awal', 'akhir', 'status', 'hariIni', 'search', 'categoryId', 'lokasiId'
+        );
     }
 }

@@ -41,14 +41,27 @@ class PenyusutanService
         return (float) $item->nilai_perolehan - $this->akumulasi($item, $tglAcuan);
     }
 
-    /** Satu baris laporan untuk periode [awal, akhir]. */
-    public function baris(Item $item, Carbon $awal, Carbon $akhir): array
+    /**
+     * Satu baris laporan untuk periode [awal, akhir].
+     * $bulanList (angka bulan) menghasilkan rincian penyusutan per bulan pada tahun $awal.
+     */
+    public function baris(Item $item, Carbon $awal, Carbon $akhir, array $bulanList = []): array
     {
         $akumAkhir = $this->akumulasi($item, $akhir);
         $akumAwal  = $this->akumulasi($item, $awal->copy()->subDay());
 
+        $perBulan = [];
+        foreach ($bulanList as $bulan) {
+            $mulaiBulan = Carbon::create($awal->year, $bulan, 1)->startOfDay();
+            $akhirBulan = $mulaiBulan->copy()->endOfMonth();
+
+            $perBulan[$bulan] = $this->akumulasi($item, $akhirBulan)
+                              - $this->akumulasi($item, $mulaiBulan->copy()->subDay());
+        }
+
         return [
             'item'               => $item,
+            'per_bulan'          => $perBulan,
             'penyusutan_periode' => $akumAkhir - $akumAwal,
             'akumulasi'          => $akumAkhir,
             'nilai_buku'         => (float) $item->nilai_perolehan - $akumAkhir,

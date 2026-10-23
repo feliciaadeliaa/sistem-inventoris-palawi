@@ -35,6 +35,8 @@ class StoreItemRequest extends FormRequest
             'kondisi'         => ['required', 'in:B,BPR,RB,RSS'],
             'tanggal_terima'  => ['required', 'date', 'before_or_equal:today'],
             'gambar_asset' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'category_id' => ['required', Rule::exists('categories', 'category_id')->where('is_active', true)],
+            'location_id' => ['required', Rule::exists('locations', 'id')->where('is_active', true)],
         ];
     }
 

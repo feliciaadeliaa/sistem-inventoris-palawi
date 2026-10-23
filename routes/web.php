@@ -84,10 +84,10 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
         // Download Excel data aset (tanpa kolom foto) - taruh di atas resource
         Route::get('barang/export', [ItemController::class, 'export'])->name('barang.export');
 
-        // Trash (aset yang di-soft delete) + pulihkan
+        // Trash (aset yang di-soft delete) + pulihkan + hapus permanen
         Route::get('barang/trash', [ItemController::class, 'trash'])->name('barang.trash');
         Route::patch('barang/{id}/restore', [ItemController::class, 'restore'])->name('barang.restore');
-          Route::delete('barang/{id}/force-delete', [ItemController::class, 'forceDelete'])->name('barang.force-delete');
+        Route::delete('barang/{id}/force-delete', [ItemController::class, 'forceDelete'])->name('barang.force-delete');
 
         Route::resource('barang', ItemController::class)
             ->parameters(['barang' => 'item'])
@@ -105,18 +105,27 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
         Route::post('barang-import', [ItemController::class, 'import'])->name('barang.import');
         Route::get('barang-import/template', [ItemController::class, 'template'])->name('barang.import.template');
 
+        // Kategori: tanpa hapus, ada aktif/nonaktif (edit tetap ada)
         Route::resource('kategori', CategoryController::class)
             ->parameters(['kategori' => 'category'])
-            ->except(['show']);
+            ->except(['show', 'destroy']);
+        Route::patch('kategori/{category}/toggle-active', [CategoryController::class, 'toggleActive'])
+            ->name('kategori.toggle-active');
 
         // Master Golongan AT (menentukan masa manfaat aset berdasarkan sub jenis)
+        // Tanpa edit & hapus, ada aktif/nonaktif
         Route::resource('golongan', GolonganController::class)
             ->parameters(['golongan' => 'golongan'])
-            ->except(['show']);
+            ->except(['show', 'edit', 'update', 'destroy']);
+        Route::patch('golongan/{golongan}/toggle-active', [GolonganController::class, 'toggleActive'])
+            ->name('golongan.toggle-active');
 
+        // Lokasi: tanpa edit & hapus, ada aktif/nonaktif
         Route::resource('lokasi', LocationController::class)
             ->parameters(['lokasi' => 'location'])
-            ->except(['show']);
+            ->except(['show', 'edit', 'update', 'destroy']);
+        Route::patch('lokasi/{location}/toggle-active', [LocationController::class, 'toggleActive'])
+            ->name('lokasi.toggle-active');
 
         Route::get('lokasi-import', [LocationController::class, 'importForm'])->name('lokasi.import.form');
         Route::post('lokasi-import', [LocationController::class, 'import'])->name('lokasi.import');

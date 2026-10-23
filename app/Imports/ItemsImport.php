@@ -36,8 +36,18 @@ class ItemsImport implements ToCollection, WithHeadingRow
                 ->where('kode_aktiva_tetap', $kode)->where('sub_jenis', $sub)->first();
             $location = Location::where('kode_unit_bisnis', $klaster)->where('kode_lokasi', $wisata)->first();
 
-            if (!$category) $errors[] = "Baris $baris: kategori $kode/$sub tidak ditemukan";
-            if (!$location) $errors[] = "Baris $baris: lokasi $klaster/$wisata tidak ditemukan";
+            if (!$category) {
+                $errors[] = "Baris $baris: kategori $kode/$sub tidak ditemukan";
+            } elseif (!$category->is_active) {
+                $errors[] = "Baris $baris: kategori $kode/$sub sedang nonaktif, aktifkan dulu di menu Kategori";
+            }
+
+            if (!$location) {
+                $errors[] = "Baris $baris: lokasi $klaster/$wisata tidak ditemukan";
+            } elseif (!$location->is_active) {
+                $errors[] = "Baris $baris: lokasi $klaster/$wisata sedang nonaktif, aktifkan dulu di menu Lokasi";
+            }
+
             if (!in_array($tipe, ['AT', 'IBAT'])) $errors[] = "Baris $baris: at_ibat harus AT atau IBAT";
             if (!preg_match('/^\d{4}$/', (string) $row['tahun_perolehan'])) {
                 $errors[] = "Baris $baris: tahun_perolehan harus 4 digit";
@@ -74,7 +84,8 @@ class ItemsImport implements ToCollection, WithHeadingRow
         }
 
         DB::transaction(function () use ($prepared) {
-            $urut = (int) Item::lockForUpdate()->max('nomor_urut');
+            // withTrashed(): aset di Trash tetap dihitung supaya nomor urutnya tidak dipakai ulang
+            $urut = (int) Item::withTrashed()->lockForUpdate()->max('nomor_urut');
 
             foreach ($prepared as $p) {
                 $urut++;

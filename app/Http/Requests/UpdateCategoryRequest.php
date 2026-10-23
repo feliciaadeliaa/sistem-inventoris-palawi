@@ -22,6 +22,11 @@ class UpdateCategoryRequest extends FormRequest
 
         $category = $this->route('category');
 
+        // Golongan harus aktif, kecuali golongan yang sedang dipakai kategori ini
+        $golonganAktif = fn () => Rule::exists('golongans', 'id')->where(
+            fn ($q) => $q->where('is_active', true)->orWhere('id', $category?->golongan_id)
+        );
+
         // Kategori belum dipakai aset: Sub Jenis dan Golongan boleh diubah
         if ($category && $category->subJenisBolehDiubah()) {
             $rules['sub_jenis'] = [
@@ -50,14 +55,14 @@ class UpdateCategoryRequest extends FormRequest
             $rules['golongan_id'] = [
                 Rule::requiredIf(fn () => $this->filled('sub_jenis')),
                 'nullable',
-                Rule::exists('golongans', 'id'),
+                $golonganAktif(),
             ];
         } elseif ($category && $category->golonganBolehDiubah()) {
             // Sudah dipakai aset tapi golongan masih kosong (sisa data lama): boleh dilengkapi
             $rules['golongan_id'] = [
                 Rule::requiredIf(fn () => filled($category->sub_jenis)),
                 'nullable',
-                Rule::exists('golongans', 'id'),
+                $golonganAktif(),
             ];
         }
 
@@ -71,7 +76,7 @@ class UpdateCategoryRequest extends FormRequest
             'sub_jenis.digits'      => 'Sub Jenis harus 2 digit angka (contoh: 47).',
             'sub_jenis.unique'      => 'Kombinasi Kode Aktiva Tetap dan Sub Jenis ini sudah ada.',
             'golongan_id.required'  => 'Golongan AT wajib dipilih karena menentukan masa manfaat aset.',
-            'golongan_id.exists'    => 'Golongan AT yang dipilih tidak valid.',
+            'golongan_id.exists'    => 'Golongan AT yang dipilih tidak valid atau sudah nonaktif.',
         ];
     }
 }

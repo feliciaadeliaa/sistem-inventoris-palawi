@@ -11,7 +11,12 @@ class Location extends Model
         'unit_bisnis',
         'kode_lokasi',
         'nama_wisata',
+        'is_active'
     ];
+        protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
 
     public function items()
     {
@@ -33,5 +38,10 @@ class Location extends Model
     public function scopeUrut($query)
     {
         return $query->orderBy('kode_unit_bisnis')->orderBy('kode_lokasi');
+    }
+
+        public function scopeAktif($query)
+    {
+        return $query->where('is_active', true);
     }
 }

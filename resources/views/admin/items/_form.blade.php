@@ -2,9 +2,10 @@
     $item = $item ?? null;
     $locked = $locked ?? false;
 
-    // Gaya untuk field yang dikunci (abu-abu) dan field otomatis (readonly)
-    $lockedClass = $locked ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : '';
-    $roClass = $locked ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-gray-50';
+    // field-locked = abu-abu (tidak bisa diedit). Dipakai untuk field yang dikunci
+    // saat edit, dan untuk field otomatis (readonly) seperti Golongan, Masa Manfaat, Nomor Aktiva.
+    $lockedClass = $locked ? 'field-locked' : '';
+    $roClass = 'field-locked';
 
     $selectedCategoryId = old('category_id', $item->category_id ?? null);
     $selectedLocationId = old('location_id', $item->location_id ?? null);
@@ -44,6 +45,17 @@
 
     $selectedAtIbat = old('at_ibat', $item->at_ibat ?? '');
 @endphp
+
+<style>
+    /* Field yang tidak bisa diedit: abu-abu */
+    .form-control.field-locked,
+    .form-control.field-locked:disabled {
+        background-color: #f3f4f6;
+        color: #6b7280;
+        cursor: not-allowed;
+        opacity: 1;
+    }
+</style>
 
 @if ($locked)
     <style>
@@ -141,7 +153,7 @@
         <p id="kode-gabungan-preview" class="mt-1.5 text-sm text-gray-400"></p>
     </div>
 
-    {{-- Golongan AT & Masa Manfaat: otomatis dari Sub Jenis --}}
+    {{-- Golongan AT & Masa Manfaat: otomatis dari Sub Jenis (tidak bisa diedit, selalu abu-abu) --}}
     <div>
         <label for="golongan_display" class="form-label">
             {{ __('Golongan AT') }}

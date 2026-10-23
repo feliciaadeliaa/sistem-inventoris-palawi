@@ -18,6 +18,10 @@ class Category extends Model
         'sub_jenis',
         'keterangan_fungsi',
         'golongan_id',
+        'is_active', 
+    ];
+        protected $casts = [        // <-- tambah blok ini
+        'is_active' => 'boolean',
     ];
 
     public function items()
@@ -82,5 +86,10 @@ class Category extends Model
     public function scopeUrut($query)
     {
         return $query->orderBy('kode_aktiva_tetap')->orderBy('sub_jenis');
+    }
+    
+       public function scopeAktif($query)   // <-- tambah method ini
+    {
+        return $query->where('is_active', true);
     }
 }

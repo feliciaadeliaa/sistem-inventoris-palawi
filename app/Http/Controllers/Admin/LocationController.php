@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLocationRequest;
-use App\Http\Requests\UpdateLocationRequest;
 use App\Imports\LocationsImport;
 use App\Models\Location;
 use Illuminate\Http\Request;
@@ -52,34 +51,16 @@ class LocationController extends Controller
             ->with('success', 'Lokasi berhasil ditambahkan.');
     }
 
-    public function edit(Location $location)
+    public function toggleActive(Request $request, Location $location)
     {
-        return view('admin.locations.edit', compact('location'));
-    }
+        $location->update(['is_active' => !$location->is_active]);
 
-    public function update(UpdateLocationRequest $request, Location $location)
-    {
-        // Kode klaster dan kode lokasi membentuk nomor aktiva, jadi tidak boleh berubah.
-        $location->update($request->only('nama_wisata'));
+        $status = $location->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
+        // Kembali ke daftar, dengan halaman, pencarian, dan filter yang sedang dibuka
         return redirect()
-            ->route('lokasi.index')
-            ->with('success', 'Lokasi berhasil diperbarui.');
-    }
-
-    public function destroy(Location $location)
-    {
-        if ($location->items()->exists()) {
-            return redirect()
-                ->route('lokasi.index')
-                ->with('error', 'Lokasi tidak bisa dihapus karena masih dipakai oleh barang.');
-        }
-
-        $location->delete();
-
-        return redirect()
-            ->route('lokasi.index')
-            ->with('success', 'Lokasi berhasil dihapus.');
+            ->route('lokasi.index', array_filter($request->only(['q', 'search', 'unit_bisnis', 'page'])))
+            ->with('success', "Lokasi \"{$location->nama_wisata}\" berhasil {$status}.");
     }
 
     public function importForm()

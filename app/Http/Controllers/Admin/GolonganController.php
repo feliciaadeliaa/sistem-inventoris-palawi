@@ -40,27 +40,13 @@ class GolonganController extends Controller
         return redirect()->route('golongan.index')->with('success', 'Golongan AT berhasil ditambahkan.');
     }
 
-    public function edit(Golongan $golongan)
+    public function toggleActive(Golongan $golongan)
     {
-        return view('admin.golongan.edit', compact('golongan'));
-    }
+        $golongan->update(['is_active' => !$golongan->is_active]);
 
-    public function update(GolonganRequest $request, Golongan $golongan)
-    {
-        $golongan->update($request->validated());
+        $status = $golongan->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
-        return redirect()->route('golongan.index')->with('success', 'Golongan AT berhasil diperbarui.');
-    }
-
-    public function destroy(Golongan $golongan)
-    {
-        if ($golongan->categories()->exists()) {
-            return redirect()->route('golongan.index')
-                ->with('error', "{$golongan->nama} masih dipakai oleh sub jenis di menu Kategori, tidak bisa dihapus.");
-        }
-
-        $golongan->delete();
-
-        return redirect()->route('golongan.index')->with('success', 'Golongan AT berhasil dihapus.');
+        return redirect()->route('golongan.index')
+            ->with('success', "{$golongan->nama} berhasil {$status}.");
     }
 }

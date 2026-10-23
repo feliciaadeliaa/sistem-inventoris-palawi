@@ -34,7 +34,8 @@ class CategoryController extends Controller
 
     public function create()
     {
-        $golongans = Golongan::orderBy('kode')->get();
+        // Hanya golongan aktif yang bisa dipilih untuk kategori baru
+        $golongans = Golongan::aktif()->orderBy('kode')->get();
 
         return view('admin.categories.create', compact('golongans'));
     }
@@ -70,15 +71,19 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        $golongans = Golongan::orderBy('kode')->get();
+        // Golongan aktif + golongan yang sedang dipakai kategori ini (walau sudah nonaktif)
+        $golongans = Golongan::where('is_active', true)
+            ->when($category->golongan_id, fn ($q) => $q->orWhere('id', $category->golongan_id))
+            ->orderBy('kode')
+            ->get();
 
         return view('admin.categories.edit', compact('category', 'golongans'));
     }
 
     public function update(UpdateCategoryRequest $request, Category $category)
     {
-        // Kode, jenis, dan sub jenis membentuk nomor aktiva, jadi tidak pernah ikut diubah.
-        // validated() hanya berisi keterangan_fungsi, plus golongan_id kalau golongan masih boleh diubah.
+        // Kode dan jenis membentuk nomor aktiva, jadi tidak pernah ikut diubah.
+        // validated() hanya berisi field yang memang boleh diubah saat ini.
         $category->update($request->validated());
 
         return redirect()
@@ -86,19 +91,15 @@ class CategoryController extends Controller
             ->with('success', 'Kategori berhasil diperbarui.');
     }
 
-    public function destroy(Category $category)
+    public function toggleActive(Request $request, Category $category)
     {
-        // withTrashed(): aset di Trash juga masih membutuhkan kategorinya
-        if ($category->items()->withTrashed()->exists()) {
-            return redirect()
-                ->route('kategori.index')
-                ->with('error', 'Kategori tidak bisa dihapus karena masih dipakai oleh barang (termasuk yang ada di Trash).');
-        }
+        $category->update(['is_active' => !$category->is_active]);
 
-        $category->delete();
+        $status = $category->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
+        // Kembali ke daftar, dengan halaman & pencarian yang sedang dibuka
         return redirect()
-            ->route('kategori.index')
-            ->with('success', 'Kategori berhasil dihapus.');
+            ->route('kategori.index', array_filter($request->only(['q', 'page'])))
+            ->with('success', "Kategori \"{$category->nama_kategori}\" berhasil {$status}.");
     }
 }

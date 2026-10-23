@@ -61,6 +61,13 @@ class StoreCategoryRequest extends FormRequest
             ],
 
             'keterangan_fungsi' => ['nullable', 'string', 'max:255'],
+
+            // Golongan AT menentukan masa manfaat: wajib kalau Sub Jenis diisi
+            'golongan_id' => [
+                Rule::requiredIf(fn () => $this->filled('sub_jenis')),
+                'nullable',
+                Rule::exists('golongans', 'id'),
+            ],
         ];
     }
 
@@ -70,6 +77,8 @@ class StoreCategoryRequest extends FormRequest
             'kode_aktiva_tetap.digits' => 'Kode Aktiva Tetap harus 2 digit angka (contoh: 09).',
             'sub_jenis.digits'         => 'Sub Jenis harus 2 digit angka (contoh: 47).',
             'sub_jenis.unique'         => 'Kombinasi Kode Aktiva Tetap dan Sub Jenis ini sudah ada.',
+            'golongan_id.required'     => 'Golongan AT wajib dipilih karena menentukan masa manfaat aset.',
+            'golongan_id.exists'       => 'Golongan AT yang dipilih tidak valid.',
         ];
     }
 }

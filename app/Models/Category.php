@@ -31,6 +31,29 @@ class Category extends Model
         return $this->belongsTo(Golongan::class);
     }
 
+    /**
+     * Sub Jenis boleh diubah hanya kalau kategori belum dipakai aset mana pun
+     * (termasuk yang ada di Trash). Sub Jenis membentuk nomor aktiva, dan nomor
+     * yang sudah tersimpan di aset tidak ikut berubah.
+     */
+    public function subJenisBolehDiubah(): bool
+    {
+        return !$this->items()->withTrashed()->exists();
+    }
+
+    /**
+     * Golongan boleh diubah kalau:
+     * - belum diisi (kategori lama dari seeder yang perlu dilengkapi), atau
+     * - kategori belum dipakai aset mana pun (termasuk yang ada di Trash).
+     * Kalau sudah dipakai aset, golongan dikunci karena masa manfaat dan
+     * penyusutan semua aset di kategori ini ikut berubah.
+     */
+    public function golonganBolehDiubah(): bool
+    {
+        return $this->golongan_id === null
+            || !$this->items()->withTrashed()->exists();
+    }
+
     // Segmen ke-3 nomor aktiva (4 digit), contoh: "0947". Null kalau belum punya sub jenis.
     public function getKodeGabunganAttribute(): ?string
     {

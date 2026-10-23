@@ -37,6 +37,8 @@
                         <th>Jenis Aktiva Tetap</th>
                         <th>Sub Jenis</th>
                         <th>Keterangan Fungsi</th>
+                        <th>Golongan AT</th>
+                        <th>Masa Manfaat</th>
                         <th class="text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -58,6 +60,20 @@
 
                             <td class="text-gray-700">
                                 {{ $category->keterangan_fungsi ?? '-' }}
+                            </td>
+
+                            <td>
+                                @if ($category->golongan)
+                                    <span class="badge badge-slate">{{ $category->golongan->nama }}</span>
+                                @elseif ($category->sub_jenis)
+                                    <span class="badge badge-red" title="Atur golongan lewat tombol edit">Belum diatur</span>
+                                @else
+                                    -
+                                @endif
+                            </td>
+
+                            <td>
+                                {{ $category->golongan ? $category->golongan->masa_manfaat . ' ' . __('tahun') : '-' }}
                             </td>
 
                             <td>
@@ -92,7 +108,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-6 text-center text-gray-500">
+                            <td colspan="7" class="px-4 py-6 text-center text-gray-500">
                                 Belum ada data kategori.
                             </td>
                         </tr>

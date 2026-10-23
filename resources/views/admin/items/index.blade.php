@@ -40,6 +40,12 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div class="mb-4 p-4 bg-red-50 text-red-700 rounded-lg text-sm">
+            {{ session('error') }}
+        </div>
+    @endif
+
     {{-- Filter --}}
     <form method="GET" action="{{ route('barang.index') }}" class="mb-4 card card-pad">
         {{-- Bawa kata kunci dari search bar header saat filter diterapkan --}}
@@ -259,6 +265,17 @@
                                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                                             </svg>
                                         </a>
+                                        <button type="button" title="{{ __('Hapus (pindah ke Trash)') }}"
+                                            onclick="confirmDeleteItem('{{ route('barang.destroy', $item) }}', @js($item->nama_barang), '{{ $item->id }}')"
+                                            class="icon-btn icon-btn-ghost text-red-500">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M3 6h18" />
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                                <path d="M10 11v6" />
+                                                <path d="M14 11v6" />
+                                            </svg>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -278,6 +295,12 @@
             </div>
         </div>
 
+    </form>
+
+    {{-- Form hapus (soft delete): satu form bersama di luar print-labels-form, action diisi via JS --}}
+    <form id="delete-item-form" method="POST" class="hidden">
+        @csrf
+        @method('DELETE')
     </form>
 
     {{-- Modal QR --}}
@@ -354,6 +377,22 @@
         });
         updateSelectAllState();
         updateCounter();
+    }
+
+    // Hapus aset (soft delete -> masuk Trash). Konfirmasi dulu, lalu submit form tersembunyi.
+    function confirmDeleteItem(url, itemName, itemId) {
+        if (!confirm('Pindahkan "' + itemName + '" ke Trash?\n\nAset masih bisa dipulihkan dari menu Trash.')) {
+            return;
+        }
+
+        // Buang dari pilihan checkbox yang tersimpan supaya hitungan tidak nyangkut
+        const selected = getSelectedIds();
+        selected.delete(String(itemId));
+        saveSelectedIds(selected);
+
+        const form = document.getElementById('delete-item-form');
+        form.action = url;
+        form.submit();
     }
 
     // Sinkron saat halaman dimuat, dan setelah search bar header mengganti isi halaman

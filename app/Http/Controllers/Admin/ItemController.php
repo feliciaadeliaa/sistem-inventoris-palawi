@@ -95,39 +95,30 @@ class ItemController extends Controller
             ->with('success', 'Barang berhasil ditambahkan.');
     }
 
-    public function edit(Item $item)
-    {
-        $categories = Category::with('golongan')->siapDipakai()->urut()->get();
-        $locations = Location::urut()->get();
+public function edit(Item $item)
+{
+    $categories = Category::with('golongan')->siapDipakai()->urut()->get();
+    $locations = Location::urut()->get();
 
-        return view('admin.items.edit', compact('item', 'categories', 'locations'));
-    }
+    return view('admin.items.edit', compact('item', 'categories', 'locations'));
+}
 
     public function update(UpdateItemRequest $request, Item $item)
     {
-        $validated = Arr::except($request->validated(), ['masa_manfaat', 'gambar_asset']);
-
         $oldFoto = $item->gambar_asset;
         $newFoto = $request->hasFile('gambar_asset')
             ? $request->file('gambar_asset')->store('assets', 'public')
             : null;
 
         try {
-            DB::transaction(function () use ($validated, $item, $newFoto) {
-                $item->fill($validated);
+            // Hanya nama barang & foto. Nomor urut / nomor aktiva TIDAK disentuh.
+            $item->nama_barang = $request->validated()['nama_barang'];
 
-                if ($newFoto) {
-                    $item->gambar_asset = $newFoto;
-                }
+            if ($newFoto) {
+                $item->gambar_asset = $newFoto;
+            }
 
-                // Nomor urut dipertahankan. Aset lama yang belum punya nomor urut diberi nomor baru.
-                if (!$item->nomor_urut) {
-                    $item->nomor_urut = Item::nextNomorUrut();
-                }
-
-                $item->nomor_aktiva_tetap = $item->buildNomorAktiva();
-                $item->save();
-            });
+            $item->save();
         } catch (\Throwable $e) {
             if ($newFoto) {
                 Storage::disk('public')->delete($newFoto);
@@ -147,12 +138,90 @@ class ItemController extends Controller
 
     public function destroy(Item $item)
     {
-        // Soft deactivate: data & foto dipertahankan untuk riwayat
-        $item->update(['is_active' => false, 'status' => 'nonaktif']);
+        // Aset yang sedang dipinjam tidak boleh dihapus
+        if ($item->status === 'dipinjam' || $item->activeLoan()->exists()) {
+            return redirect()
+                ->route('barang.index')
+                ->with('error', 'Barang sedang dipinjam, tidak bisa dihapus. Selesaikan pengembaliannya dulu.');
+        }
+
+        // Soft delete: data, foto, dan riwayat tetap tersimpan, bisa dilihat di Trash
+        $item->delete();
 
         return redirect()
             ->route('barang.index')
-            ->with('success', 'Barang berhasil dinonaktifkan.');
+            ->with('success', 'Barang dipindahkan ke Trash.');
+    }
+
+    public function trash(Request $request)
+    {
+        $items = Item::onlyTrashed()
+            ->with(['category', 'location'])
+            ->withCount('transactions')
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $search = $request->q;
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('nama_barang', 'like', "%{$search}%")
+                        ->orWhere('item_id', 'like', "%{$search}%")
+                        ->orWhere('nomor_aktiva_tetap', 'like', "%{$search}%");
+                });
+            })
+            ->latest('deleted_at')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('admin.items.trash', compact('items'));
+    }
+
+    public function restore($id)
+    {
+        $item = Item::onlyTrashed()->findOrFail($id);
+
+        // Sisa cara hapus lama (status 'nonaktif' + is_active false): kembalikan ke normal
+        if ($item->status === 'nonaktif') {
+            $item->status = 'tersedia';
+        }
+        $item->is_active = true;
+        $item->save();
+
+        $item->restore();
+
+        return redirect()
+            ->route('barang.trash')
+            ->with('success', "Barang \"{$item->nama_barang}\" berhasil dipulihkan.");
+    }
+    
+        public function forceDelete($id)
+    {
+        $item = Item::onlyTrashed()->findOrFail($id);
+
+        // Aset yang punya riwayat transaksi tidak boleh dihapus permanen,
+        // supaya riwayat peminjaman/mutasi tidak kehilangan datanya.
+        if ($item->transactions()->exists()) {
+            return redirect()
+                ->route('barang.trash')
+                ->with('error', "Barang \"{$item->nama_barang}\" punya riwayat transaksi, tidak bisa dihapus permanen. Biarkan di Trash atau pulihkan.");
+        }
+
+        $nama = $item->nama_barang;
+        $foto = $item->gambar_asset;
+
+        try {
+            $item->forceDelete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Masih dipakai tabel lain (misalnya data perbaikan)
+            return redirect()
+                ->route('barang.trash')
+                ->with('error', "Barang \"{$nama}\" masih terkait data lain, tidak bisa dihapus permanen.");
+        }
+
+        if ($foto) {
+            Storage::disk('public')->delete($foto);
+        }
+
+        return redirect()
+            ->route('barang.trash')
+            ->with('success', "Barang \"{$nama}\" dihapus permanen.");
     }
 
     public function showQr(Item $item)

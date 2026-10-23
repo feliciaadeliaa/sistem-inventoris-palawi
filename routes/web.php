@@ -84,6 +84,11 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
         // Download Excel data aset (tanpa kolom foto) - taruh di atas resource
         Route::get('barang/export', [ItemController::class, 'export'])->name('barang.export');
 
+        // Trash (aset yang di-soft delete) + pulihkan
+        Route::get('barang/trash', [ItemController::class, 'trash'])->name('barang.trash');
+        Route::patch('barang/{id}/restore', [ItemController::class, 'restore'])->name('barang.restore');
+          Route::delete('barang/{id}/force-delete', [ItemController::class, 'forceDelete'])->name('barang.force-delete');
+
         Route::resource('barang', ItemController::class)
             ->parameters(['barang' => 'item'])
             ->except(['show']);

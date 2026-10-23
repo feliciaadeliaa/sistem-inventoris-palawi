@@ -1,5 +1,10 @@
 @php
     $item = $item ?? null;
+    $locked = $locked ?? false;
+
+    // Gaya untuk field yang dikunci (abu-abu) dan field otomatis (readonly)
+    $lockedClass = $locked ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : '';
+    $roClass = $locked ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-gray-50';
 
     $selectedCategoryId = old('category_id', $item->category_id ?? null);
     $selectedLocationId = old('location_id', $item->location_id ?? null);
@@ -40,7 +45,18 @@
     $selectedAtIbat = old('at_ibat', $item->at_ibat ?? '');
 @endphp
 
+@if ($locked)
+    <style>
+        .form-control:disabled {
+            background-color: #f3f4f6;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+    </style>
+@endif
+
 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    {{-- Nama Barang: SELALU bisa diedit --}}
     <div>
         <label for="nama_barang" class="form-label">
             {{ __('Nama Barang') }}
@@ -57,7 +73,7 @@
         <label for="at_ibat" class="form-label">
             {{ __('AT/IBAT') }}
         </label>
-        <select id="at_ibat" name="at_ibat" class="form-control" required>
+        <select id="at_ibat" name="at_ibat" class="form-control {{ $lockedClass }}" required @disabled($locked)>
             <option value="">{{ __('-- Pilih AT/IBAT --') }}</option>
             @foreach (array_keys(\App\Models\Item::AT_IBAT_KODE) as $kode)
                 <option value="{{ $kode }}" @selected($selectedAtIbat === $kode)>
@@ -75,7 +91,7 @@
         <label for="kode_klaster" class="form-label">
             {{ __('Klaster') }}
         </label>
-        <select id="kode_klaster" class="form-control" required>
+        <select id="kode_klaster" class="form-control {{ $lockedClass }}" required @disabled($locked)>
             <option value="">{{ __('-- Pilih Klaster --') }}</option>
             @foreach ($klasters as $k)
                 <option value="{{ $k['kode'] }}" @selected($selectedKlaster === $k['kode'])>
@@ -89,7 +105,7 @@
         <label for="location_id" class="form-label">
             {{ __('Lokasi Pemakaian') }}
         </label>
-        <select id="location_id" name="location_id" class="form-control" required disabled>
+        <select id="location_id" name="location_id" class="form-control {{ $lockedClass }}" required disabled>
             <option value="">{{ __('-- Pilih Wisata --') }}</option>
         </select>
         @error('location_id')
@@ -102,7 +118,7 @@
         <label for="kode_aktiva_tetap" class="form-label">
             {{ __('Kode Aktiva Tetap') }}
         </label>
-        <select id="kode_aktiva_tetap" class="form-control" required>
+        <select id="kode_aktiva_tetap" class="form-control {{ $lockedClass }}" required @disabled($locked)>
             <option value="">{{ __('-- Pilih Kode Aktiva Tetap --') }}</option>
             @foreach ($groups as $group)
                 <option value="{{ $group['kode'] }}" @selected($selectedKode === $group['kode'])>
@@ -116,7 +132,7 @@
         <label for="category_id" class="form-label">
             {{ __('Sub Jenis') }}
         </label>
-        <select id="category_id" name="category_id" class="form-control" required disabled>
+        <select id="category_id" name="category_id" class="form-control {{ $lockedClass }}" required disabled>
             <option value="">{{ __('-- Pilih Sub Jenis --') }}</option>
         </select>
         @error('category_id')
@@ -131,7 +147,7 @@
             {{ __('Golongan AT') }}
         </label>
         <input type="text" id="golongan_display" readonly placeholder="Terisi otomatis dari Sub Jenis"
-            class="form-control bg-gray-50" />
+            class="form-control {{ $roClass }}" />
         <p id="golongan-warning" class="mt-1.5 text-sm text-error-500 hidden">
             {{ __('Sub jenis ini belum punya golongan AT. Atur dulu di menu Kategori.') }}
         </p>
@@ -143,7 +159,7 @@
         </label>
         <input type="number" id="masa_manfaat" readonly placeholder="Terisi otomatis"
             value="{{ old('masa_manfaat', $item->masa_manfaat ?? '') }}"
-            class="form-control bg-gray-50" />
+            class="form-control {{ $roClass }}" />
         @error('masa_manfaat')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
@@ -155,7 +171,7 @@
         </label>
         <input type="number" id="tahun_perolehan" name="tahun_perolehan" min="1990" max="{{ date('Y') }}"
             value="{{ old('tahun_perolehan', $item->tahun_perolehan ?? '') }}" required
-            class="form-control" />
+            class="form-control {{ $lockedClass }}" @disabled($locked) />
         @error('tahun_perolehan')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
@@ -165,9 +181,9 @@
         <label for="nilai_perolehan" class="form-label">
             {{ __('Nilai Perolehan (Rp)') }}
         </label>
-<input type="number" step="0.01" min="0.01" id="nilai_perolehan" name="nilai_perolehan"
-    value="{{ old('nilai_perolehan', $item->nilai_perolehan ?? '') }}" required
-    class="form-control" />
+        <input type="number" step="0.01" min="0.01" id="nilai_perolehan" name="nilai_perolehan"
+            value="{{ old('nilai_perolehan', $item->nilai_perolehan ?? '') }}" required
+            class="form-control {{ $lockedClass }}" @disabled($locked) />
         @error('nilai_perolehan')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
@@ -177,7 +193,7 @@
         <label for="kondisi" class="form-label">
             {{ __('Kondisi') }}
         </label>
-        <select id="kondisi" name="kondisi" class="form-control">
+        <select id="kondisi" name="kondisi" class="form-control {{ $lockedClass }}" @disabled($locked)>
             <option value="">{{ __('-- Pilih Kondisi --') }}</option>
             @foreach (\App\Models\Item::KONDISI_LABELS as $kode => $label)
                 <option value="{{ $kode }}" @selected(old('kondisi', $item->kondisi ?? '') == $kode)>
@@ -197,9 +213,13 @@
         </label>
         <input type="text" id="nomor_aktiva_preview" readonly
             value="{{ $item->nomor_aktiva_tetap ?? '' }}"
-            class="form-control bg-gray-50" />
+            class="form-control {{ $roClass }}" />
         <p class="mt-1.5 text-sm text-gray-400">
-            {{ __('Terbentuk otomatis. Nomor urut (XXXX) diberikan sistem saat disimpan.') }}
+            @if ($locked)
+                {{ __('Nomor aktiva tetap tidak dapat diubah.') }}
+            @else
+                {{ __('Terbentuk otomatis. Nomor urut (XXXX) diberikan sistem saat disimpan.') }}
+            @endif
         </p>
         @error('nomor_aktiva_tetap')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
@@ -210,15 +230,15 @@
         <label for="tanggal_terima" class="form-label">
             {{ __('Tanggal Terima') }}
         </label>
-<input type="date" id="tanggal_terima" name="tanggal_terima" max="{{ date('Y-m-d') }}"
-    value="{{ old('tanggal_terima', isset($item->tanggal_terima) ? $item->tanggal_terima->format('Y-m-d') : '') }}" required
-    class="form-control" />
+        <input type="date" id="tanggal_terima" name="tanggal_terima" max="{{ date('Y-m-d') }}"
+            value="{{ old('tanggal_terima', isset($item->tanggal_terima) ? $item->tanggal_terima->format('Y-m-d') : '') }}" required
+            class="form-control {{ $lockedClass }}" @disabled($locked) />
         @error('tanggal_terima')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
     </div>
 
-    {{-- Foto Aset (opsional) --}}
+    {{-- Foto Aset: SELALU bisa diedit --}}
     <div class="md:col-span-2">
         <label for="gambar_asset" class="form-label">
             {{ __('Foto Aset') }}
@@ -253,6 +273,7 @@
 
 <script>
     (function () {
+        const locked = @json($locked);
         const groups = @json($groups);
         const klasters = @json($klasters);
         const selectedCategoryId = @json($selectedCategoryId);
@@ -294,6 +315,7 @@
             warningEl.classList.toggle('hidden', !(adaSubJenis && !opt.dataset.golongan));
         }
 
+        // Hanya dipakai di mode tambah. Saat edit, nomor asli dari database ditampilkan apa adanya.
         function updateNomor() {
             const urut = nomorUrut ? String(nomorUrut).padStart(4, '0') : 'XXXX';
             const tipe = atIbatKode[atIbatEl.value] || 'X';
@@ -325,7 +347,7 @@
                 subEl.appendChild(opt);
             });
 
-            subEl.disabled = false;
+            subEl.disabled = locked;   // saat edit tetap terkunci
             updatePreview();
             updateGolongan();
         }
@@ -348,7 +370,7 @@
                 wisataEl.appendChild(opt);
             });
 
-            wisataEl.disabled = false;
+            wisataEl.disabled = locked;   // saat edit tetap terkunci
         }
 
         // Preview foto + cek ukuran di sisi klien (validasi final tetap di server)
@@ -377,25 +399,27 @@
             gambarPreviewEl.classList.remove('hidden');
         });
 
-        kodeEl.addEventListener('change', function () {
-            renderSubs(kodeEl.value, null);
-        });
-        subEl.addEventListener('change', function () {
-            updatePreview();
-            updateGolongan();
-        });
+        if (!locked) {
+            kodeEl.addEventListener('change', function () {
+                renderSubs(kodeEl.value, null);
+            });
+            subEl.addEventListener('change', function () {
+                updatePreview();
+                updateGolongan();
+            });
 
-        klasterEl.addEventListener('change', function () {
-            renderWisata(klasterEl.value, null);
-        });
+            klasterEl.addEventListener('change', function () {
+                renderWisata(klasterEl.value, null);
+            });
 
-        // Preview nomor aktiva ikut berubah setiap ada perubahan di form
-        klasterEl.form.addEventListener('change', updateNomor);
-        klasterEl.form.addEventListener('input', updateNomor);
+            // Preview nomor aktiva ikut berubah setiap ada perubahan di form
+            klasterEl.form.addEventListener('change', updateNomor);
+            klasterEl.form.addEventListener('input', updateNomor);
+        }
 
         // Saat edit atau setelah validasi gagal, pulihkan pilihan sebelumnya
         if (kodeEl.value) renderSubs(kodeEl.value, selectedCategoryId);
         if (klasterEl.value) renderWisata(klasterEl.value, selectedLocationId);
-        updateNomor();
+        if (!locked) updateNomor();
     })();
 </script>

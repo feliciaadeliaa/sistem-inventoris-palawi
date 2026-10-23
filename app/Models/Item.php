@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Item extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'item_id', 'nama_barang', 'gambar_asset', 'category_id', 'location_id',
         'nomor_urut', 'nomor_aktiva_tetap',
@@ -71,12 +74,12 @@ class Item extends Model
     /**
      * Nomor urut berikutnya (4 digit pertama nomor aktiva).
      * Harus dipanggil di dalam DB::transaction supaya lockForUpdate efektif.
-     * Kalau nanti Item memakai SoftDeletes dan nomor bekas tidak boleh dipakai ulang,
-     * ganti jadi: static::withTrashed()->lockForUpdate()->max('nomor_urut')
+     * withTrashed(): aset yang di-soft delete tetap dihitung, supaya nomor
+     * miliknya tidak dipakai ulang dan tidak bentrok saat aset itu di-restore.
      */
     public static function nextNomorUrut(): int
     {
-        return ((int) static::lockForUpdate()->max('nomor_urut')) + 1;
+        return ((int) static::withTrashed()->lockForUpdate()->max('nomor_urut')) + 1;
     }
 
     /**
@@ -104,14 +107,15 @@ class Item extends Model
         return (int) ($this->category?->golongan?->masa_manfaat ?? 0);
     }
 
-public function activeLoan()
-{
-    return $this->hasOne(Transaction::class)
-        ->where('jenis_transaksi', 'Stock Out')
-        ->where('status', 'disetujui')   // disetujui = sedang dipinjam, belum dikembalikan
-        ->with('user')
-        ->latest('id');
-}
+    public function activeLoan()
+    {
+        return $this->hasOne(Transaction::class)
+            ->where('jenis_transaksi', 'Stock Out')
+            ->where('status', 'disetujui')   // disetujui = sedang dipinjam, belum dikembalikan
+            ->with('user')
+            ->latest('id');
+    }
+
     public function getGambarUrlAttribute(): ?string
     {
         return $this->gambar_asset ? asset('storage/' . $this->gambar_asset) : null;

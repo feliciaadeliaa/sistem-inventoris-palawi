@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
+use App\Models\Golongan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -13,7 +14,7 @@ class CategoryController extends Controller
 {
     public function index(Request $request)
     {
-        $categories = Category::query()
+        $categories = Category::with('golongan')
             ->when($request->filled('q'), function ($q) use ($request) {
                 $search = $request->q;
                 $q->where(function ($sub) use ($search) {
@@ -33,20 +34,23 @@ class CategoryController extends Controller
 
     public function create()
     {
-        return view('admin.categories.create');
+        $golongans = Golongan::orderBy('kode')->get();
+
+        return view('admin.categories.create', compact('golongans'));
     }
 
     public function store(StoreCategoryRequest $request)
     {
+        // Sudah termasuk golongan_id (wajib kalau sub_jenis diisi)
         $data = $request->validated();
 
         DB::transaction(function () use ($data) {
             // Kalau jenis ini sebelumnya hanya berupa baris tanpa sub jenis,
-            // hapus baris kosong itu (kecuali sudah dipakai barang).
+            // hapus baris kosong itu (kecuali sudah dipakai barang, termasuk yang di Trash).
             if (!empty($data['sub_jenis'])) {
                 Category::where('kode_aktiva_tetap', $data['kode_aktiva_tetap'])
                     ->whereNull('sub_jenis')
-                    ->doesntHave('items')
+                    ->whereDoesntHave('items', fn ($q) => $q->withTrashed())
                     ->delete();
             }
 
@@ -66,13 +70,16 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        return view('admin.categories.edit', compact('category'));
+        $golongans = Golongan::orderBy('kode')->get();
+
+        return view('admin.categories.edit', compact('category', 'golongans'));
     }
 
     public function update(UpdateCategoryRequest $request, Category $category)
     {
-        // Kode, jenis, dan sub jenis membentuk nomor aktiva, jadi tidak boleh berubah.
-        $category->update($request->only('keterangan_fungsi'));
+        // Kode, jenis, dan sub jenis membentuk nomor aktiva, jadi tidak pernah ikut diubah.
+        // validated() hanya berisi keterangan_fungsi, plus golongan_id kalau golongan masih boleh diubah.
+        $category->update($request->validated());
 
         return redirect()
             ->route('kategori.index')
@@ -81,10 +88,11 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
-        if ($category->items()->exists()) {
+        // withTrashed(): aset di Trash juga masih membutuhkan kategorinya
+        if ($category->items()->withTrashed()->exists()) {
             return redirect()
                 ->route('kategori.index')
-                ->with('error', 'Kategori tidak bisa dihapus karena masih dipakai oleh barang.');
+                ->with('error', 'Kategori tidak bisa dihapus karena masih dipakai oleh barang (termasuk yang ada di Trash).');
         }
 
         $category->delete();

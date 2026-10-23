@@ -35,6 +35,7 @@
                     <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Admin</option>
                     <option value="senior_analis" {{ $user->role == 'senior_analis' ? 'selected' : '' }}>Senior Analis</option>
                     <option value="gm" {{ $user->role == 'gm' ? 'selected' : '' }}>General Manager</option>
+                    <option value="finance" {{ $user->role == 'finance' ? 'selected' : '' }}>Finance</option>
                 </select>
                 @error('role') <p class="text-error-600 text-sm mt-1">{{ $message }}</p> @enderror
             </div>

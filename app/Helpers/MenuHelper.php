@@ -57,7 +57,7 @@ class MenuHelper
             'name' => 'Laporan',
             'subItems' => [
                 ['name' => 'Ekspor & Laporan Umum', 'path' => '/admin/laporan'],
-                ['name' => 'Penyusutan', 'path' => '/admin/laporan/penyusutan'],
+                ['name' => 'Penyusutan', 'path' => '/laporan/penyusutan'],
             ],
         ],
         [
@@ -69,7 +69,7 @@ class MenuHelper
 }
 
     /**
-     * Menu untuk role User (akses terbatas) — juga dipakai Senior Analis untuk sementara
+     * Menu untuk role User (akses terbatas)
      */
     public static function getUserMenuItems()
     {
@@ -103,6 +103,7 @@ class MenuHelper
                 'name' => 'Riwayat Pengajuan Saya',
                 'path' => '/riwayat-pengajuan',
             ],
+            
         ];
     }
 
@@ -122,7 +123,23 @@ class MenuHelper
         $items[] = [
             'icon' => 'charts',
             'name' => 'Laporan Penyusutan',
-            'path' => '/admin/laporan/penyusutan',
+            'path' => '/laporan/penyusutan',
+        ];
+
+        return $items;
+    }
+
+        /**
+     * Menu untuk role Senior Analis — menu user + Laporan Penyusutan
+     */
+    public static function getSeniorAnalisMenuItems()
+    {
+        $items = self::getUserMenuItems();
+
+        $items[] = [
+            'icon' => 'charts',
+            'name' => 'Laporan Penyusutan',
+            'path' => '/laporan/penyusutan',
         ];
 
         return $items;
@@ -135,7 +152,7 @@ class MenuHelper
     $items[] = [
         'icon' => 'charts',
         'name' => 'Laporan Penyusutan',
-        'path' => '/admin/laporan/penyusutan',
+        'path' => '/laporan/penyusutan',
     ];
 
     return $items;
@@ -148,6 +165,8 @@ class MenuHelper
         $items = match ($role) {
             'admin' => self::getAdminMenuItems(),
             'gm' => self::getGmMenuItems(),
+            'finance' => self::getFinanceMenuItems(),
+            'senior_analis' => self::getSeniorAnalisMenuItems(),
             default => self::getUserMenuItems(),
         };
 

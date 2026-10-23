@@ -53,7 +53,7 @@
 </div>
 
 {{-- Filter --}}
-<form method="GET" action="{{ route('admin.laporan.penyusutan') }}"
+<form method="GET" action="{{ route('laporan.penyusutan') }}"
       x-data="{ mode: '{{ $mode }}' }"
       class="card card-pad mb-4">
 
@@ -122,12 +122,12 @@
 
     <div class="flex items-center gap-3 mt-4">
         <button type="submit" class="btn btn-primary">Terapkan Filter</button>
-        <a href="{{ route('admin.laporan.penyusutan') }}" class="text-sm text-gray-500 hover:underline">Reset</a>
+        <a href="{{ route('laporan.penyusutan') }}" class="text-sm text-gray-500 hover:underline">Reset</a>
     </div>
 </form>
 
 {{-- Form export: membungkus tabel karena checkbox ada di dalamnya --}}
-<form id="export-form" method="GET" action="{{ route('admin.laporan.penyusutan.export') }}">
+<form id="export-form" method="GET" action="{{ route('laporan.penyusutan.export') }}">
     <input type="hidden" name="mode" value="{{ $mode }}">
     <input type="hidden" name="bulan_dari" value="{{ $bulanDari }}">
     <input type="hidden" name="bulan_sampai" value="{{ $bulanSampai }}">

@@ -181,9 +181,9 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
         Route::patch('approval/mutasi/{transaction}/reject', [GmApprovalController::class, 'rejectMutasi'])->name('approval.mutasi.reject');
     });
 
-    Route::middleware('role:admin,finance')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('laporan/penyusutan', [LaporanPenyusutanController::class, 'index'])->name('laporan.penyusutan');
-        Route::get('laporan/penyusutan/export', [LaporanPenyusutanController::class, 'export'])->name('laporan.penyusutan.export');
+    Route::middleware('role:admin,finance,gm,senior_analis')->prefix('laporan')->name('laporan.')->group(function () {
+        Route::get('penyusutan', [LaporanPenyusutanController::class, 'index'])->name('penyusutan');
+        Route::get('penyusutan/export', [LaporanPenyusutanController::class, 'export'])->name('penyusutan.export');
     });
 });
 

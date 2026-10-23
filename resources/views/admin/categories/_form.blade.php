@@ -6,7 +6,31 @@
     $subJenisTerkunci = $category && !$category->subJenisBolehDiubah();
     $golonganTerkunci = $category && !$category->golonganBolehDiubah();
     $selectedGolongan = old('golongan_id', $category->golongan_id ?? '');
+
+    // Kode & Jenis selalu terkunci saat edit
+    $kodeJenisTerkunci = (bool) $category;
+
+    // Kelas tampilan: hitam/putih = bisa diedit, abu-abu = terkunci
+    $fieldClass = fn (bool $locked) => 'form-control ' . ($locked ? 'field-locked' : 'field-editable');
 @endphp
+
+<style>
+    .form-control.field-editable {
+        background-color: #ffffff;
+        color: #111827;
+    }
+    .form-control.field-editable::placeholder {
+        color: #9ca3af;
+    }
+    .form-control.field-locked,
+    .form-control.field-locked:disabled {
+        background-color: #f3f4f6;
+        color: #6b7280;
+        cursor: not-allowed;
+        opacity: 1;
+    }
+</style>
+
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
     <div>
@@ -16,8 +40,8 @@
         <input type="text" id="kode_aktiva_tetap" name="kode_aktiva_tetap" maxlength="2"
             inputmode="numeric" pattern="[0-9]{2}" placeholder="09"
             value="{{ old('kode_aktiva_tetap', $category->kode_aktiva_tetap ?? '') }}"
-            {{ $category ? 'readonly' : '' }} required
-            class="form-control {{ $category ? 'opacity-60 cursor-not-allowed' : '' }}" />
+            {{ $kodeJenisTerkunci ? 'readonly' : '' }} required
+            class="{{ $fieldClass($kodeJenisTerkunci) }}" />
         @error('kode_aktiva_tetap')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
@@ -29,8 +53,8 @@
         </label>
         <input type="text" id="jenis_aktiva_tetap" name="jenis_aktiva_tetap"
             value="{{ old('jenis_aktiva_tetap', $category->jenis_aktiva_tetap ?? '') }}"
-            {{ $category ? 'readonly' : '' }} required
-            class="form-control {{ $category ? 'opacity-60 cursor-not-allowed' : '' }}" />
+            {{ $kodeJenisTerkunci ? 'readonly' : '' }} required
+            class="{{ $fieldClass($kodeJenisTerkunci) }}" />
         @error('jenis_aktiva_tetap')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
@@ -44,7 +68,7 @@
             inputmode="numeric" pattern="[0-9]{2}" placeholder="47"
             value="{{ old('sub_jenis', $category->sub_jenis ?? '') }}"
             {{ $subJenisTerkunci ? 'readonly' : '' }}
-            class="form-control {{ $subJenisTerkunci ? 'opacity-60 cursor-not-allowed' : '' }}" />
+            class="{{ $fieldClass($subJenisTerkunci) }}" />
         @error('sub_jenis')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
@@ -63,7 +87,7 @@
         </label>
         <input type="text" id="keterangan_fungsi" name="keterangan_fungsi"
             value="{{ old('keterangan_fungsi', $category->keterangan_fungsi ?? '') }}"
-            class="form-control" />
+            class="{{ $fieldClass(false) }}" />
         @error('keterangan_fungsi')
             <p class="mt-1.5 text-sm text-error-500">{{ $message }}</p>
         @enderror
@@ -75,7 +99,7 @@
             {{ __('Golongan AT') }}
         </label>
         <select id="golongan_id" name="golongan_id"
-            class="form-control {{ $golonganTerkunci ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : '' }}"
+            class="{{ $fieldClass($golonganTerkunci) }}"
             @disabled($golonganTerkunci)>
             <option value="">{{ __('-- Pilih Golongan AT --') }}</option>
             @foreach ($golongans as $golongan)

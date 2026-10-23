@@ -46,6 +46,8 @@ class ItemController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        // Filter memakai semua kategori & lokasi (termasuk yang nonaktif),
+        // supaya aset lama tetap bisa difilter.
         $categories = Category::siapDipakai()->urut()->get();
         $locations = Location::urut()->get();
         $golonganOptions = Item::whereNotNull('at_ibat')
@@ -59,8 +61,9 @@ class ItemController extends Controller
 
     public function create()
     {
-        $categories = Category::with('golongan')->siapDipakai()->urut()->get();
-        $locations = Location::urut()->get();
+        // Aset baru hanya boleh memakai kategori dan lokasi yang aktif
+        $categories = Category::with('golongan')->siapDipakai()->aktif()->urut()->get();
+        $locations = Location::aktif()->urut()->get();
 
         return view('admin.items.create', compact('categories', 'locations'));
     }
@@ -95,13 +98,15 @@ class ItemController extends Controller
             ->with('success', 'Barang berhasil ditambahkan.');
     }
 
-public function edit(Item $item)
-{
-    $categories = Category::with('golongan')->siapDipakai()->urut()->get();
-    $locations = Location::urut()->get();
+    public function edit(Item $item)
+    {
+        // Form edit terkunci (hanya nama & foto yang bisa diubah), jadi tampilkan SEMUA
+        // kategori & lokasi, termasuk yang sudah nonaktif, supaya data aset lama tetap tampil benar.
+        $categories = Category::with('golongan')->urut()->get();
+        $locations = Location::urut()->get();
 
-    return view('admin.items.edit', compact('item', 'categories', 'locations'));
-}
+        return view('admin.items.edit', compact('item', 'categories', 'locations'));
+    }
 
     public function update(UpdateItemRequest $request, Item $item)
     {
@@ -190,8 +195,8 @@ public function edit(Item $item)
             ->route('barang.trash')
             ->with('success', "Barang \"{$item->nama_barang}\" berhasil dipulihkan.");
     }
-    
-        public function forceDelete($id)
+
+    public function forceDelete($id)
     {
         $item = Item::onlyTrashed()->findOrFail($id);
 

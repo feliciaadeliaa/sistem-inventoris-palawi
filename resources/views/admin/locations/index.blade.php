@@ -77,13 +77,14 @@
                         <th>Klaster</th>
                         <th>Kode Lokasi</th>
                         <th>Nama Wisata</th>
+                        <th>Status</th>
                         <th class="text-right">Aksi</th>
                     </tr>
                 </thead>
 
                 <tbody>
                     @forelse ($locations as $location)
-                        <tr>
+                        <tr class="{{ $location->is_active ? '' : 'opacity-60' }}">
                             <td class="cell-id">
                                 {{ $location->kode_gabungan }}
                             </td>
@@ -101,29 +102,31 @@
                             </td>
 
                             <td>
-                                <div class="flex items-center justify-end gap-1.5">
-                                    <a href="{{ route('lokasi.edit', $location) }}"
-                                        title="Edit"
-                                        class="icon-btn icon-btn-edit">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                        </svg>
-                                    </a>
+                                <span class="badge {{ $location->is_active ? 'badge-green' : 'badge-slate' }}">
+                                    {{ $location->is_active ? 'Aktif' : 'Nonaktif' }}
+                                </span>
+                            </td>
 
-                                    <form action="{{ route('lokasi.destroy', $location) }}" method="POST" class="inline"
-                                        onsubmit="return confirm('Yakin hapus lokasi ini?')">
+                            <td>
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <form action="{{ route('lokasi.toggle-active', $location) }}" method="POST" class="inline"
+                                        onsubmit="return confirm('{{ $location->is_active
+                                            ? 'Nonaktifkan lokasi ini? Lokasi tidak akan muncul di pilihan saat menambah aset baru. Aset yang sudah ada tidak terpengaruh.'
+                                            : 'Aktifkan kembali lokasi ini?' }}')">
                                         @csrf
-                                        @method('DELETE')
+                                        @method('PATCH')
+                                        {{-- Supaya setelah toggle tetap di halaman, pencarian, dan filter yang sedang dibuka --}}
+                                        <input type="hidden" name="page" value="{{ request('page') }}">
+                                        <input type="hidden" name="q" value="{{ request('q') }}">
+                                        <input type="hidden" name="search" value="{{ request('search') }}">
+                                        <input type="hidden" name="unit_bisnis" value="{{ request('unit_bisnis') }}">
 
                                         <button type="submit"
-                                            title="Hapus"
-                                            class="icon-btn icon-btn-danger">
+                                            title="{{ $location->is_active ? 'Nonaktifkan' : 'Aktifkan' }}"
+                                            class="icon-btn {{ $location->is_active ? 'icon-btn-danger' : 'icon-btn-outline' }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="3 6 5 6 21 6" />
-                                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                                <line x1="10" y1="11" x2="10" y2="17" />
-                                                <line x1="14" y1="11" x2="14" y2="17" />
+                                                <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+                                                <line x1="12" y1="2" x2="12" y2="12" />
                                             </svg>
                                         </button>
                                     </form>
@@ -132,7 +135,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-6 text-center text-gray-500">
+                            <td colspan="6" class="px-4 py-6 text-center text-gray-500">
                                 Belum ada data lokasi.
                             </td>
                         </tr>

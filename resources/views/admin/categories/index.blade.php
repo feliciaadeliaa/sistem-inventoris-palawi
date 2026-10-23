@@ -39,13 +39,14 @@
                         <th>Keterangan Fungsi</th>
                         <th>Golongan AT</th>
                         <th>Masa Manfaat</th>
+                        <th>Status</th>
                         <th class="text-right">Aksi</th>
                     </tr>
                 </thead>
 
                 <tbody>
                     @forelse ($categories as $category)
-                        <tr>
+                        <tr class="{{ $category->is_active ? '' : 'opacity-60' }}">
                             <td class="cell-id">
                                 {{ $category->kode_aktiva_tetap }}
                             </td>
@@ -77,6 +78,12 @@
                             </td>
 
                             <td>
+                                <span class="badge {{ $category->is_active ? 'badge-green' : 'badge-slate' }}">
+                                    {{ $category->is_active ? 'Aktif' : 'Nonaktif' }}
+                                </span>
+                            </td>
+
+                            <td>
                                 <div class="flex items-center justify-end gap-1.5">
                                     <a href="{{ route('kategori.edit', $category) }}"
                                         title="Edit"
@@ -87,19 +94,22 @@
                                         </svg>
                                     </a>
 
-                                    <form action="{{ route('kategori.destroy', $category) }}" method="POST" class="inline"
-                                        onsubmit="return confirm('Yakin hapus kategori ini?')">
+                                    <form action="{{ route('kategori.toggle-active', $category) }}" method="POST" class="inline"
+                                        onsubmit="return confirm('{{ $category->is_active
+                                            ? 'Nonaktifkan kategori ini? Kategori tidak akan muncul di pilihan saat menambah aset baru. Aset yang sudah ada tidak terpengaruh.'
+                                            : 'Aktifkan kembali kategori ini?' }}')">
                                         @csrf
-                                        @method('DELETE')
+                                        @method('PATCH')
+                                        {{-- Supaya setelah toggle tetap di halaman & pencarian yang sedang dibuka --}}
+                                        <input type="hidden" name="page" value="{{ request('page') }}">
+                                        <input type="hidden" name="q" value="{{ request('q') }}">
 
                                         <button type="submit"
-                                            title="Hapus"
-                                            class="icon-btn icon-btn-danger">
+                                            title="{{ $category->is_active ? 'Nonaktifkan' : 'Aktifkan' }}"
+                                            class="icon-btn {{ $category->is_active ? 'icon-btn-danger' : 'icon-btn-outline' }}">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="3 6 5 6 21 6" />
-                                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                                <line x1="10" y1="11" x2="10" y2="17" />
-                                                <line x1="14" y1="11" x2="14" y2="17" />
+                                                <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+                                                <line x1="12" y1="2" x2="12" y2="12" />
                                             </svg>
                                         </button>
                                     </form>
@@ -108,7 +118,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-6 text-center text-gray-500">
+                            <td colspan="8" class="px-4 py-6 text-center text-gray-500">
                                 Belum ada data kategori.
                             </td>
                         </tr>

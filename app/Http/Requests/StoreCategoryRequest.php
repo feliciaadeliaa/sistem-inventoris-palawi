@@ -62,11 +62,12 @@ class StoreCategoryRequest extends FormRequest
 
             'keterangan_fungsi' => ['nullable', 'string', 'max:255'],
 
-            // Golongan AT menentukan masa manfaat: wajib kalau Sub Jenis diisi
+            // Golongan AT menentukan masa manfaat: wajib kalau Sub Jenis diisi.
+            // Hanya golongan yang aktif yang boleh dipilih untuk kategori baru.
             'golongan_id' => [
                 Rule::requiredIf(fn () => $this->filled('sub_jenis')),
                 'nullable',
-                Rule::exists('golongans', 'id'),
+                Rule::exists('golongans', 'id')->where('is_active', true),
             ],
         ];
     }
@@ -78,7 +79,7 @@ class StoreCategoryRequest extends FormRequest
             'sub_jenis.digits'         => 'Sub Jenis harus 2 digit angka (contoh: 47).',
             'sub_jenis.unique'         => 'Kombinasi Kode Aktiva Tetap dan Sub Jenis ini sudah ada.',
             'golongan_id.required'     => 'Golongan AT wajib dipilih karena menentukan masa manfaat aset.',
-            'golongan_id.exists'       => 'Golongan AT yang dipilih tidak valid.',
+            'golongan_id.exists'       => 'Golongan AT yang dipilih tidak valid atau sudah nonaktif.',
         ];
     }
 }

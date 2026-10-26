@@ -8,6 +8,7 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -15,24 +16,14 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-/**
- * Export Laporan Penyusutan Aset.
- * Menerima baris hasil PenyusutanService::baris(), yaitu array:
- * ['item' => Item, 'per_bulan' => [bulan => nilai], 'penyusutan_periode' => ...,
- *  'akumulasi' => ..., 'nilai_buku' => ...]
- *
- * Susunan kolom:
- * A No | B ID Item | C Nama Barang | D Jenis Aktiva | E Lokasi | F No. Aktiva Tetap |
- * G Tgl Terima | H Masa Manfaat | I Nilai Perolehan | J.. kolom per bulan |
- * lalu Total Penyusutan Periode | Akumulasi | Nilai Buku
- */
 class PenyusutanExport implements
     FromCollection,
     WithHeadings,
     WithMapping,
     ShouldAutoSize,
     WithColumnFormatting,
-    WithStyles
+    WithStyles,
+    WithStrictNullComparison
 {
     private const KOLOM_TETAP = 9; // A..I sebelum kolom per bulan
 
@@ -101,9 +92,9 @@ class PenyusutanExport implements
         }
 
         return array_merge($line, [
-            (float) $row['penyusutan_periode'],
-            (float) $row['akumulasi'],
-            (float) $row['nilai_buku'],
+            (float) ($row['penyusutan_periode'] ?? 0),
+            (float) ($row['akumulasi'] ?? 0),
+            (float) ($row['nilai_buku'] ?? 0),
         ]);
     }
 
